@@ -132,10 +132,10 @@ Dự án không dùng MediatR, AutoMapper, MassTransit và FluentAssertions.
 Chỉ cần [Docker Desktop](https://www.docker.com/products/docker-desktop/); .NET, PostgreSQL và RabbitMQ đều chạy trong container. Từ gốc repo:
 
 ```bash
-docker compose -f deploy/docker-compose.yml up -d --build
+docker compose -f deploy/docker-compose.yml up -d
 ```
 
-Lần đầu mất vài phút để tải image và build. Xong thì:
+Lần đầu mất vài phút để tải image, tải package và build trong container. Xong thì:
 
 | Địa chỉ | Là gì |
 | --- | --- |
@@ -145,7 +145,8 @@ Lần đầu mất vài phút để tải image và build. Xong thì:
 | `http://localhost:15672`, user và mật khẩu `oism` | Giao diện quản trị RabbitMQ |
 
 - Máy đã có PostgreSQL chiếm cổng 5432: tạo `deploy/.env` chứa `POSTGRES_PORT=5433`. Các biến khác xem `deploy/.env.example`.
-- Sửa code xong thì chạy lại lệnh trên để build lại image.
+- Sửa code không cần build lại image: mã nguồn `backend/` được mount vào container và chạy bằng `dotnet watch`, lưu file xong khoảng 10 đến 15 giây là service tự build và khởi động lại. Migration mới được áp ngay lúc service khởi động lại.
+- Xem log build của một service: `docker compose -f deploy/docker-compose.yml logs -f core`. Build lỗi thì service dừng ở bản lỗi và tự chạy lại khi file được sửa.
 - Chạy toàn bộ test mà không cần cài .NET: `docker compose -f deploy/docker-compose.yml run --rm tests`.
 - Dừng: `docker compose -f deploy/docker-compose.yml down`; thêm `-v` để xóa luôn dữ liệu PostgreSQL.
 

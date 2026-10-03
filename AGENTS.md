@@ -87,10 +87,11 @@ Vi phạm bất kỳ điều nào dưới đây là lỗi, kể cả khi test hi
 ```bash
 dotnet build backend/Oism.sln
 dotnet test backend/Oism.sln
-docker compose -f deploy/docker-compose.yml up -d --build
+docker compose -f deploy/docker-compose.yml up -d
 docker compose -f deploy/docker-compose.yml run --rm tests
 ```
 
+- Compose dev chạy service bằng `dotnet watch` trên mã nguồn mount: sửa code hay thêm migration không cần build lại image.
 - Hai lệnh `dotnet` cần .NET 8 runtime; máy không có .NET 8 thì dùng lệnh `run --rm tests`, chỉ cần Docker.
 - Test tích hợp cần Docker đang chạy vì dùng Testcontainers.
 - Lệnh frontend (`npm --prefix frontend ...`) chạy được sau task W1-09.

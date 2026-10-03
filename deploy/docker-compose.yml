@@ -1,25 +1,45 @@
-# Compose cho máy dev (W1-03). Máy chỉ cần Docker; .NET được build bên trong image.
-# Chạy từ gốc repo: docker compose -f deploy/docker-compose.yml up -d --build
+# Compose cho máy dev (W1-03). Máy chỉ cần Docker; mã nguồn backend được mount vào container SDK và chạy
+# bằng `dotnet watch`: sửa code hay thêm migration thì service tự build và khởi động lại, không build image.
+# Chạy từ gốc repo: docker compose -f deploy/docker-compose.yml up -d
 # Tên, cổng, tiền tố route: docs/architecture/context-and-containers.md mục "Địa chỉ và cổng".
 name: oism
 
-x-dotnet-health: &dotnet-health
-  test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
-  interval: 10s
-  timeout: 3s
-  retries: 5
-  start_period: 30s
+x-dotnet-env: &dotnet-env
+  ASPNETCORE_ENVIRONMENT: Development
+  Jwt__PublicKey: ${JWT_PUBLIC_KEY:-}
+  # bin/obj nằm trong container, không lẫn với bin/obj do IDE build trên máy host.
+  # ponytail: mất khi `down`, lần `up` sau build lại từ đầu; cần nhanh hơn thì đưa vào volume riêng từng service.
+  ArtifactsPath: /artifacts
+  # Thư mục khóa của NuGet nằm trong volume chung; thiếu nó thì các container restore cùng lúc giẫm lên nhau.
+  NUGET_SCRATCH: /root/.nuget/packages/.scratch
+  # Build xong thì tiến trình MSBuild và trình biên dịch thoát luôn thay vì nằm chờ, để 6 container không giữ RAM.
+  MSBUILDDISABLENODEREUSE: 1
+  UseSharedCompilation: false
+
+x-dotnet: &dotnet
+  image: mcr.microsoft.com/dotnet/sdk:8.0
+  restart: unless-stopped
+  working_dir: /src
+  environment: *dotnet-env
+  volumes:
+    - ../backend:/src
+    - nuget-packages:/root/.nuget/packages
+  healthcheck:
+    test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+    interval: 10s
+    timeout: 3s
+    retries: 5
+    # Lần chạy đầu phải tải package và build trong container.
+    start_period: 300s
 
 x-service: &service
-  restart: unless-stopped
+  <<: *dotnet
   environment:
-    ASPNETCORE_ENVIRONMENT: Development
+    <<: *dotnet-env
     ConnectionStrings__Oism: Host=postgres;Database=oism;Username=${POSTGRES_USER:-oism};Password=${POSTGRES_PASSWORD:-oism}
-    Jwt__PublicKey: ${JWT_PUBLIC_KEY:-}
   depends_on:
     postgres:
       condition: service_healthy
-  healthcheck: *dotnet-health
 
 services:
   postgres:
@@ -56,55 +76,40 @@ services:
       timeout: 5s
       retries: 10
 
+  # --no-hot-reload: mỗi lần lưu file là build và khởi động lại, nên migration mới được áp ngay lúc khởi động.
   gateway:
-    build:
-      context: ../backend
-      dockerfile: gateway/Oism.Gateway/Dockerfile
-    restart: unless-stopped
-    environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      Jwt__PublicKey: ${JWT_PUBLIC_KEY:-}
+    <<: *dotnet
+    command: dotnet watch --no-hot-reload --project gateway/Oism.Gateway
     ports:
       - "8080:8080"
-    healthcheck: *dotnet-health
 
   identity:
     <<: *service
-    build:
-      context: ../backend
-      dockerfile: services/identity/src/Oism.Identity.Api/Dockerfile
+    command: dotnet watch --no-hot-reload --project services/identity/src/Oism.Identity.Api
     ports:
       - "5101:8080"
 
   catalog:
     <<: *service
-    build:
-      context: ../backend
-      dockerfile: services/catalog/src/Oism.Catalog.Api/Dockerfile
+    command: dotnet watch --no-hot-reload --project services/catalog/src/Oism.Catalog.Api
     ports:
       - "5102:8080"
 
   core:
     <<: *service
-    build:
-      context: ../backend
-      dockerfile: services/core/src/Oism.Core.Api/Dockerfile
+    command: dotnet watch --no-hot-reload --project services/core/src/Oism.Core.Api
     ports:
       - "5103:8080"
 
   channel:
     <<: *service
-    build:
-      context: ../backend
-      dockerfile: services/channel/src/Oism.Channel.Api/Dockerfile
+    command: dotnet watch --no-hot-reload --project services/channel/src/Oism.Channel.Api
     ports:
       - "5104:8080"
 
   insights:
     <<: *service
-    build:
-      context: ../backend
-      dockerfile: services/insights/src/Oism.Insights.Api/Dockerfile
+    command: dotnet watch --no-hot-reload --project services/insights/src/Oism.Insights.Api
     ports:
       - "5105:8080"
 
