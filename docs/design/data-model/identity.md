@@ -1,6 +1,6 @@
 # Mô hình dữ liệu: identity
 
-Database `oism_identity` giữ tenant, người dùng, refresh token và chi nhánh. Bảng `tenants` là bảng duy nhất không có `tenant_id`.
+Schema `identity` của database `oism` giữ tenant, người dùng, refresh token và chi nhánh. Bảng `tenants` là bảng duy nhất không có `tenant_id`.
 
 ```mermaid
 erDiagram

@@ -1,6 +1,6 @@
 # Mô hình dữ liệu: insights
 
-Database `oism_insights` chỉ chứa bảng đọc dựng từ event. Không bảng nào ở đây là nguồn chuẩn của nghiệp vụ; xóa sạch rồi phát lại event phải dựng lại được.
+Schema `insights` của database `oism` chỉ chứa bảng đọc dựng từ event. Không bảng nào ở đây là nguồn chuẩn của nghiệp vụ; xóa sạch rồi phát lại event phải dựng lại được.
 
 ```mermaid
 erDiagram
@@ -52,4 +52,4 @@ Cảnh báo tồn thấp là các dòng có `threshold` khác null và `availabl
 
 `daily_aggregates` do job đêm dựng lại từ `sales_facts` cho từng ngày; chạy lại cho cùng ngày thì ghi đè, không cộng dồn. Báo cáo doanh thu đọc `daily_aggregates` cho các ngày đã tổng hợp và `sales_facts` cho ngày hiện tại.
 
-`insights` không phát event nên không có `outbox_messages`. Bảng của Hangfire nằm trong schema riêng `hangfire`.
+`insights` không phát event nên không có `outbox_messages`. Bảng của Hangfire nằm trong schema riêng `hangfire_insights`.

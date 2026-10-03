@@ -29,7 +29,7 @@ Phụ thuộc chỉ hướng vào trong: Api → Application → Domain; Infrast
 
 ## Sở hữu
 
-- Database `oism_identity`: Tenant, User, RefreshToken, Branch (mục 5 của kế hoạch tổng).
+- Schema `identity` của database `oism`: Tenant, User, RefreshToken, Branch (mục 5 của kế hoạch tổng).
 - API: `/tenants`, `/auth/login`, `/auth/refresh`, `/auth/logout`, `/users`, `/branches` (mục 8).
 - Event phát: `BranchUpserted` (mục 7).
 - Kiểm thử: T14; điều kiện xong của W1-04 và W1-05.

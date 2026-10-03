@@ -54,7 +54,7 @@ Các con số là ước lượng của nhóm, không phải số đo.
 | Gateway YARP, định tuyến, kiểm JWT | 1,5 | B-gọn, B, C |
 | RabbitMQ, outbox, inbox, hợp đồng event | 2,5 | B-gọn, B, C |
 | Thư viện dùng chung: tenant, JWT, lỗi chuẩn, log | 2 | B-gọn, B, C |
-| Compose nhiều database, health check | 1 | B-gọn, B, C |
+| Compose, khởi tạo schema từng service, health check | 1 | B-gọn, B, C |
 | CI nhiều project | 1 | B-gọn, B, C |
 | Mỗi service thêm ngoài service đầu tiên | 1,5 mỗi service | 2 service ở B-gọn, 4 ở B, 7 ở C |
 | Điểm tích hợp bằng event | 1 đến 2,5 mỗi điểm | Tổng 5 ở B-gọn, 8 ở B, 17,5 ở C |

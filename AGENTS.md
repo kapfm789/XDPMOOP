@@ -61,7 +61,7 @@ Quy trình chi tiết từng bước: `.claude/skills/implement-task/SKILL.md`.
 Vi phạm bất kỳ điều nào dưới đây là lỗi, kể cả khi test hiện có vẫn xanh.
 
 1. Đơn hàng và tồn kho ở chung service `core`, chung một transaction. Không tách.
-2. Service không gọi HTTP sang service khác và không đọc database của service khác. Dữ liệu dùng chung đi bằng event.
+2. Service không gọi HTTP sang service khác và không đọc schema của service khác. Dữ liệu dùng chung đi bằng event.
 3. Event ghi vào outbox trong cùng transaction với thay đổi nghiệp vụ. Không gửi RabbitMQ bên trong transaction. Consumer ghi inbox trước khi xử lý.
 4. `on_hand` chỉ đổi qua `PostLedger`; mỗi lần đổi để lại đúng một dòng sổ. `reserved` chỉ đổi qua `IStockService`.
 5. Sổ `inventory_transactions` chỉ thêm mới. Sửa sai bằng dòng `Reversal`.

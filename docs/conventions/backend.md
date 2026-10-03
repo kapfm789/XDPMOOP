@@ -90,6 +90,7 @@ Không dùng exception cho luồng bình thường (ví dụ "không có kết q
 - Ánh xạ bằng lớp `IEntityTypeConfiguration<T>` ở Infrastructure. Entity ở Domain không mang attribute của EF Core.
 - Tên bảng và cột là snake_case, qua `UseSnakeCaseNamingConvention`.
 - Entity nghiệp vụ cài `ITenantOwned`; DbContext kế thừa DbContext base của `Oism.BuildingBlocks` để có Global Query Filter và interceptor.
+- DbContext đặt schema mặc định là tên service bằng `HasDefaultSchema` ([ADR-0013](../decisions/0013-one-database-schema-per-service.md)). Không entity hay truy vấn nào trỏ sang schema của service khác.
 - Truy vấn chỉ đọc dùng `AsNoTracking` và chiếu thẳng sang DTO.
 - Không bật lazy loading.
 - SQL thô chỉ dùng cho khóa dòng và cho migration (CHECK, trigger); luôn qua tham số, không nối chuỗi.
@@ -98,6 +99,7 @@ Không dùng exception cho luồng bình thường (ví dụ "không có kết q
 ## Migration
 
 - Mỗi service giữ migration của mình trong `Oism.<Service>.Infrastructure/Migrations`.
+- Bảng lịch sử migration nằm trong schema của service: `MigrationsHistoryTable("__EFMigrationsHistory", "<service>")`. Để mặc định thì 5 service dùng chung một bảng lịch sử.
 - Một PR tối đa một migration cho mỗi service. Không sửa migration đã merge; sai thì thêm migration mới.
 - CHECK, trigger và chỉ mục đặc biệt viết bằng `migrationBuilder.Sql` trong chính migration tạo bảng.
 - Service tự chạy migration khi khởi động ở môi trường dev và demo.
@@ -129,7 +131,7 @@ Dự án không dùng MediatR, AutoMapper, MassTransit và FluentAssertions: cá
 ## Điều không làm
 
 - Không đặt nghiệp vụ trong controller, consumer, EF configuration hay SQL.
-- Không gọi HTTP sang service khác; không đọc database của service khác.
+- Không gọi HTTP sang service khác; không đọc schema của service khác.
 - Không đổi `on_hand`, `reserved` ngoài `PostLedger` và `IStockService`.
 - Không dùng `DateTime.Now` hay `DateTime.UtcNow` ngoài lớp cài `IClock`.
 - Không nuốt exception; không `catch` rồi tiếp tục commit.

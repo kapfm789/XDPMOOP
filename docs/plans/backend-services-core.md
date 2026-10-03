@@ -43,7 +43,7 @@ Hai module dùng chung một DbContext và một transaction. Module Orders ch�
 
 ## Sở hữu
 
-- Database `oism_core`: SkuRef, BranchRef, InventoryBalance, InventoryTransaction, Supplier, PurchaseReceipt, StockTransfer, Stocktake, Order, OrderItem, Reservation, Payment (mục 5 của kế hoạch tổng).
+- Schema `core` của database `oism`: SkuRef, BranchRef, InventoryBalance, InventoryTransaction, Supplier, PurchaseReceipt, StockTransfer, Stocktake, Order, OrderItem, Reservation, Payment (mục 5 của kế hoạch tổng).
 - API: `/pos/skus`, `/pos/checkout`, `/stock`, `/ledger`, `/purchase-receipts`, `/transfers`, `/stocktakes`, `/orders` (mục 8).
 - Event nhận: `SkuUpserted`, `BranchUpserted`, `SubmitOrder`. Event phát: `OrderReserved`, `OrderRejected`, `OrderConfirmed`, `OrderCancelled`, `StockChanged` (mục 7).
 - Kiểm thử: T01 đến T13, T16, T23.

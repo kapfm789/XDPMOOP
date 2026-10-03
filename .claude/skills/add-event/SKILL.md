@@ -1,6 +1,6 @@
 ---
 name: add-event
-description: "Thêm một thông điệp mới giữa các service của OISM, hoặc thêm trường vào một thông điệp đã có, sao cho hợp đồng, bên phát, bên nhận, tài liệu và test khớp nhau. Dùng skill này khi người dùng nói 'thêm event', 'phát event', 'thêm consumer', 'service này cần dữ liệu của service kia', 'thêm trường vào event', hoặc khi một thay đổi cần đưa dữ liệu từ service này sang service khác. Luôn dùng skill này thay vì gọi HTTP giữa các service hay đọc database của service khác."
+description: "Thêm một thông điệp mới giữa các service của OISM, hoặc thêm trường vào một thông điệp đã có, sao cho hợp đồng, bên phát, bên nhận, tài liệu và test khớp nhau. Dùng skill này khi người dùng nói 'thêm event', 'phát event', 'thêm consumer', 'service này cần dữ liệu của service kia', 'thêm trường vào event', hoặc khi một thay đổi cần đưa dữ liệu từ service này sang service khác. Luôn dùng skill này thay vì gọi HTTP giữa các service hay đọc schema của service khác."
 argument-hint: "[tên thông điệp, ví dụ OrderConfirmed]"
 ---
 

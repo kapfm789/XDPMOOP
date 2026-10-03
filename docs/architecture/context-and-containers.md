@@ -44,7 +44,7 @@ flowchart TB
   channel["channel"]
   insights["insights"]
   mq[("RabbitMQ")]
-  pg[("PostgreSQL<br/>5 database")]
+  pg[("PostgreSQL<br/>database oism, 5 schema")]
 
   admin --> gw
   pos --> gw
@@ -68,18 +68,18 @@ flowchart TB
   insights --- pg
 ```
 
-Đường liền có mũi tên là HTTP; đường đứt là event qua RabbitMQ; đường liền không mũi tên là kết nối tới database riêng của service.
+Đường liền có mũi tên là HTTP; đường đứt là event qua RabbitMQ; đường liền không mũi tên là kết nối tới schema riêng của service trong database `oism` ([ADR-0013](../decisions/0013-one-database-schema-per-service.md)).
 
-| Khối | Công nghệ | Trách nhiệm | Database | Nhận từ | Phát ra |
+| Khối | Công nghệ | Trách nhiệm | Schema | Nhận từ | Phát ra |
 | --- | --- | --- | --- | --- | --- |
 | `admin` | React, Vite, TypeScript | Trang quản trị cho Owner và Staff | Không | Người dùng | HTTP tới gateway |
 | `pos` | React PWA | Bán tại quầy cho Cashier | Không | Người dùng | HTTP tới gateway |
 | `gateway` | ASP.NET Core, YARP | Định tuyến, kiểm JWT, TLS, WebSocket | Không | Frontend, simulator | HTTP tới service |
-| `identity` | ASP.NET Core, EF Core | Tenant, user, đăng nhập, chi nhánh | `oism_identity` | HTTP | `BranchUpserted` |
-| `catalog` | ASP.NET Core, EF Core | Danh mục, sản phẩm, SKU, mã vạch, giá | `oism_catalog` | HTTP | `SkuUpserted` |
-| `core` | ASP.NET Core, EF Core, Hangfire | Ledger, số dư, giá vốn, đơn, giữ hàng, POS checkout | `oism_core` | HTTP, `SkuUpserted`, `BranchUpserted`, `SubmitOrder` | `OrderReserved`, `OrderRejected`, `OrderConfirmed`, `OrderCancelled`, `StockChanged` |
-| `channel` | ASP.NET Core, EF Core | Nhận webhook, chống trùng, chuẩn hóa đơn | `oism_channel` | HTTP, `OrderReserved`, `OrderRejected` | `SubmitOrder` |
-| `insights` | ASP.NET Core, EF Core, Hangfire, SignalR | Báo cáo, cảnh báo, dự báo, thông báo realtime | `oism_insights` | HTTP, WebSocket, mọi event của `core`, `SkuUpserted` | Thông báo SignalR |
+| `identity` | ASP.NET Core, EF Core | Tenant, user, đăng nhập, chi nhánh | `identity` | HTTP | `BranchUpserted` |
+| `catalog` | ASP.NET Core, EF Core | Danh mục, sản phẩm, SKU, mã vạch, giá | `catalog` | HTTP | `SkuUpserted` |
+| `core` | ASP.NET Core, EF Core, Hangfire | Ledger, số dư, giá vốn, đơn, giữ hàng, POS checkout | `core` | HTTP, `SkuUpserted`, `BranchUpserted`, `SubmitOrder` | `OrderReserved`, `OrderRejected`, `OrderConfirmed`, `OrderCancelled`, `StockChanged` |
+| `channel` | ASP.NET Core, EF Core | Nhận webhook, chống trùng, chuẩn hóa đơn | `channel` | HTTP, `OrderReserved`, `OrderRejected` | `SubmitOrder` |
+| `insights` | ASP.NET Core, EF Core, Hangfire, SignalR | Báo cáo, cảnh báo, dự báo, thông báo realtime | `insights` | HTTP, WebSocket, mọi event của `core`, `SkuUpserted` | Thông báo SignalR |
 
 ## Địa chỉ và cổng
 
@@ -103,5 +103,5 @@ Gateway bỏ tiền tố trước khi chuyển tiếp: `GET /api/core/orders` t�
 ## Quy tắc giao tiếp
 
 - Frontend chỉ gọi gateway. Không ứng dụng nào gọi thẳng cổng của service.
-- Service không gọi HTTP sang service khác và không đọc database của service khác. Dữ liệu cần dùng chung đi bằng event và được lưu thành bản sao cục bộ.
+- Service không gọi HTTP sang service khác và không đọc schema của service khác. Dữ liệu cần dùng chung đi bằng event và được lưu thành bản sao cục bộ.
 - Mọi event đi qua outbox của bên phát và inbox của bên nhận. Chi tiết ở [messaging.md](messaging.md).

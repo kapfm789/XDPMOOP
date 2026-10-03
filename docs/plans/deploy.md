@@ -11,7 +11,7 @@ Tầng dữ liệu và hạ tầng chạy (mục 4.1 của kế hoạch tổng):
 ```text
 deploy/
 ├─ docker-compose.yml             gateway, 5 service, admin, pos, PostgreSQL, RabbitMQ
-├─ postgres/init-databases.sql    tạo 5 database: oism_identity, oism_catalog, oism_core, oism_channel, oism_insights
+├─ postgres/init-schemas.sql      tạo 5 schema trong database oism: identity, catalog, core, channel, insights
 └─ seed/                          2 tenant, mỗi tenant 2 chi nhánh, khoảng 50 SKU, 60 ngày lịch sử bán
 
 .github/workflows/ci.yml          build, test, build image
@@ -21,7 +21,7 @@ deploy/
 
 | Phase | Mã | Việc | Owner | Yêu cầu | Xong khi |
 | --- | --- | --- | --- | --- | --- |
-| 1 | W1-03 | Docker Compose dev: PostgreSQL với 5 database, RabbitMQ, gateway YARP | A | NFR-SEC-01 | `docker compose up` chạy; health check 5 service qua gateway |
+| 1 | W1-03 | Docker Compose dev: PostgreSQL một database với 5 schema, RabbitMQ, gateway YARP | A | NFR-SEC-01 | `docker compose up` chạy; health check 5 service qua gateway |
 | 1 | W1-11 | CI: GitHub Actions build và test backend, build frontend | C | Mục e.7 của đề | PR hiện check xanh hoặc đỏ |
 | 8 | W4-09 | Seed data: 2 tenant, mỗi tenant 2 chi nhánh, khoảng 50 SKU, 60 ngày lịch sử bán | C, có A và B hỗ trợ | Mục f của đề | Script chạy lặp lại được |
 | 9 | W5-04 | Docker Compose demo đầy đủ, Dockerfile từng service, seed tự chạy, HTTPS ở gateway, health check và restart policy | C | Mục f của đề, NFR-SEC-01, NFR-USA-01 | Máy sạch: clone, compose up, đăng nhập được |

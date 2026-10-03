@@ -1,12 +1,12 @@
 # Bản ghi quyết định kiến trúc
 
-Mỗi file ở đây ghi một quyết định cho điểm mà đề bài để ngỏ: bối cảnh, lựa chọn, hệ quả và cái phải sửa nếu lựa chọn bị đổi. Cả 12 bản ghi đang ở trạng thái đề xuất, chờ giảng viên xác nhận ở task W1-01.
+Mỗi file ở đây ghi một quyết định cho điểm mà đề bài để ngỏ: bối cảnh, lựa chọn, hệ quả và cái phải sửa nếu lựa chọn bị đổi. Cả 13 bản ghi đang ở trạng thái đề xuất, chờ giảng viên xác nhận ở task W1-01.
 
 Bảng D-01 đến D-18 ở [PLAN.md](../PLAN.md) mục 3 là bản tóm tắt; các file ở đây là nguồn chuẩn.
 
 | ADR | Quyết định | Gộp từ | Trạng thái |
 | --- | --- | --- | --- |
-| [0001](0001-microservices-by-transaction-boundary.md) | 5 service và gateway; đơn và kho chung `core`; event qua outbox | D-17, D-18 | Đề xuất |
+| [0001](0001-microservices-by-transaction-boundary.md) | 5 service và gateway; đơn và kho chung `core`; event qua outbox | D-17, D-18 | Đề xuất; phần database thay bằng 0013 |
 | [0002](0002-shared-schema-tenant-id.md) | Chung schema, cột `tenant_id`, Global Query Filter | D-01 | Đề xuất |
 | [0003](0003-ledger-balance-and-locking.md) | Ledger chỉ thêm mới kèm bảng số dư; khóa bi quan | D-02, D-03 | Đề xuất |
 | [0004](0004-wac-per-branch.md) | Giá vốn bình quân theo chi nhánh và SKU | D-04 | Đề xuất |
@@ -18,6 +18,7 @@ Bảng D-01 đến D-18 ở [PLAN.md](../PLAN.md) mục 3 là bản tóm tắt; 
 | [0010](0010-ai-forecast.md) | Dự báo thống kê, không dùng dịch vụ ngoài | D-14 | Đề xuất |
 | [0011](0011-auth-and-roles.md) | JWT, refresh token, mỗi người dùng một tenant | D-15 | Đề xuất |
 | [0012](0012-frontend-workspaces.md) | Một workspace npm: admin, pos, shared | D-16 | Đề xuất |
+| [0013](0013-one-database-schema-per-service.md) | Một database `oism`, mỗi service một schema riêng | D-18 | Đề xuất |
 
 ## Cách dùng
 

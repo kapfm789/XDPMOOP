@@ -4,7 +4,7 @@ Thư mục này là nguồn chuẩn cho bảng, API, event, trạng thái và tr
 
 | Phần | File | Nội dung |
 | --- | --- | --- |
-| Mô hình dữ liệu | [data-model/identity.md](data-model/identity.md), [catalog.md](data-model/catalog.md), [core.md](data-model/core.md), [channel.md](data-model/channel.md), [insights.md](data-model/insights.md) | Bảng, cột, khóa, chỉ mục của từng database |
+| Mô hình dữ liệu | [data-model/identity.md](data-model/identity.md), [catalog.md](data-model/catalog.md), [core.md](data-model/core.md), [channel.md](data-model/channel.md), [insights.md](data-model/insights.md) | Bảng, cột, khóa, chỉ mục của từng schema |
 | API | [api/identity.md](api/identity.md), [catalog.md](api/catalog.md), [core.md](api/core.md), [channel.md](api/channel.md), [insights.md](api/insights.md) | Endpoint, vai trò, dữ liệu vào ra, mã lỗi |
 | Event | [events.md](events.md) | 8 thông điệp giữa các service, từng trường |
 | Trạng thái | [state-machines.md](state-machines.md) | Đơn, phần giữ hàng, phiếu nhập, chuyển kho, kiểm kê, webhook |

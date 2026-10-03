@@ -13,7 +13,7 @@ Mọi service của OISM có cùng một khuôn để người và công cụ đ
 ## Trước khi dựng
 
 1. Đọc `docs/architecture/source-tree.md` (tên folder, project, namespace) và `docs/architecture/layering.md` (lớp nào tham chiếu lớp nào).
-2. Đọc `docs/architecture/context-and-containers.md` để lấy tiền tố route, cổng dev và tên database của service.
+2. Đọc `docs/architecture/context-and-containers.md` để lấy tiền tố route, cổng dev và tên schema của service.
 3. Kiểm `backend/Oism.sln`, `backend/shared/Oism.BuildingBlocks` và `backend/shared/Oism.Contracts` đã có chưa. Chưa có thì đó là phần còn lại của task W1-02; dựng chúng trước theo `docs/plans/backend-shared.md`, hoặc báo lại nếu người dùng chỉ muốn một service.
 4. Tên service phải là một trong năm tên ở trên. Tên khác thì hỏi lại; thêm service mới là một quyết định kiến trúc cần ADR.
 
@@ -41,7 +41,7 @@ Nội dung tối thiểu:
 
 | Nơi | Có gì |
 | --- | --- |
-| Infrastructure | `<Service>DbContext` kế thừa DbContext base của `Oism.BuildingBlocks`; cấu hình Npgsql với snake_case; thư mục `Migrations` với migration đầu tạo `outbox_messages` và `inbox_messages` nếu service có phát hoặc nhận event; phương thức mở rộng đăng ký DI |
+| Infrastructure | `<Service>DbContext` kế thừa DbContext base của `Oism.BuildingBlocks`; cấu hình Npgsql với snake_case, schema mặc định `<service>` và bảng lịch sử migration trong schema đó; thư mục `Migrations` với migration đầu tạo `outbox_messages` và `inbox_messages` nếu service có phát hoặc nhận event; phương thức mở rộng đăng ký DI |
 | Api | `Program.cs` đăng ký: xác thực JWT bằng khóa công khai, tenant middleware, ProblemDetails, Swagger, health check tại `/health`, chạy migration khi khởi động ở môi trường dev |
 | IntegrationTests | Lớp nền dùng `WebApplicationFactory` và Testcontainers PostgreSQL; một test gọi `/health`; một test duyệt mọi entity của DbContext và báo lỗi nếu entity nghiệp vụ nào không cài `ITenantOwned` |
 | UnitTests | Một test giữ chỗ để project build và chạy được |
@@ -52,7 +52,7 @@ Service nào phát hoặc nhận event thì xem bảng ở `docs/design/events.m
 
 1. Thêm 6 project vào `backend/Oism.sln`.
 2. Thêm route `/api/<service>` vào cấu hình của `backend/gateway`, bỏ tiền tố khi chuyển tiếp.
-3. Thêm service vào `deploy/docker-compose.yml` với đúng tên và cổng ở tài liệu; thêm database `oism_<service>` vào `deploy/postgres/init-databases.sql`.
+3. Thêm service vào `deploy/docker-compose.yml` với đúng tên và cổng ở tài liệu; thêm schema `<service>` vào `deploy/postgres/init-schemas.sql`.
 4. Thêm project vào CI nếu CI liệt kê project tường minh.
 
 Nếu gateway hoặc Compose chưa tồn tại, bỏ qua bước tương ứng và ghi rõ trong báo cáo.

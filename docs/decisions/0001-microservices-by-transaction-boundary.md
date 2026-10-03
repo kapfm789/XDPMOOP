@@ -1,6 +1,6 @@
 # ADR-0001: Tách 5 service theo ranh giới transaction, nối bằng event qua outbox
 
-- Trạng thái: Đề xuất, chờ giảng viên xác nhận
+- Trạng thái: Đề xuất, chờ giảng viên xác nhận; dòng "mỗi service một database riêng" thay bằng [ADR-0013](0013-one-database-schema-per-service.md)
 - Gộp từ: D-17, D-18
 - Ngày: 2026-10-03
 

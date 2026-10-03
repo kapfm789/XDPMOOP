@@ -30,7 +30,7 @@ Một task xong khi đạt cột "Xong khi" của nó ở PLAN và đủ các đ
 2. Có test cho quy tắc nghiệp vụ; phần kho và giữ hàng có test tích hợp trên PostgreSQL thật.
 3. Mọi truy vấn đi qua Global Query Filter.
 4. Endpoint có policy theo vai trò và hiện trên Swagger.
-5. Không truy cập database của service khác; không gọi HTTP giữa các service.
+5. Không truy cập schema của service khác; không gọi HTTP giữa các service.
 6. Tài liệu ở `docs/design/` khớp với code vừa viết; đổi bảng, API hay event thì đã sửa tài liệu trong cùng PR.
 7. RTM ở PLAN mục 16 đã cập nhật nếu task hoặc kịch bản kiểm chứng thay đổi.
 

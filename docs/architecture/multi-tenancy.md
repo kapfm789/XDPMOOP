@@ -2,7 +2,7 @@
 
 Mọi service dùng chung một cơ chế: `TenantId` lấy từ JWT, vào `ITenantContext`, rồi được EF Core tự áp lên mọi truy vấn đọc và mọi lần ghi. Dev không tự viết `WHERE tenant_id = ...`; cơ chế làm việc đó, nên chỗ nào đi vòng qua cơ chế mới là chỗ dễ rò dữ liệu.
 
-Mô hình: chung schema, mọi bảng nghiệp vụ có cột `tenant_id` ([ADR-0002](../decisions/0002-shared-schema-tenant-id.md)).
+Mô hình: các tenant dùng chung bảng, mọi bảng nghiệp vụ có cột `tenant_id` ([ADR-0002](../decisions/0002-shared-schema-tenant-id.md)). Schema của PostgreSQL chia theo service, không chia theo tenant ([ADR-0013](../decisions/0013-one-database-schema-per-service.md)).
 
 ## Đường đi của TenantId
 

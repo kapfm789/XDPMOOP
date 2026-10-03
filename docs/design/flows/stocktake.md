@@ -8,7 +8,7 @@ sequenceDiagram
   actor Staff
   participant Api as core Api
   participant UC as PostStocktakeHandler
-  participant DB as oism_core
+  participant DB as schema core
 
   Staff->>Api: POST stocktakes/:id/post
   Api->>UC: PostStocktakeCommand

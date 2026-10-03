@@ -1,6 +1,6 @@
 # Kiến trúc OISM
 
-OISM là 5 service .NET 8 sau một API gateway, hai ứng dụng React, một PostgreSQL với 5 database và một RabbitMQ. Ranh giới service đi theo ranh giới transaction: đơn hàng và tồn kho phải commit cùng nhau nên nằm chung service `core`.
+OISM là 5 service .NET 8 sau một API gateway, hai ứng dụng React, một database PostgreSQL với 5 schema và một RabbitMQ. Ranh giới service đi theo ranh giới transaction: đơn hàng và tồn kho phải commit cùng nhau nên nằm chung service `core`.
 
 ## Động lực kiến trúc
 
@@ -36,6 +36,6 @@ Xếp theo ưu tiên; khi hai động lực xung đột, cái đứng trên th�
 
 ## Ba quy tắc tóm gọn cả kiến trúc
 
-1. Thứ gì phải commit cùng nhau thì ở chung một service và một database.
-2. Giữa các service chỉ có event qua outbox; không gọi HTTP chéo, không đọc database của nhau.
+1. Thứ gì phải commit cùng nhau thì ở chung một service và một schema.
+2. Giữa các service chỉ có event qua outbox; không gọi HTTP chéo, không đọc schema của nhau.
 3. Trong một service, phụ thuộc chỉ hướng vào Domain; nghiệp vụ không nằm ở controller hay ở EF Core.

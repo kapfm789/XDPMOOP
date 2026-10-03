@@ -1,6 +1,6 @@
 # Mô hình dữ liệu: channel
 
-Database `oism_channel` giữ cấu hình shop của từng sàn và nhật ký webhook đã nhận. `channel` không giữ đơn hàng; đơn nằm ở `core`.
+Schema `channel` của database `oism` giữ cấu hình shop của từng sàn và nhật ký webhook đã nhận. `channel` không giữ đơn hàng; đơn nằm ở `core`.
 
 ```mermaid
 erDiagram

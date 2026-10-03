@@ -29,7 +29,7 @@ Phụ thuộc chỉ hướng vào trong: Api → Application → Domain; Infrast
 
 ## Sở hữu
 
-- Database `oism_catalog`: Category, Brand, Product, Sku, Barcode (mục 5 của kế hoạch tổng).
+- Schema `catalog` của database `oism`: Category, Brand, Product, Sku, Barcode (mục 5 của kế hoạch tổng).
 - API: `/categories`, `/brands`, `/products`, `/products/{id}/skus`, `/skus/{id}/barcodes`, `/skus/{id}/prices` (mục 8).
 - Event phát: `SkuUpserted` (mục 7).
 - Kiểm thử: T14; điều kiện xong của W1-06 và W1-07.

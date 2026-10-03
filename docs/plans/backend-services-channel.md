@@ -29,7 +29,7 @@ Skeleton của folder được tạo từ mẫu ở phase 1 (W1-02) để gatewa
 
 ## Sở hữu
 
-- Database `oism_channel`: ChannelShop, WebhookEvent (mục 5 của kế hoạch tổng).
+- Schema `channel` của database `oism`: ChannelShop, WebhookEvent (mục 5 của kế hoạch tổng).
 - API: `/webhooks/{channel}`, `/simulator/burst`, `/webhook-events` (mục 8).
 - Event phát: `SubmitOrder`. Event nhận: `OrderReserved`, `OrderRejected` (mục 7).
 - Kiểm thử: T03.

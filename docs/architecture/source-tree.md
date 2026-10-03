@@ -45,7 +45,7 @@ XDPMOOP/
 │     └─ src/                      pages, features, app
 ├─ deploy/
 │  ├─ docker-compose.yml
-│  ├─ postgres/init-databases.sql
+│  ├─ postgres/init-schemas.sql
 │  └─ seed/
 ├─ tools/k6/
 ├─ docs/
@@ -78,7 +78,8 @@ Test của nó nằm cùng tên ở project test: `Oism.Core.UnitTests/Orders/Co
 | Controller | Danh từ số nhiều | `OrdersController` |
 | Consumer | `<Tên event>Consumer` | `SkuUpsertedConsumer` |
 | Bảng và cột database | snake_case, bảng số nhiều | `inventory_balances.on_hand` |
-| Database | `oism_<service>` | `oism_core` |
+| Database | Một database cho cả hệ thống | `oism` |
+| Schema | Tên service, chữ thường | `core` |
 | Event | Danh từ kèm quá khứ phân từ | `OrderConfirmed` |
 | Component React | PascalCase, một component một file | `CartPanel.tsx` |
 | Hook React | `use` kèm tên | `usePosSearch.ts` |

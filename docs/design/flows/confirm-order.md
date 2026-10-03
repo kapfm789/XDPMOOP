@@ -9,7 +9,7 @@ sequenceDiagram
   participant Api as core Api
   participant UC as ConfirmOrderHandler
   participant Stock as IStockService
-  participant DB as oism_core
+  participant DB as schema core
 
   Staff->>Api: POST orders/:id/confirm
   Api->>UC: ConfirmOrderCommand

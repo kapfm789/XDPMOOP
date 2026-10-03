@@ -1,6 +1,6 @@
 # Mô hình dữ liệu: catalog
 
-Database `oism_catalog` giữ danh mục, thương hiệu, sản phẩm, SKU, mã vạch và giá niêm yết. Giá vốn không nằm ở đây; nó thuộc `core`.
+Schema `catalog` của database `oism` giữ danh mục, thương hiệu, sản phẩm, SKU, mã vạch và giá niêm yết. Giá vốn không nằm ở đây; nó thuộc `core`.
 
 ```mermaid
 erDiagram

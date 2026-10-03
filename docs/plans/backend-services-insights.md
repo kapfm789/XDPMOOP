@@ -33,14 +33,14 @@ Skeleton của folder được tạo từ mẫu ở phase 1 (W1-02); nghiệp v�
 
 ## Sở hữu
 
-- Database `oism_insights`: SalesFact, StockSnapshot, DailyAggregate, ForecastRun, ForecastResult (mục 5 của kế hoạch tổng).
+- Schema `insights` của database `oism`: SalesFact, StockSnapshot, DailyAggregate, ForecastRun, ForecastResult (mục 5 của kế hoạch tổng).
 - API: `/reports/gross-profit`, `/reports/inventory-value`, `/reports/top-sellers`, `/reports/slow-movers`, `/alerts/low-stock`, `/forecast/reorder-suggestions`, `/forecast/run`, WebSocket `/hubs/notifications` (mục 8).
 - Event nhận: `SkuUpserted`, `OrderReserved`, `OrderRejected`, `OrderConfirmed`, `OrderCancelled`, `StockChanged` (mục 7). Không phát event.
 - Kiểm thử: T10, T15, T18, T19, T22.
 
 ## Quy tắc riêng
 
-- Chỉ đọc dữ liệu từ event, không truy cập `oism_core`.
+- Chỉ đọc dữ liệu từ event, không truy cập schema `core`.
 - Giá vốn trong báo cáo lấy từ `costPrice` đã chốt trong `OrderConfirmed`, không lấy giá vốn hiện tại (FR-COST-02).
 - Công thức báo cáo theo D-12; báo cáo lợi nhuận chỉ Owner xem (D-15).
 - Dự báo chỉ là khuyến nghị: không tự tạo phiếu mua, không ghi ledger (D-14).

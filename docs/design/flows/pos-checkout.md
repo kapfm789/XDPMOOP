@@ -10,7 +10,7 @@ sequenceDiagram
   participant Api as core Api
   participant UC as PosCheckoutHandler
   participant Stock as IStockService
-  participant DB as oism_core
+  participant DB as schema core
 
   Cashier->>Pos: bấm thanh toán
   Pos->>Api: POST pos/checkout kèm Idempotency-Key

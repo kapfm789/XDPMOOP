@@ -8,7 +8,7 @@ sequenceDiagram
   actor Staff
   participant Api as core Api
   participant UC as Handler chuyển kho
-  participant DB as oism_core
+  participant DB as schema core
 
   Staff->>Api: POST transfers/:id/ship
   Api->>UC: ShipTransferCommand

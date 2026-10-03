@@ -10,7 +10,7 @@ Phụ thuộc chỉ đi một chiều: tầng trên gọi tầng dưới, lớp 
 | 2. Cổng vào | API gateway | `backend/gateway` | Chỉ tầng 3 |
 | 3. Dịch vụ | identity, catalog, core, channel, insights | `backend/services/*` | Tầng 4 và tầng 5 của chính nó |
 | 4. Thông điệp | RabbitMQ, outbox, inbox | `backend/shared` | Tầng 3 của service khác, chỉ bằng event |
-| 5. Dữ liệu | PostgreSQL, mỗi service một database | `deploy/postgres`, migration trong từng service | Không gọi tầng nào |
+| 5. Dữ liệu | PostgreSQL, một database `oism`, mỗi service một schema | `deploy/postgres`, migration trong từng service | Không gọi tầng nào |
 
 ## Bốn lớp trong mỗi service
 

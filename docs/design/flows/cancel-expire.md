@@ -8,7 +8,7 @@ sequenceDiagram
   participant Src as Controller hoặc job Hangfire
   participant UC as CancelOrderHandler
   participant Stock as IStockService
-  participant DB as oism_core
+  participant DB as schema core
 
   Src->>UC: CancelOrderCommand, lý do Manual hoặc Expired
   UC->>DB: BEGIN

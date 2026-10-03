@@ -10,7 +10,7 @@ sequenceDiagram
   participant Src as Consumer hoặc Controller
   participant UC as ReserveStockHandler
   participant Stock as IStockService
-  participant DB as oism_core
+  participant DB as schema core
 
   Src->>UC: ReserveStockCommand
   UC->>DB: BEGIN

@@ -8,7 +8,7 @@ sequenceDiagram
   participant Sim as Simulator
   participant Gw as gateway
   participant Ch as channel
-  participant CDB as oism_channel
+  participant CDB as schema channel
   participant MQ as RabbitMQ
   participant Core as core
   participant Ins as insights

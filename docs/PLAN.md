@@ -63,7 +63,7 @@ Cả 18 quyết định dưới đây là lựa chọn mặc định của nhóm
 | D-15 | Xác thực và quyền | BCrypt; access token 60 phút; refresh 7 ngày, xoay vòng, thu hồi khi logout; user thuộc một tenant; `Branch` có `Type` Store/Warehouse; báo cáo lợi nhuận chỉ Owner xem | Chờ xác nhận |
 | D-16 | Tổ chức frontend | npm workspaces `frontend/` gồm `admin`, `pos`, `shared` (Vite, React, TypeScript) | Chờ xác nhận |
 | D-17 | Kiến trúc triển khai | Microservice: 5 service và một gateway; đơn hàng và tồn kho chung service `core` | Chờ xác nhận |
-| D-18 | Giao tiếp và dữ liệu | RabbitMQ với transactional outbox; mỗi service một database trên cùng một PostgreSQL | Chờ xác nhận |
+| D-18 | Giao tiếp và dữ liệu | RabbitMQ với transactional outbox; một database PostgreSQL dùng chung, mỗi service một schema riêng | Chờ xác nhận |
 
 Bốn quyết định tốn công nhất nếu bị đổi:
 
@@ -76,7 +76,7 @@ Bốn quyết định tốn công nhất nếu bị đổi:
 
 > Nguồn chuẩn: [architecture/](architecture/README.md). Mục này là bản tóm tắt.
 
-Ranh giới service đi theo ranh giới transaction: thứ gì phải commit cùng nhau thì ở chung một service và một database. Vì vậy đơn hàng, giữ hàng, ledger và giá vốn nằm trong `core`; bốn service còn lại nối với `core` bằng event.
+Ranh giới service đi theo ranh giới transaction: thứ gì phải commit cùng nhau thì ở chung một service và một schema. Vì vậy đơn hàng, giữ hàng, ledger và giá vốn nằm trong `core`; bốn service còn lại nối với `core` bằng event.
 
 ```mermaid
 flowchart TB
@@ -84,11 +84,11 @@ flowchart TB
   pos["POS PWA<br/>React, bán tại quầy"]
   sim["Simulator<br/>webhook giả lập"]
   gw["API gateway (YARP)<br/>định tuyến, kiểm JWT, TLS, WebSocket"]
-  identity["identity<br/>tenant, user, JWT, RBAC, chi nhánh<br/>DB oism_identity"]
-  catalog["catalog<br/>danh mục, SKU, mã vạch, giá<br/>DB oism_catalog"]
-  core["core<br/>ledger, giá vốn, đơn, giữ hàng, POS checkout<br/>DB oism_core"]
-  insights["insights<br/>báo cáo, cảnh báo, dự báo AI, SignalR<br/>DB oism_insights"]
-  channel["channel<br/>webhook 3 sàn, chống trùng, chuẩn hóa đơn<br/>DB oism_channel"]
+  identity["identity<br/>tenant, user, JWT, RBAC, chi nhánh<br/>schema identity"]
+  catalog["catalog<br/>danh mục, SKU, mã vạch, giá<br/>schema catalog"]
+  core["core<br/>ledger, giá vốn, đơn, giữ hàng, POS checkout<br/>schema core"]
+  insights["insights<br/>báo cáo, cảnh báo, dự báo AI, SignalR<br/>schema insights"]
+  channel["channel<br/>webhook 3 sàn, chống trùng, chuẩn hóa đơn<br/>schema channel"]
   mq[("RabbitMQ")]
 
   admin --> gw
@@ -124,7 +124,7 @@ flowchart TB
 Bốn quy tắc áp cho mọi service:
 
 - Bốn lớp Clean Architecture: Domain, Application, Infrastructure, Api (NFR-MAINT-01). Domain không tham chiếu EF Core.
-- Một database riêng trên cùng PostgreSQL. Không join và không khóa ngoại chéo database.
+- Một schema riêng trong database `oism` dùng chung. Không join và không khóa ngoại chéo schema.
 - `TenantId` lấy từ JWT và áp qua Global Query Filter trong `Oism.BuildingBlocks` (NFR-TENANT-01). Event mang `TenantId`; consumer đặt lại ngữ cảnh tenant trước khi xử lý.
 - Service không gọi HTTP sang service khác. Dữ liệu tham chiếu đi bằng event và lưu bản sao cục bộ.
 
@@ -138,7 +138,7 @@ Hệ thống chia 5 tầng. Tầng trên chỉ gọi xuống tầng dưới; fro
 | 2. Cổng vào | API gateway | `backend/gateway` | Định tuyến, kiểm JWT, TLS, WebSocket |
 | 3. Dịch vụ | identity, catalog, core, channel, insights | `backend/services/*` | Nghiệp vụ; mỗi service bốn lớp (mục 4.2) |
 | 4. Thông điệp | RabbitMQ, outbox, inbox | `backend/shared` | Event giữa các service (mục 7) |
-| 5. Dữ liệu | PostgreSQL, mỗi service một database | `deploy/postgres`, migration trong từng service | Lưu trữ, khóa dòng, ràng buộc |
+| 5. Dữ liệu | PostgreSQL, một database `oism`, mỗi service một schema | `deploy/postgres`, migration trong từng service | Lưu trữ, khóa dòng, ràng buộc |
 
 ### 4.2 Phân lớp trong mỗi service
 
@@ -177,7 +177,7 @@ XDPMOOP/
 │  └─ shared/                   API client, auth, kiểu dữ liệu
 ├─ deploy/
 │  ├─ docker-compose.yml
-│  └─ postgres/init-databases.sql
+│  └─ postgres/init-schemas.sql
 ├─ tools/k6/                    kịch bản đo tải
 ├─ docs/                        PLAN.md, plans/, requirements/, usecase-userstory/, architecture/, decisions/, design/, testing/, conventions/
 └─ .github/workflows/ci.yml
@@ -390,7 +390,7 @@ Mỗi folder có file plan riêng trong `docs/plans/`, ghi việc của folder �
 | --- | --- | --- | --- | --- |
 | W1-01 | Chốt D-01 đến D-18 với giảng viên, cập nhật mục 3 | A chủ trì, cả nhóm | Mục 3 | Mỗi quyết định có trạng thái; task bị ảnh hưởng đã sửa |
 | W1-02 | Skeleton repo, `Oism.BuildingBlocks` (tenant context, Global Query Filter, kiểm JWT, lỗi chuẩn), mẫu service bốn lớp | A | NFR-MAINT-01, NFR-TENANT-01 | `dotnet build` xanh; test: entity có TenantId tự bị lọc |
-| W1-03 | Docker Compose dev: PostgreSQL với 5 database, RabbitMQ, gateway YARP | A | NFR-SEC-01 | `docker compose up` chạy; health check 5 service qua gateway |
+| W1-03 | Docker Compose dev: PostgreSQL một database với 5 schema, RabbitMQ, gateway YARP | A | NFR-SEC-01 | `docker compose up` chạy; health check 5 service qua gateway |
 | W1-06 | catalog: danh mục phân cấp, thương hiệu | B | FR-PROD-01 | CRUD và test cây danh mục |
 | W1-13 | shared: outbox và inbox trong `Oism.BuildingBlocks`, kết nối RabbitMQ, `Oism.Contracts` với `BranchUpserted` và `SkuUpserted` | B | NFR-SEC-02 | Event mẫu đi từ outbox tới consumer; gửi lại không xử lý trùng |
 | W1-09 | frontend: npm workspaces, API client, đăng ký tenant, login và refresh, layout, chặn route theo vai trò | C | FR-AUTH-01, FR-AUTH-02, FR-AUTH-03 | Đăng ký tenant rồi đăng nhập được trên admin và pos |
@@ -578,7 +578,7 @@ Một task chỉ được tính là xong khi đạt cột "Xong khi" của nó v
 - Có test cho quy tắc nghiệp vụ; phần kho và giữ hàng có test tích hợp trên PostgreSQL thật.
 - Mọi truy vấn đi qua Global Query Filter; không dùng `IgnoreQueryFilters` ngoài job có đặt tenant rõ ràng.
 - Endpoint có kiểm vai trò và hiện trên Swagger.
-- Không truy cập database của service khác; không gọi HTTP giữa các service.
+- Không truy cập schema của service khác; không gọi HTTP giữa các service.
 - RTM (mục 16) đã cập nhật.
 
 Quy ước git và nhịp làm việc:

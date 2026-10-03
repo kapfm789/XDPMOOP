@@ -1,6 +1,6 @@
 # Mô hình dữ liệu: core
 
-Database `oism_core` giữ số dư tồn, sổ giao dịch, chứng từ kho và đơn hàng. Hai bảng quyết định tính đúng của cả hệ thống là `inventory_balances` và `inventory_transactions`; quy tắc đổi chúng nằm ở [transactions-and-concurrency.md](../../architecture/transactions-and-concurrency.md).
+Schema `core` của database `oism` giữ số dư tồn, sổ giao dịch, chứng từ kho và đơn hàng. Hai bảng quyết định tính đúng của cả hệ thống là `inventory_balances` và `inventory_transactions`; quy tắc đổi chúng nằm ở [transactions-and-concurrency.md](../../architecture/transactions-and-concurrency.md).
 
 ```mermaid
 erDiagram
@@ -122,4 +122,4 @@ Chỉ mục: `(tenant_id, order_id)`; `(status, expires_at)` cho job hết hạn
 
 `sku_refs` và `branch_refs` là bản sao dựng từ event. Chỉ consumer được ghi vào hai bảng này, và chỉ ghi đè khi `version` của event lớn hơn `version` đang lưu.
 
-Bảng của Hangfire nằm trong schema riêng `hangfire` và không có `tenant_id`.
+Bảng của Hangfire nằm trong schema riêng `hangfire_core` và không có `tenant_id`.

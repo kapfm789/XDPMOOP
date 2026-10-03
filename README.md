@@ -36,7 +36,7 @@ Tổng cộng 30 FR và 11 NFR của đề, cộng 3 mã FR-AI. Chi tiết: [doc
 
 > Nguồn chuẩn: [docs/architecture/](docs/architecture/README.md). Mục này là bản tóm tắt.
 
-Năm service .NET 8 đứng sau một API gateway, hai ứng dụng React, một PostgreSQL với 5 database và một RabbitMQ.
+Năm service .NET 8 đứng sau một API gateway, hai ứng dụng React, một database PostgreSQL với 5 schema và một RabbitMQ.
 
 ```mermaid
 flowchart TB
@@ -50,7 +50,7 @@ flowchart TB
   channel["channel"]
   insights["insights"]
   mq[("RabbitMQ")]
-  pg[("PostgreSQL<br/>5 database")]
+  pg[("PostgreSQL<br/>database oism, 5 schema")]
 
   admin --> gw
   pos --> gw
@@ -74,22 +74,22 @@ flowchart TB
   insights --- pg
 ```
 
-Đường liền có mũi tên là HTTP qua gateway; đường đứt là event qua RabbitMQ; đường liền không mũi tên là kết nối tới database riêng của service.
+Đường liền có mũi tên là HTTP qua gateway; đường đứt là event qua RabbitMQ; đường liền không mũi tên là kết nối tới schema riêng của service trong database `oism`.
 
-| Khối | Trách nhiệm | Database |
+| Khối | Trách nhiệm | Schema |
 | --- | --- | --- |
 | `gateway` | Định tuyến, kiểm JWT, TLS, WebSocket | Không |
-| `identity` | Tenant, người dùng, đăng nhập, phân quyền, chi nhánh | `oism_identity` |
-| `catalog` | Danh mục, thương hiệu, sản phẩm, SKU, mã vạch, giá | `oism_catalog` |
-| `core` | Sổ kho, số dư, giá vốn, đơn hàng, giữ hàng, POS checkout | `oism_core` |
-| `channel` | Nhận webhook ba sàn, chống trùng, chuẩn hóa đơn | `oism_channel` |
-| `insights` | Báo cáo, cảnh báo tồn, dự báo, thông báo realtime | `oism_insights` |
+| `identity` | Tenant, người dùng, đăng nhập, phân quyền, chi nhánh | `identity` |
+| `catalog` | Danh mục, thương hiệu, sản phẩm, SKU, mã vạch, giá | `catalog` |
+| `core` | Sổ kho, số dư, giá vốn, đơn hàng, giữ hàng, POS checkout | `core` |
+| `channel` | Nhận webhook ba sàn, chống trùng, chuẩn hóa đơn | `channel` |
+| `insights` | Báo cáo, cảnh báo tồn, dự báo, thông báo realtime | `insights` |
 | `admin`, `pos` | Trang quản trị cho Owner và Staff; PWA bán tại quầy cho Cashier | Không |
 
 Ba quy tắc tóm gọn cả kiến trúc:
 
-1. Thứ gì phải commit cùng nhau thì ở chung một service và một database. Vì vậy đơn hàng, giữ hàng, sổ kho và giá vốn nằm chung `core`.
-2. Giữa các service chỉ có event qua outbox và inbox; không gọi HTTP chéo, không đọc database của nhau.
+1. Thứ gì phải commit cùng nhau thì ở chung một service và một schema. Vì vậy đơn hàng, giữ hàng, sổ kho và giá vốn nằm chung `core`.
+2. Giữa các service chỉ có event qua outbox và inbox; không gọi HTTP chéo, không đọc schema của nhau.
 3. Trong một service, phụ thuộc chỉ hướng vào Domain; nghiệp vụ không nằm ở controller hay ở EF Core.
 
 Mỗi service chia bốn lớp Clean Architecture:
