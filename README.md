@@ -1,12 +1,12 @@
 # OISM: Hệ thống quản lý bán hàng và tồn kho đa kênh
 
-OISM (Omnichannel Inventory and Sales Management System) là hệ thống SaaS multi-tenant giúp cửa hàng bán lẻ quản lý đơn hàng và tồn kho trên nhiều kênh cùng lúc: quầy POS và các sàn Shopee, TikTok Shop, Lazada. Đây là đồ án của 3 dev trong 5 tuần.
+OISM (Omnichannel Inventory and Sales Management System) là hệ thống SaaS multi-tenant giúp cửa hàng bán lẻ quản lý đơn hàng và tồn kho trên nhiều kênh cùng lúc: quầy POS và các sàn Shopee, TikTok Shop, Lazada.
 
 ## Bài toán
 
 Bán trên nhiều kênh rời nhau gây ra ba lỗi quen thuộc: bán vượt tồn vì đồng bộ chậm, giá vốn hàng bán (COGS) sai, và số liệu lệch vì sửa tồn bằng tay.
 
-## Cách giải
+## Cách giải quyết
 
 - **Sổ kho chỉ thêm mới.** Mọi thay đổi tồn là một dòng trong `inventory_transactions`; không sửa thẳng cột tồn, sửa sai bằng dòng đảo.
 - **Chống bán vượt.** `available = on_hand - reserved`; đơn online vào là giữ hàng, khóa dòng số dư bằng `SELECT ... FOR UPDATE`. Đích: 50 đơn tranh 1 sản phẩm thì đúng 1 đơn thắng, tồn không âm.
