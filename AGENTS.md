@@ -99,6 +99,7 @@ Test tích hợp cần Docker đang chạy vì dùng Testcontainers.
 ## Việc không tự làm
 
 - Không commit, không push, không mở PR khi chưa được yêu cầu.
+- Khi được yêu cầu commit: tác giả duy nhất là người dùng theo cấu hình git của máy. Không thêm dòng `Co-Authored-By`, không thêm chữ ký hay ghi chú "Generated with" của bất kỳ công cụ AI nào vào commit message hay mô tả PR.
 - Không sửa ADR đã có; đề xuất ADR mới.
 - Không đưa bí mật hay dữ liệu thật vào repo.
 - Không làm nhiều task trong một lượt khi chỉ được giao một task.
