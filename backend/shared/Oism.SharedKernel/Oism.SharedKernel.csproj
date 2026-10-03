@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Không tham chiếu project hay package nào: đây là thứ duy nhất Domain được tham chiếu. -->
+</Project>

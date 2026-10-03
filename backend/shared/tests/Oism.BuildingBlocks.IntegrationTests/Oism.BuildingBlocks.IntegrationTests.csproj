@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../../Oism.BuildingBlocks/Oism.BuildingBlocks.csproj" />
+  </ItemGroup>
+</Project>

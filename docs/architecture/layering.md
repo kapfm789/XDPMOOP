@@ -30,7 +30,7 @@ flowchart LR
 
 | Lớp | Project | Được tham chiếu | Package được phép |
 | --- | --- | --- | --- |
-| Domain | `Oism.<Service>.Domain` | Không lớp nào | Chỉ thư viện chuẩn .NET |
+| Domain | `Oism.<Service>.Domain` | Không lớp nào; chỉ `Oism.SharedKernel` | Chỉ thư viện chuẩn .NET |
 | Application | `Oism.<Service>.Application` | Domain, `Oism.Contracts` | FluentValidation, abstraction của logging và DI |
 | Infrastructure | `Oism.<Service>.Infrastructure` | Application, Domain, `Oism.BuildingBlocks`, `Oism.Contracts` | EF Core, Npgsql, RabbitMQ.Client, Hangfire, BCrypt |
 | Api | `Oism.<Service>.Api` | Application; Infrastructure chỉ để đăng ký DI | ASP.NET Core, Swashbuckle, SignalR |
@@ -42,7 +42,7 @@ flowchart LR
 | Entity, aggregate | Domain | `Order`, `InventoryBalance` |
 | Value object | Domain | `Money`, `Quantity` |
 | Quy tắc nghiệp vụ thuần | Domain | `WeightedAverageCost.Recalculate`, `OrderStateMachine` |
-| Lỗi nghiệp vụ | Domain | `InsufficientStockException`, `InvalidStateTransitionException` |
+| Lỗi nghiệp vụ | Domain, kế thừa `OismException` của `Oism.SharedKernel` | `InsufficientStockException`, `InvalidStateTransitionException` |
 | Use case | Application | `ReserveStockHandler`, `PosCheckoutHandler` |
 | Interface ra ngoài | Application | `IOrderRepository`, `IStockService`, `IEventPublisher`, `IUnitOfWork`, `IClock` |
 | Dữ liệu vào và ra của use case | Application | `PosCheckoutCommand`, `OrderDto` |
@@ -58,6 +58,7 @@ flowchart LR
 ## Quy tắc cấm
 
 - Domain không tham chiếu EF Core, ASP.NET Core, RabbitMQ hay bất kỳ package hạ tầng nào. Entity không mang attribute của EF Core; ánh xạ nằm ở Infrastructure.
+- Project duy nhất Domain được tham chiếu là `Oism.SharedKernel`: không phụ thuộc gì, chỉ chứa `ITenantOwned` và các exception gốc có mã (`OismException`, `NotFoundException`, `DuplicateException`). `Oism.BuildingBlocks` kéo theo EF Core và ASP.NET Core nên Domain không được tham chiếu.
 - Application không tham chiếu Infrastructure hay Api và không dùng `DbContext`. Truy cập dữ liệu đi qua interface repository hoặc interface truy vấn.
 - Controller và consumer không chứa nghiệp vụ: nhận request, gọi một handler, trả kết quả.
 - Một use case là một transaction do handler mở qua `IUnitOfWork`. Không gọi `SaveChanges` rải rác ở nhiều nơi.

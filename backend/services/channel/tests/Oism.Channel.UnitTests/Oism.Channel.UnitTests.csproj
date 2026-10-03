@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../../src/Oism.Channel.Domain/Oism.Channel.Domain.csproj" />
+    <ProjectReference Include="../../src/Oism.Channel.Application/Oism.Channel.Application.csproj" />
+  </ItemGroup>
+</Project>

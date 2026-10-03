@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../Oism.Catalog.Application/Oism.Catalog.Application.csproj" />
+    <ProjectReference Include="../Oism.Catalog.Domain/Oism.Catalog.Domain.csproj" />
+    <ProjectReference Include="../../../../shared/Oism.BuildingBlocks/Oism.BuildingBlocks.csproj" />
+    <ProjectReference Include="../../../../shared/Oism.Contracts/Oism.Contracts.csproj" />
+  </ItemGroup>
+</Project>

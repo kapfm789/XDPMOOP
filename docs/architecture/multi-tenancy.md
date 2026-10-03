@@ -20,7 +20,7 @@ flowchart LR
 | --- | --- | --- |
 | `ITenantContext` | `Oism.BuildingBlocks/Tenancy` | Giữ `TenantId` của request hoặc của event đang xử lý |
 | Middleware | `Oism.BuildingBlocks/Tenancy` | Đọc claim `tenant_id` từ JWT đã kiểm, đặt vào `ITenantContext` |
-| `ITenantOwned` | `Oism.BuildingBlocks/Persistence` | Interface đánh dấu entity có `TenantId` |
+| `ITenantOwned` | `Oism.SharedKernel` | Interface đánh dấu entity có `TenantId`; nằm ngoài `Oism.BuildingBlocks` để Domain cài được mà không kéo theo EF Core ([layering.md](layering.md)) |
 | Global Query Filter | DbContext base | Tự thêm điều kiện `TenantId == tenant hiện tại` cho mọi entity `ITenantOwned` |
 | Interceptor khi ghi | DbContext base | Gán `TenantId` cho bản ghi mới; ném lỗi nếu bản ghi mang `TenantId` khác tenant hiện tại |
 

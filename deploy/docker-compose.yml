@@ -1,0 +1,130 @@
+# Compose cho máy dev (W1-03). Máy chỉ cần Docker; .NET được build bên trong image.
+# Chạy từ gốc repo: docker compose -f deploy/docker-compose.yml up -d --build
+# Tên, cổng, tiền tố route: docs/architecture/context-and-containers.md mục "Địa chỉ và cổng".
+name: oism
+
+x-dotnet-health: &dotnet-health
+  test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+  interval: 10s
+  timeout: 3s
+  retries: 5
+  start_period: 30s
+
+x-service: &service
+  restart: unless-stopped
+  environment:
+    ASPNETCORE_ENVIRONMENT: Development
+    ConnectionStrings__Oism: Host=postgres;Database=oism;Username=${POSTGRES_USER:-oism};Password=${POSTGRES_PASSWORD:-oism}
+    Jwt__PublicKey: ${JWT_PUBLIC_KEY:-}
+  depends_on:
+    postgres:
+      condition: service_healthy
+  healthcheck: *dotnet-health
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: oism
+      POSTGRES_USER: ${POSTGRES_USER:-oism}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-oism}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init-schemas.sql:/docker-entrypoint-initdb.d/init-schemas.sql:ro
+    healthcheck:
+      # -h localhost: chỉ báo sẵn sàng khi server thật đã nghe TCP, không phải server tạm lúc chạy init script.
+      test: ["CMD-SHELL", "pg_isready -h localhost -U $${POSTGRES_USER} -d oism"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-oism}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-oism}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  gateway:
+    build:
+      context: ../backend
+      dockerfile: gateway/Oism.Gateway/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Jwt__PublicKey: ${JWT_PUBLIC_KEY:-}
+    ports:
+      - "8080:8080"
+    healthcheck: *dotnet-health
+
+  identity:
+    <<: *service
+    build:
+      context: ../backend
+      dockerfile: services/identity/src/Oism.Identity.Api/Dockerfile
+    ports:
+      - "5101:8080"
+
+  catalog:
+    <<: *service
+    build:
+      context: ../backend
+      dockerfile: services/catalog/src/Oism.Catalog.Api/Dockerfile
+    ports:
+      - "5102:8080"
+
+  core:
+    <<: *service
+    build:
+      context: ../backend
+      dockerfile: services/core/src/Oism.Core.Api/Dockerfile
+    ports:
+      - "5103:8080"
+
+  channel:
+    <<: *service
+    build:
+      context: ../backend
+      dockerfile: services/channel/src/Oism.Channel.Api/Dockerfile
+    ports:
+      - "5104:8080"
+
+  insights:
+    <<: *service
+    build:
+      context: ../backend
+      dockerfile: services/insights/src/Oism.Insights.Api/Dockerfile
+    ports:
+      - "5105:8080"
+
+  # Build và chạy toàn bộ test mà không cần cài .NET. Không khởi động cùng `up`:
+  # docker compose -f deploy/docker-compose.yml run --rm tests
+  tests:
+    image: mcr.microsoft.com/dotnet/sdk:8.0
+    profiles: [test]
+    working_dir: /src
+    environment:
+      # Testcontainers chạy container PostgreSQL cạnh container này, nên phải đi qua máy host.
+      TESTCONTAINERS_HOST_OVERRIDE: host.docker.internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ../backend:/repo:ro
+      - nuget-packages:/root/.nuget/packages
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: ["bash", "-c", "cp -r /repo/. /src && dotnet test Oism.sln"]
+
+volumes:
+  postgres-data:
+  nuget-packages:

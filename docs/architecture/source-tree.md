@@ -2,7 +2,7 @@
 
 Đây là cây thư mục mà repo phải có khi dựng xong skeleton (task W1-02). Tên folder, tên project và namespace dùng đúng như dưới đây; đừng đặt tên khác dù thấy hợp lý hơn, vì tài liệu, rule và CI đều trỏ theo các đường dẫn này.
 
-Hiện repo mới có `docs/`, `AGENTS.md`, `CLAUDE.md` và `.claude/`. Các folder code chưa tồn tại.
+Skeleton backend (W1-02) và Compose dev (W1-03) đã dựng; `frontend/`, `deploy/seed/`, `tools/k6/` và `.github/` chưa có.
 
 ## Cây thư mục
 
@@ -18,8 +18,11 @@ XDPMOOP/
 │  ├─ Directory.Build.props        phiên bản .NET, nullable, cảnh báo thành lỗi
 │  ├─ Directory.Packages.props     phiên bản package dùng chung
 │  ├─ shared/
+│  │  ├─ Oism.SharedKernel/        ITenantOwned, exception gốc có mã; không phụ thuộc gì, Domain được tham chiếu
 │  │  ├─ Oism.BuildingBlocks/      Tenancy, Auth, Messaging, Persistence, Web
-│  │  └─ Oism.Contracts/           event và command giữa các service
+│  │  ├─ Oism.Contracts/           event và command giữa các service
+│  │  └─ tests/
+│  │     └─ Oism.BuildingBlocks.IntegrationTests/
 │  ├─ gateway/
 │  │  └─ Oism.Gateway/
 │  └─ services/
@@ -45,6 +48,7 @@ XDPMOOP/
 │     └─ src/                      pages, features, app
 ├─ deploy/
 │  ├─ docker-compose.yml
+│  ├─ .env.example                 giá trị mẫu; .env thật bị git bỏ qua
 │  ├─ postgres/init-schemas.sql
 │  └─ seed/
 ├─ tools/k6/

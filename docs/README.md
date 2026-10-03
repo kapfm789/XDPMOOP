@@ -54,6 +54,7 @@ Thấy mâu thuẫn thì dừng lại, nêu rõ hai chỗ lệch nhau và sửa 
 
 ## Trạng thái
 
-- Đây là bản thiết kế v0, viết ngày 2026-10-03, trước khi repo có code. Khi code thật khác tài liệu, người sửa code cập nhật tài liệu trong cùng PR.
+- Đây là bản thiết kế v0, viết ngày 2026-10-03. Khi code thật khác tài liệu, người sửa code cập nhật tài liệu trong cùng PR.
+- Đã có code: skeleton backend (W1-02) và Compose dev (W1-03). Chưa có nghiệp vụ, frontend, CI, seed.
 - Mọi quyết định trong [decisions/](decisions/) đang ở trạng thái đề xuất, chờ giảng viên xác nhận ở task W1-01.
 - Quy tắc cho công cụ AI nằm ở [AGENTS.md](../AGENTS.md) tại gốc repo; rule và skill riêng của Claude Code nằm trong `.claude/`.

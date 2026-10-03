@@ -124,7 +124,7 @@ Danh sách đã chọn; thêm package ngoài danh sách phải hỏi nhóm trư�
 | Job nền | Hangfire.AspNetCore, Hangfire.PostgreSql |
 | Gateway | Yarp.ReverseProxy |
 | Tài liệu API | Swashbuckle.AspNetCore |
-| Test | xunit, Microsoft.AspNetCore.Mvc.Testing, Testcontainers.PostgreSql, Testcontainers.RabbitMq, coverlet.collector |
+| Test | xunit, xunit.runner.visualstudio, Microsoft.NET.Test.Sdk, Microsoft.AspNetCore.Mvc.Testing, Testcontainers.PostgreSql, Testcontainers.RabbitMq, coverlet.collector |
 
 Dự án không dùng MediatR, AutoMapper, MassTransit và FluentAssertions: các thư viện này đã chuyển sang mô hình giấy phép thương mại ở những bản phát hành gần đây và dự án không cần tới chúng. Ánh xạ giữa entity và DTO viết tay.
 

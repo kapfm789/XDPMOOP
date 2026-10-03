@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <PackageReference Include="Yarp.ReverseProxy" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../shared/Oism.BuildingBlocks/Oism.BuildingBlocks.csproj" />
+  </ItemGroup>
+</Project>
