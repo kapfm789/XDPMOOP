@@ -1,0 +1,67 @@
+# API: core
+
+Tiền tố `/api/core`. Use case ở [inventory.md](../../usecase-userstory/inventory.md), [orders.md](../../usecase-userstory/orders.md), [pos.md](../../usecase-userstory/pos.md); bảng ở [data-model/core.md](../data-model/core.md); trình tự ở [flows/](../flows/). Quy ước chung ở [README.md](README.md).
+
+## POS
+
+| Phương thức | Đường dẫn | Vai trò | Vào | Ra | Lỗi riêng |
+| --- | --- | --- | --- | --- | --- |
+| GET | `/api/core/pos/skus` | Cashier, Staff, Owner | `query`, `branchId` | Tối đa 20 SKU: `skuId`, `skuCode`, `name`, `barcodes`, `retailPrice`, `available` | |
+| POST | `/api/core/pos/checkout` | Cashier, Owner | Header `Idempotency-Key`; `branchId`, `items[]`, `payment` | 201: đơn ở Completed kèm dòng đơn và thanh toán | 409 `insufficient_stock`; 403 khi Cashier sai chi nhánh |
+
+`items[]`: `skuId`, `quantity`, `unitPrice?`, `discount?`. Bỏ trống `unitPrice` thì dùng giá lẻ hiện tại. `payment`: `method` (`Cash` hoặc `QR`), `amount`. Gửi lại cùng `Idempotency-Key` trả 200 với đơn đã tạo.
+
+## Tồn và sổ
+
+| Phương thức | Đường dẫn | Vai trò | Vào | Ra | Lỗi riêng |
+| --- | --- | --- | --- | --- | --- |
+| GET | `/api/core/stock` | Owner, Staff | `branchId?`, `skuId?`, `query?`, `page`, `pageSize` | Dòng số dư: `branchId`, `skuId`, `skuCode`, `name`, `onHand`, `reserved`, `available`, `avgCost`, `threshold?` | |
+| PUT | `/api/core/stock/threshold` | Owner, Staff | `branchId`, `skuId`, `threshold?` | 200: dòng số dư | 400 khi âm |
+| GET | `/api/core/ledger` | Owner, Staff | `branchId?`, `skuId?`, `from?`, `to?`, `page`, `pageSize` | Dòng sổ theo thứ tự ghi | |
+
+Staff không thấy `avgCost` trong phản hồi của `/stock` và `unitCost` trong `/ledger`; hai trường này chỉ trả cho Owner.
+
+## Nhập hàng
+
+| Phương thức | Đường dẫn | Vai trò | Vào | Ra | Lỗi riêng |
+| --- | --- | --- | --- | --- | --- |
+| GET, POST | `/api/core/suppliers` | Owner, Staff | `name`, `phone?` | Nhà cung cấp | |
+| GET | `/api/core/purchase-receipts` | Owner, Staff | `branchId?`, `status?`, `page`, `pageSize` | Danh sách phiếu | |
+| POST | `/api/core/purchase-receipts` | Owner, Staff | `branchId`, `supplierId`, `note?`, `items[]` | 201: phiếu Draft | 409 `reference_not_ready` |
+| PUT | `/api/core/purchase-receipts/{id}` | Owner, Staff | `supplierId`, `note?`, `items[]` | 200: phiếu | 409 khi không còn Draft |
+| POST | `/api/core/purchase-receipts/{id}/confirm` | Owner, Staff | | 200: phiếu Confirmed | |
+
+`items[]`: `skuId`, `quantity`, `unitCost`. Xác nhận lại phiếu đã Confirmed trả 200 với cùng phiếu, không tác động lần hai.
+
+## Chuyển kho và kiểm kê
+
+| Phương thức | Đường dẫn | Vai trò | Vào | Ra | Lỗi riêng |
+| --- | --- | --- | --- | --- | --- |
+| POST | `/api/core/transfers` | Owner, Staff | `fromBranchId`, `toBranchId`, `items[]` (`skuId`, `quantity`) | 201: phiếu Draft | 400 khi hai chi nhánh trùng nhau |
+| POST | `/api/core/transfers/{id}/ship` | Owner, Staff | | 200: phiếu InTransit | 409 `insufficient_stock` |
+| POST | `/api/core/transfers/{id}/receive` | Owner, Staff | | 200: phiếu Received | 409 `invalid_state_transition` |
+| GET | `/api/core/transfers` | Owner, Staff | `status?`, `page`, `pageSize` | Danh sách phiếu | |
+| POST | `/api/core/stocktakes` | Owner, Staff | `branchId` | 201: phiên Open | |
+| PUT | `/api/core/stocktakes/{id}/counts` | Owner, Staff | `items[]` (`skuId`, `countedQty`) | 200: phiên | 409 khi đã Posted |
+| POST | `/api/core/stocktakes/{id}/post` | Owner, Staff | | 200: phiên Posted kèm chênh lệch từng SKU | 409 `stocktake_below_reserved` |
+
+## Đơn hàng
+
+| Phương thức | Đường dẫn | Vai trò | Vào | Ra | Lỗi riêng |
+| --- | --- | --- | --- | --- | --- |
+| GET | `/api/core/orders` | Owner, Staff | `status?`, `channel?`, `branchId?`, `from?`, `to?`, `page`, `pageSize` | Danh sách đơn | |
+| GET | `/api/core/orders/{id}` | Owner, Staff | | Đơn kèm dòng đơn, phần giữ hàng, thanh toán | |
+| POST | `/api/core/orders` | Owner, Staff | `branchId`, `note?`, `items[]` (`skuId`, `quantity`, `unitPrice?`, `discount?`) | 201: đơn Reserved, kênh Admin | 409 `insufficient_stock` |
+| POST | `/api/core/orders/{id}/confirm` | Owner, Staff | | 200: đơn Confirmed | 409 `invalid_state_transition` |
+| POST | `/api/core/orders/{id}/complete` | Owner, Staff | | 200: đơn Completed | 409 `invalid_state_transition` |
+| POST | `/api/core/orders/{id}/cancel` | Owner, Staff | `reason?` | 200: đơn Cancelled | 409 `invalid_state_transition` |
+
+Hủy lại đơn đã Cancelled trả 200 với cùng đơn, không tác động lần hai. `costPrice` trên dòng đơn chỉ trả cho Owner.
+
+## Đường vào không phải HTTP
+
+| Nguồn | Tên | Xử lý |
+| --- | --- | --- |
+| RabbitMQ | `SubmitOrder` | Tạo đơn online và giữ hàng; phát `OrderReserved` hoặc `OrderRejected` |
+| RabbitMQ | `SkuUpserted`, `BranchUpserted` | Ghi đè `sku_refs`, `branch_refs` theo `version` |
+| Hangfire, mỗi phút | Hết hạn giữ hàng | Hủy đơn Reserved quá hạn, mỗi đơn một transaction |
