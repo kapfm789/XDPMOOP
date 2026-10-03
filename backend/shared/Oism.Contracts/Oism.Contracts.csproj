@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Hợp đồng event và command giữa các service: docs/design/events.md. Chỉ được thêm trường. -->
+</Project>

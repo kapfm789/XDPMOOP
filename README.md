@@ -127,9 +127,31 @@ Các cơ chế xuyên suốt:
 
 Dự án không dùng MediatR, AutoMapper, MassTransit và FluentAssertions.
 
+## Chạy trên máy dev
+
+Chỉ cần [Docker Desktop](https://www.docker.com/products/docker-desktop/); .NET, PostgreSQL và RabbitMQ đều chạy trong container. Từ gốc repo:
+
+```bash
+docker compose -f deploy/docker-compose.yml up -d --build
+```
+
+Lần đầu mất vài phút để tải image và build. Xong thì:
+
+| Địa chỉ | Là gì |
+| --- | --- |
+| `http://localhost:8080/api/<service>/health` | Health check của `identity`, `catalog`, `core`, `channel`, `insights` qua gateway |
+| `http://localhost:5101/swagger` … `5105/swagger` | Swagger của từng service |
+| `localhost:5432`, database `oism`, user và mật khẩu `oism` | PostgreSQL, mỗi service một schema |
+| `http://localhost:15672`, user và mật khẩu `oism` | Giao diện quản trị RabbitMQ |
+
+- Máy đã có PostgreSQL chiếm cổng 5432: tạo `deploy/.env` chứa `POSTGRES_PORT=5433`. Các biến khác xem `deploy/.env.example`.
+- Sửa code xong thì chạy lại lệnh trên để build lại image.
+- Chạy toàn bộ test mà không cần cài .NET: `docker compose -f deploy/docker-compose.yml run --rm tests`.
+- Dừng: `docker compose -f deploy/docker-compose.yml down`; thêm `-v` để xóa luôn dữ liệu PostgreSQL.
+
 ## Trạng thái
 
-- Repo hiện chỉ có tài liệu thiết kế; code chưa tồn tại. Các mục trên mô tả đích, chưa phải thứ đã chạy được.
+- Đã có skeleton backend (W1-02) và Compose dev (W1-03): gateway định tuyến tới 5 service rỗng, chưa có nghiệp vụ. Frontend, CI, seed chưa có.
 - 18 quyết định của nhóm, gồm cả việc chia microservice (D-17), đang chờ giảng viên xác nhận ở task W1-01: [docs/decisions/](docs/decisions/README.md).
 
 ## Tài liệu

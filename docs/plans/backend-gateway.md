@@ -26,6 +26,6 @@ gateway/
 
 ## Quy tắc riêng
 
-- `POST /api/channel/webhooks/{channel}` không yêu cầu JWT; mọi route khác yêu cầu.
+- Route không yêu cầu JWT đúng bằng danh sách endpoint công khai ở [security.md](../architecture/security.md): đăng ký tenant, đăng nhập, làm mới token, `POST /api/channel/webhooks/{channel}` và `/api/<service>/health`. Mọi route khác yêu cầu.
 - Gateway chỉ chuyển tiếp: không sửa nội dung request, chỉ truyền header xác thực và correlation id.
 - HTTPS với TLS 1.3 bật ở gateway (NFR-SEC-01); các service phía sau nói HTTP trong mạng nội bộ của Compose.

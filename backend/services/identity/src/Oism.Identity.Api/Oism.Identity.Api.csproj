@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Oism.Identity.Application/Oism.Identity.Application.csproj" />
+    <!-- Infrastructure chỉ để đăng ký DI. -->
+    <ProjectReference Include="../Oism.Identity.Infrastructure/Oism.Identity.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

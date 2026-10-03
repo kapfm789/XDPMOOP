@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../../src/Oism.Core.Api/Oism.Core.Api.csproj" />
+  </ItemGroup>
+</Project>

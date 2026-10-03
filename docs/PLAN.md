@@ -162,6 +162,7 @@ XDPMOOP/
 ├─ backend/
 │  ├─ Oism.sln
 │  ├─ shared/
+│  │  ├─ Oism.SharedKernel/     ITenantOwned, exception gốc; thứ duy nhất Domain được tham chiếu
 │  │  ├─ Oism.BuildingBlocks/   tenant context, query filter, JWT, outbox/inbox, lỗi chuẩn
 │  │  └─ Oism.Contracts/        event và command dùng chung
 │  ├─ gateway/Oism.Gateway/     YARP

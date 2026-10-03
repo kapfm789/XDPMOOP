@@ -4,7 +4,7 @@ OISM là hệ thống quản lý bán hàng và tồn kho đa kênh, multi-tenan
 
 ## Trạng thái repo
 
-Repo hiện chỉ có tài liệu trong `docs/`. Code chưa tồn tại. Khi tạo file code, đặt đúng đường dẫn và tên ở `docs/architecture/source-tree.md`; không tự nghĩ ra cấu trúc khác.
+Đã có skeleton backend (`backend/shared`, gateway, 5 service bốn lớp, chưa có nghiệp vụ) và Compose dev ở `deploy/`. Frontend, CI, seed chưa có. Khi tạo file code, đặt đúng đường dẫn và tên ở `docs/architecture/source-tree.md`; không tự nghĩ ra cấu trúc khác. Service mới hoặc phần mới của service chép khuôn từ code đã có.
 
 ## Nguyên tắc: tài liệu trước, code sau
 
@@ -84,17 +84,16 @@ Vi phạm bất kỳ điều nào dưới đây là lỗi, kể cả khi test hi
 
 ## Lệnh
 
-Các lệnh dưới là quy ước cho skeleton. Trước khi task W1-02 và W1-03 xong, chúng chưa chạy được.
-
 ```bash
 dotnet build backend/Oism.sln
 dotnet test backend/Oism.sln
-npm --prefix frontend install
-npm --prefix frontend run build --workspaces
-docker compose -f deploy/docker-compose.yml up -d
+docker compose -f deploy/docker-compose.yml up -d --build
+docker compose -f deploy/docker-compose.yml run --rm tests
 ```
 
-Test tích hợp cần Docker đang chạy vì dùng Testcontainers.
+- Hai lệnh `dotnet` cần .NET 8 runtime; máy không có .NET 8 thì dùng lệnh `run --rm tests`, chỉ cần Docker.
+- Test tích hợp cần Docker đang chạy vì dùng Testcontainers.
+- Lệnh frontend (`npm --prefix frontend ...`) chạy được sau task W1-09.
 
 ## Việc không tự làm
 

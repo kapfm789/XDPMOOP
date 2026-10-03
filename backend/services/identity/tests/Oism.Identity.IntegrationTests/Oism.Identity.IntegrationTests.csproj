@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../../src/Oism.Identity.Api/Oism.Identity.Api.csproj" />
+  </ItemGroup>
+</Project>

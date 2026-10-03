@@ -1,23 +1,26 @@
 # backend/shared — kế hoạch folder
 
-Hai thư viện dùng chung cho cả 5 service: `Oism.BuildingBlocks` (hạ tầng) và `Oism.Contracts` (hợp đồng event). Owner: Dev A (BuildingBlocks), Dev B (outbox/inbox, Contracts). Kế hoạch tổng: [docs/PLAN.md](../PLAN.md).
+Ba thư viện dùng chung cho cả 5 service: `Oism.SharedKernel` (kiểu nền cho Domain), `Oism.BuildingBlocks` (hạ tầng) và `Oism.Contracts` (hợp đồng event). Owner: Dev A (BuildingBlocks), Dev B (outbox/inbox, Contracts). Kế hoạch tổng: [docs/PLAN.md](../PLAN.md).
 
 ## Thuộc tầng nào
 
-Tầng dịch vụ và tầng thông điệp (mục 4.1 của kế hoạch tổng). Mọi service tham chiếu hai project này; hai project này không tham chiếu service nào.
+Tầng dịch vụ và tầng thông điệp (mục 4.1 của kế hoạch tổng). Mọi service tham chiếu các project này; chúng không tham chiếu service nào.
 
 ## Cấu trúc
 
 ```text
 shared/
+├─ Oism.SharedKernel/ ITenantOwned, OismException, NotFoundException, DuplicateException; không phụ thuộc gì
 ├─ Oism.BuildingBlocks/
 │  ├─ Tenancy/        ITenantContext, Global Query Filter, middleware đọc TenantId từ JWT
 │  ├─ Auth/           kiểm JWT, policy theo vai trò Owner, Staff, Cashier
 │  ├─ Messaging/      OutboxMessage, InboxMessage, publisher nền, consumer base bỏ qua bản trùng
 │  ├─ Persistence/    DbContext base, interceptor gán TenantId khi ghi
 │  └─ Web/            ProblemDetails, correlation id, health check
-└─ Oism.Contracts/    BranchUpserted, SkuUpserted, SubmitOrder, OrderReserved, OrderRejected,
-                      OrderConfirmed, OrderCancelled, StockChanged
+├─ Oism.Contracts/    BranchUpserted, SkuUpserted, SubmitOrder, OrderReserved, OrderRejected,
+│                     OrderConfirmed, OrderCancelled, StockChanged
+└─ tests/
+   └─ Oism.BuildingBlocks.IntegrationTests/   Tenancy, Web, Messaging; chạy trên PostgreSQL thật
 ```
 
 ## Việc theo phase

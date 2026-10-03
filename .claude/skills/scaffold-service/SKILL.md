@@ -24,7 +24,7 @@ Với `<service>` viết thường và `<Service>` viết hoa chữ đầu:
 ```text
 backend/services/<service>/
 ├─ src/
-│  ├─ Oism.<Service>.Domain/            không tham chiếu project nào
+│  ├─ Oism.<Service>.Domain/            chỉ tham chiếu Oism.SharedKernel
 │  ├─ Oism.<Service>.Application/       tham chiếu Domain, Oism.Contracts
 │  ├─ Oism.<Service>.Infrastructure/    tham chiếu Application, Domain, Oism.BuildingBlocks, Oism.Contracts
 │  └─ Oism.<Service>.Api/               tham chiếu Application, Infrastructure
@@ -44,7 +44,7 @@ Nội dung tối thiểu:
 | Infrastructure | `<Service>DbContext` kế thừa DbContext base của `Oism.BuildingBlocks`; cấu hình Npgsql với snake_case, schema mặc định `<service>` và bảng lịch sử migration trong schema đó; thư mục `Migrations` với migration đầu tạo `outbox_messages` và `inbox_messages` nếu service có phát hoặc nhận event; phương thức mở rộng đăng ký DI |
 | Api | `Program.cs` đăng ký: xác thực JWT bằng khóa công khai, tenant middleware, ProblemDetails, Swagger, health check tại `/health`, chạy migration khi khởi động ở môi trường dev |
 | IntegrationTests | Lớp nền dùng `WebApplicationFactory` và Testcontainers PostgreSQL; một test gọi `/health`; một test duyệt mọi entity của DbContext và báo lỗi nếu entity nghiệp vụ nào không cài `ITenantOwned` |
-| UnitTests | Một test giữ chỗ để project build và chạy được |
+| UnitTests | `LayeringTests`: Domain chỉ tham chiếu thư viện chuẩn và `Oism.SharedKernel`; Application không tham chiếu lớp ngoài |
 
 Service nào phát hoặc nhận event thì xem bảng ở `docs/design/events.md`.
 
@@ -61,7 +61,8 @@ Nếu gateway hoặc Compose chưa tồn tại, bỏ qua bước tương ứng v
 
 - `dotnet build backend/Oism.sln` không lỗi, không cảnh báo.
 - `dotnet test` cho hai project test của service chạy xanh; test tích hợp cần Docker.
-- Kiểm tham chiếu: Domain không tham chiếu gì; Application không tham chiếu Infrastructure hay Api.
+- Kiểm tham chiếu: Domain chỉ tham chiếu `Oism.SharedKernel`; Application không tham chiếu Infrastructure, Api hay `Oism.BuildingBlocks`. `LayeringTests` trong UnitTests kiểm việc này.
+- Năm service hiện có là khuôn mẫu: chép cấu trúc của một service có sẵn thay vì tự viết lại.
 
 ## Báo cáo
 

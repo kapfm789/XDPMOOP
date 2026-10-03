@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Domain chỉ được tham chiếu Oism.SharedKernel: docs/architecture/layering.md. -->
+  <ItemGroup>
+    <ProjectReference Include="../../../../shared/Oism.SharedKernel/Oism.SharedKernel.csproj" />
+  </ItemGroup>
+</Project>

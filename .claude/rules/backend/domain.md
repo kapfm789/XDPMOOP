@@ -12,6 +12,6 @@ Domain chứa nghiệp vụ thuần để test được mà không cần databas
 - Bước chuyển trạng thái phải khớp bảng ở `docs/design/state-machines.md`; bước không có trong bảng ném `InvalidStateTransitionException`.
 - Lỗi nghiệp vụ là exception của Domain có mã, theo bảng ở `docs/conventions/backend.md`.
 - Không dùng `DateTime.UtcNow`; nhận thời gian qua tham số.
-- Entity nghiệp vụ cài `ITenantOwned`.
+- Entity nghiệp vụ cài `ITenantOwned` của `Oism.SharedKernel`, khai báo `public Guid TenantId { get; private set; }`. Domain chỉ được tham chiếu `Oism.SharedKernel`.
 - Tiền là `decimal`, số lượng là `int`; không dùng `double` hay `float`.
 - Mỗi quy tắc mới có test đơn vị ở `tests/Oism.<Service>.UnitTests`.
