@@ -1,1 +1,132 @@
+<<<<<<< Updated upstream
 # XDPMOOP
+=======
+# OISM: Hệ thống quản lý bán hàng và tồn kho đa kênh
+
+OISM (Omnichannel Inventory and Sales Management System) là hệ thống SaaS multi-tenant giúp cửa hàng bán lẻ quản lý đơn hàng và tồn kho trên nhiều kênh cùng lúc: quầy POS và các sàn Shopee, TikTok Shop, Lazada. Đây là đồ án của 3 dev trong 5 tuần.
+
+## Bài toán
+
+Bán trên nhiều kênh rời nhau gây ra ba lỗi quen thuộc: bán vượt tồn vì đồng bộ chậm, giá vốn hàng bán (COGS) sai, và số liệu lệch vì sửa tồn bằng tay.
+
+## Cách giải
+
+- **Sổ kho chỉ thêm mới.** Mọi thay đổi tồn là một dòng trong `inventory_transactions`; không sửa thẳng cột tồn, sửa sai bằng dòng đảo.
+- **Chống bán vượt.** `available = on_hand - reserved`; đơn online vào là giữ hàng, khóa dòng số dư bằng `SELECT ... FOR UPDATE`. Đích: 50 đơn tranh 1 sản phẩm thì đúng 1 đơn thắng, tồn không âm.
+- **Giá vốn bình quân gia quyền.** Tính lại khi xác nhận phiếu nhập; chốt vào dòng đơn lúc xác nhận và không đổi nữa.
+- **Order hub.** Đơn từ POS, admin và webhook giả lập của sàn được chuẩn hóa về một Canonical Order, đi theo máy trạng thái Draft → Reserved → Confirmed → Completed (hoặc Cancelled).
+- **POS PWA.** Thanh toán tại quầy chạy giữ hàng, xác nhận, trừ tồn trong một transaction.
+- **Cách ly tenant.** Mọi bảng nghiệp vụ có `TenantId`, lọc bằng EF Core Global Query Filter.
+
+## Chức năng
+
+| Nhóm | Nội dung |
+| --- | --- |
+| FR-AUTH | Đăng ký tenant, đăng nhập JWT, phân quyền Owner / Staff / Cashier, quản lý chi nhánh |
+| FR-PROD | Danh mục, thương hiệu, sản phẩm và biến thể (SKU), mã vạch, giá lẻ và giá sỉ |
+| FR-INV | Sổ kho, phiếu nhập, chuyển kho hai bước, kiểm kê |
+| FR-COST | Giá vốn bình quân gia quyền, chốt giá vốn vào dòng đơn |
+| FR-ORD | Nhận đơn đa kênh, máy trạng thái đơn, duyệt và hủy đơn |
+| FR-RSE | Tính `available`, giữ hàng, trừ hoặc giải phóng |
+| FR-POS | Bán nhanh tại quầy, chặn bán vượt tồn, tiền mặt hoặc QR, in hóa đơn qua trình duyệt |
+| FR-REP | Doanh thu và lợi nhuận gộp, giá trị tồn và tốc độ bán, cảnh báo tồn thấp |
+| FR-SIM | Giả lập webhook sàn, thông báo realtime bằng SignalR, job nền bằng Hangfire |
+| FR-AI | Dự báo và đề xuất nhập hàng (mã tạm, nhóm thêm theo gói việc 5 của đề) |
+
+Tổng cộng 30 FR và 11 NFR của đề, cộng 3 mã FR-AI. Chi tiết: [docs/requirements/](docs/requirements/functional.md); hạng mục không làm: [PLAN.md mục 2](docs/PLAN.md).
+
+## Kiến trúc
+
+> Nguồn chuẩn: [docs/architecture/](docs/architecture/README.md). Mục này là bản tóm tắt.
+
+Năm service .NET 8 đứng sau một API gateway, hai ứng dụng React, một PostgreSQL với 5 database và một RabbitMQ.
+
+```mermaid
+flowchart TB
+  admin["Admin web<br/>React"]
+  pos["POS PWA<br/>React"]
+  sim["Simulator<br/>webhook giả lập"]
+  gw["gateway<br/>YARP"]
+  identity["identity"]
+  catalog["catalog"]
+  core["core<br/>Inventory + Orders"]
+  channel["channel"]
+  insights["insights"]
+  mq[("RabbitMQ")]
+  pg[("PostgreSQL<br/>5 database")]
+
+  admin --> gw
+  pos --> gw
+  sim --> gw
+  gw --> identity & catalog & core & channel & insights
+  identity & catalog & channel & core -.-> mq
+  mq -.-> core & channel & insights
+  identity & catalog & core & channel & insights --- pg
+```
+
+Đường liền có mũi tên là HTTP qua gateway; đường đứt là event qua RabbitMQ; đường liền không mũi tên là kết nối tới database riêng của service.
+
+| Khối | Trách nhiệm | Database |
+| --- | --- | --- |
+| `gateway` | Định tuyến, kiểm JWT, TLS, WebSocket | Không |
+| `identity` | Tenant, người dùng, đăng nhập, phân quyền, chi nhánh | `oism_identity` |
+| `catalog` | Danh mục, thương hiệu, sản phẩm, SKU, mã vạch, giá | `oism_catalog` |
+| `core` | Sổ kho, số dư, giá vốn, đơn hàng, giữ hàng, POS checkout | `oism_core` |
+| `channel` | Nhận webhook ba sàn, chống trùng, chuẩn hóa đơn | `oism_channel` |
+| `insights` | Báo cáo, cảnh báo tồn, dự báo, thông báo realtime | `oism_insights` |
+| `admin`, `pos` | Trang quản trị cho Owner và Staff; PWA bán tại quầy cho Cashier | Không |
+
+Ba quy tắc tóm gọn cả kiến trúc:
+
+1. Thứ gì phải commit cùng nhau thì ở chung một service và một database. Vì vậy đơn hàng, giữ hàng, sổ kho và giá vốn nằm chung `core`.
+2. Giữa các service chỉ có event qua outbox và inbox; không gọi HTTP chéo, không đọc database của nhau.
+3. Trong một service, phụ thuộc chỉ hướng vào Domain; nghiệp vụ không nằm ở controller hay ở EF Core.
+
+Mỗi service chia bốn lớp Clean Architecture:
+
+| Lớp | Chứa gì |
+| --- | --- |
+| Domain | Entity, value object, quy tắc nghiệp vụ (giá vốn, giữ hàng, máy trạng thái) |
+| Application | Use case (command, query, handler), interface repository, validation |
+| Infrastructure | EF Core DbContext, migration, repository, outbox và inbox, RabbitMQ, Hangfire |
+| Api | Controller, consumer, SignalR hub, đăng ký DI, Swagger |
+
+Các cơ chế xuyên suốt:
+
+- **Multi-tenant**: `TenantId` lấy từ JWT, áp qua Global Query Filter; event mang `TenantId`; dữ liệu của tenant khác trả 404.
+- **Transaction và khóa**: một use case là một transaction; khóa dòng chứng từ trước, rồi các dòng số dư theo `branch_id`, `sku_id` tăng dần.
+- **Thông điệp**: event ghi vào outbox trong cùng transaction với thay đổi nghiệp vụ, một tiến trình nền đẩy sang RabbitMQ; bên nhận ghi inbox trước khi xử lý để bỏ bản trùng.
+
+## Tech stack
+
+> Nguồn chuẩn: [conventions/backend.md](docs/conventions/backend.md), [conventions/frontend.md](docs/conventions/frontend.md), [testing/strategy.md](docs/testing/strategy.md).
+
+| Phần | Công nghệ |
+| --- | --- |
+| Backend | C# 12, .NET 8, ASP.NET Core Web API |
+| Dữ liệu | PostgreSQL, EF Core với Npgsql, tên bảng và cột snake_case |
+| Thông điệp | RabbitMQ (RabbitMQ.Client); outbox và inbox tự viết trong `Oism.BuildingBlocks` |
+| Gateway | YARP |
+| Xác thực | JWT Bearer, mật khẩu băm BCrypt, access token 60 phút kèm refresh token |
+| Realtime | SignalR |
+| Job nền | Hangfire trên PostgreSQL |
+| Kiểm tra đầu vào, tài liệu API | FluentValidation, Swagger (Swashbuckle) |
+| Frontend | React, Vite, TypeScript strict, TanStack Query, React Router, Ant Design; npm workspaces `admin`, `pos`, `shared` |
+| Test | xUnit, Testcontainers (PostgreSQL, RabbitMQ), coverlet, Vitest, k6 đo tải |
+| Đóng gói và CI | Docker Compose, GitHub Actions |
+
+Dự án không dùng MediatR, AutoMapper, MassTransit và FluentAssertions.
+
+## Trạng thái
+
+- Repo hiện chỉ có tài liệu thiết kế; code chưa tồn tại. Các mục trên mô tả đích, chưa phải thứ đã chạy được.
+- 18 quyết định của nhóm, gồm cả việc chia microservice (D-17), đang chờ giảng viên xác nhận ở task W1-01: [docs/decisions/](docs/decisions/README.md).
+
+## Tài liệu
+
+- [Kế hoạch triển khai](docs/PLAN.md): 10 phase, ai làm gì, xong là thế nào.
+- [docs/plans/](docs/plans/): plan riêng cho từng folder (`backend/*`, `frontend/*`, `deploy`, `tools/k6`).
+- [Bản đồ tài liệu](docs/README.md): yêu cầu, use case, kiến trúc, quyết định, thiết kế, kiểm thử, quy ước.
+- [AGENTS.md](AGENTS.md): quy tắc cho công cụ AI; rule và skill của Claude Code nằm trong `.claude/`.
+- [Bản dịch và phân tích đề](OISM-ban-dich-va-phan-tich-tieng-Viet.md): 30 FR, 11 NFR và các điểm cần làm rõ.
+>>>>>>> Stashed changes
