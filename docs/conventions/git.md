@@ -13,6 +13,7 @@ Mỗi thay đổi gắn với một mã task ở [PLAN.md](../PLAN.md) mục 10.
 - Dòng đầu: `<mã task>: <việc đã làm>`, ví dụ `W2-05: engine giữ hàng khóa theo thứ tự SKU`.
 - Mỗi commit build được. Không commit code bị comment bỏ, file tạm hay bí mật.
 - Migration và code dùng nó nằm trong cùng commit.
+- Tác giả commit là người làm, theo cấu hình git của máy họ. Commit do công cụ AI tạo giúp cũng vậy: không có dòng `Co-Authored-By` và không có chữ ký của công cụ AI, để danh sách contributor của repo chỉ gồm thành viên nhóm.
 
 ## Pull request
 
