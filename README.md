@@ -164,7 +164,8 @@ npm --prefix frontend run dev:pos
 ## Trạng thái
 
 - Đã có code của phase 1: skeleton backend và Compose dev (W1-02, W1-03), outbox và inbox qua RabbitMQ (W1-13), danh mục và thương hiệu ở `catalog` (W1-06), hai ứng dụng React với đăng ký, đăng nhập và layout (W1-09), workflow CI (W1-11).
-- Đã có code của phase 2: `identity` với đăng ký tenant, đăng nhập, làm mới, đăng xuất, quản lý người dùng (W1-04) và chi nhánh (W1-05); sản phẩm, SKU, mã vạch và giá ở `catalog` (W1-07); consumer dựng bản sao SKU và chi nhánh ở `core` (W1-08); màn hình chi nhánh, người dùng, danh mục, thương hiệu trên `admin` (W1-10). Kho và đơn hàng ở `core`, nghiệp vụ của `channel`, `insights` chưa có; seed chưa có.
+- Đã có code của phase 2: `identity` với đăng ký tenant, đăng nhập, làm mới, đăng xuất, quản lý người dùng (W1-04) và chi nhánh (W1-05); sản phẩm, SKU, mã vạch và giá ở `catalog` (W1-07); consumer dựng bản sao SKU và chi nhánh ở `core` (W1-08); màn hình chi nhánh, người dùng, danh mục, thương hiệu trên `admin` (W1-10).
+- Đã có code của phase 3: sổ kho chỉ thêm mới, số dư, `PostLedger` và API xem tồn, xem sổ ở `core` (W2-01); mô hình đơn, máy trạng thái và tạo đơn thủ công ở `core` (W2-04); màn hình sản phẩm, SKU, mã vạch, giá trên `admin` (W2-07). Phiếu nhập, giữ hàng và xác nhận đơn ở `core`, nghiệp vụ của `channel`, `insights` chưa có; seed chưa có.
 - 18 quyết định của nhóm, gồm cả việc chia microservice (D-17), đã được giảng viên xác nhận ngày 2026-10-04 (task W1-01): [docs/decisions/](docs/decisions/README.md).
 
 ## Tài liệu
