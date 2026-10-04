@@ -18,12 +18,14 @@ public static class OismWeb
         services.AddExceptionHandler<OismExceptionHandler>();
         services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>
         {
-            // Lỗi không qua exception (401, 403, 404 của pipeline) vẫn phải mang `code`: docs/design/api/README.md.
+            // Lỗi không qua exception (400 do model binding; 401, 403, 404 của pipeline) vẫn phải mang `code`:
+            // docs/design/api/README.md.
             var problem = context.ProblemDetails;
             if (!problem.Extensions.TryGetValue("code", out var code))
             {
                 code = problem.Status switch
                 {
+                    StatusCodes.Status400BadRequest => "validation_failed",
                     StatusCodes.Status401Unauthorized => "unauthenticated",
                     StatusCodes.Status403Forbidden => "forbidden",
                     StatusCodes.Status404NotFound => "not_found",

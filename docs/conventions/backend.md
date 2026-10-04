@@ -77,6 +77,7 @@ Domain và Application ném exception có mã; middleware trong `Oism.BuildingBl
 | `ValidationException` | 400 | `validation_failed` |
 | `NotFoundException` | 404 | `not_found` |
 | `DuplicateException` | 409 | `duplicate` |
+| `CategoryInUseException` | 409 | `category_in_use` |
 | `InvalidStateTransitionException` | 409 | `invalid_state_transition` |
 | `InsufficientStockException` | 409 | `insufficient_stock` |
 | `StocktakeBelowReservedException` | 409 | `stocktake_below_reserved` |
@@ -84,6 +85,12 @@ Domain và Application ném exception có mã; middleware trong `Oism.BuildingBl
 | Exception khác | 500 | Không lộ chi tiết; ghi log kèm correlation id |
 
 Không dùng exception cho luồng bình thường (ví dụ "không có kết quả tìm kiếm").
+
+Ba điểm của khuôn đã có ở `catalog`, service khác chép theo:
+
+- Trùng dữ liệu do chỉ mục unique của database quyết định, không kiểm trước bằng một câu truy vấn: `ITransaction.CommitAsync` đổi lỗi vi phạm unique của PostgreSQL thành `DuplicateException`. Nhờ vậy hai request tới cùng lúc vẫn nhận đúng 409.
+- Quy tắc cần trả 400 mà phải đọc dữ liệu mới kiểm được (ví dụ vòng lặp cha con của danh mục): Domain cung cấp hàm kiểm thuần, handler gọi nó rồi ném `ValidationException` của FluentValidation kèm tên trường.
+- `Program.cs` đăng ký mọi lớp có tên kết thúc bằng `Handler` trong assembly Application; thêm use case không cần sửa `Program.cs`.
 
 ## EF Core
 

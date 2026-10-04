@@ -15,7 +15,7 @@ erDiagram
 
 | Bảng | Cột | Ràng buộc |
 | --- | --- | --- |
-| `categories` | `id`, `tenant_id`, `parent_id` (cho phép null), `name`, `sort_order` | Unique `(tenant_id, parent_id, name)`; `parent_id` không được là chính nó hay con cháu của nó, kiểm ở Domain |
+| `categories` | `id`, `tenant_id`, `parent_id` (cho phép null), `name`, `sort_order` (mặc định 0) | Unique `(tenant_id, parent_id, name)` với `NULLS NOT DISTINCT`, để hai danh mục gốc cùng tên cũng bị coi là trùng; khóa ngoại `parent_id` tới `categories.id`, không cho xóa cha còn con; `parent_id` không được là chính nó hay con cháu của nó, kiểm ở Domain |
 | `brands` | `id`, `tenant_id`, `name` | Unique `(tenant_id, name)` |
 
 ## products

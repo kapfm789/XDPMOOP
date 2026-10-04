@@ -1,5 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <PackageReference Include="FluentValidation" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="../Oism.Catalog.Domain/Oism.Catalog.Domain.csproj" />
     <ProjectReference Include="../../../../shared/Oism.Contracts/Oism.Contracts.csproj" />
   </ItemGroup>
