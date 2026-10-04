@@ -1,5 +1,17 @@
 import { endSession, getRefreshToken, startSession } from '../auth/session';
-import type { LoginResponse, RegisterTenantRequest, RegisterTenantResponse, User } from '../types/identity';
+import type { Paged } from '../types/common';
+import type {
+  Branch,
+  CreateBranchRequest,
+  CreateUserRequest,
+  LoginResponse,
+  RegisterTenantRequest,
+  RegisterTenantResponse,
+  UpdateBranchRequest,
+  UpdateUserRequest,
+  User,
+  UserAccount,
+} from '../types/identity';
 import { api } from './client';
 
 export const registerTenant = (request: RegisterTenantRequest) =>
@@ -24,3 +36,24 @@ export async function logout() {
     endSession(true);
   }
 }
+
+export const listBranches = (isActive?: boolean) =>
+  api<Branch[]>(`/api/identity/branches${isActive === undefined ? '' : `?isActive=${isActive}`}`);
+
+export const createBranch = (request: CreateBranchRequest) =>
+  api<Branch>('/api/identity/branches', { method: 'POST', body: request });
+
+export const updateBranch = (id: string, request: UpdateBranchRequest) =>
+  api<Branch>(`/api/identity/branches/${id}`, { method: 'PUT', body: request });
+
+export const setBranchActive = (id: string, isActive: boolean) =>
+  api<Branch>(`/api/identity/branches/${id}/active`, { method: 'PATCH', body: { isActive } });
+
+export const listUsers = (page: number, pageSize: number) =>
+  api<Paged<UserAccount>>(`/api/identity/users?page=${page}&pageSize=${pageSize}`);
+
+export const createUser = (request: CreateUserRequest) =>
+  api<UserAccount>('/api/identity/users', { method: 'POST', body: request });
+
+export const updateUser = (id: string, request: UpdateUserRequest) =>
+  api<UserAccount>(`/api/identity/users/${id}`, { method: 'PUT', body: request });

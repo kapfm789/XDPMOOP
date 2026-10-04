@@ -3,11 +3,15 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ConfigProvider } from 'antd';
 import viVN from 'antd/locale/vi_VN';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { BranchesPage } from '../pages/branches/BranchesPage';
+import { BrandsPage } from '../pages/catalog/BrandsPage';
+import { CategoriesPage } from '../pages/catalog/CategoriesPage';
 import { HomePage } from '../pages/home/HomePage';
 import { LoginPage } from '../pages/login/LoginPage';
 import { RegisterPage } from '../pages/register/RegisterPage';
+import { UsersPage } from '../pages/users/UsersPage';
 import { AdminLayout } from './AdminLayout';
-import { ADMIN_ROLES } from './menu';
+import { ADMIN_ROLES, OWNER_ONLY } from './menu';
 
 const queryClient = new QueryClient();
 
@@ -21,7 +25,27 @@ const router = createBrowserRouter([
         <AdminLayout />
       </RequireRole>
     ),
-    children: [{ index: true, element: <HomePage /> }],
+    children: [
+      { index: true, element: <HomePage /> },
+      {
+        path: 'branches',
+        element: (
+          <RequireRole roles={OWNER_ONLY}>
+            <BranchesPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: 'users',
+        element: (
+          <RequireRole roles={OWNER_ONLY}>
+            <UsersPage />
+          </RequireRole>
+        ),
+      },
+      { path: 'catalog/categories', element: <CategoriesPage /> },
+      { path: 'catalog/brands', element: <BrandsPage /> },
+    ],
   },
 ]);
 
