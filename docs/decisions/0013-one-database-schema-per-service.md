@@ -1,6 +1,6 @@
 # ADR-0013: Một database PostgreSQL dùng chung, mỗi service một schema riêng
 
-- Trạng thái: Đề xuất, chờ giảng viên xác nhận
+- Trạng thái: Đã xác nhận 2026-10-04
 - Gộp từ: D-18
 - Thay: dòng "mỗi service một database riêng" của [ADR-0001](0001-microservices-by-transaction-boundary.md); các dòng còn lại của ADR-0001 giữ nguyên
 - Ngày: 2026-10-03

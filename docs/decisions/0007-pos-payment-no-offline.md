@@ -1,6 +1,6 @@
 # ADR-0007: Thanh toán QR do thu ngân xác nhận tay; POS không bán offline
 
-- Trạng thái: Đề xuất, chờ giảng viên xác nhận
+- Trạng thái: Đã xác nhận 2026-10-04
 - Gộp từ: D-11
 - Ngày: 2026-10-03
 

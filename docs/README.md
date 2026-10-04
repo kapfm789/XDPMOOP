@@ -55,6 +55,8 @@ Thấy mâu thuẫn thì dừng lại, nêu rõ hai chỗ lệch nhau và sửa 
 ## Trạng thái
 
 - Đây là bản thiết kế v0, viết ngày 2026-10-03. Khi code thật khác tài liệu, người sửa code cập nhật tài liệu trong cùng PR.
-- Đã có code: skeleton backend (W1-02) và Compose dev (W1-03). Chưa có nghiệp vụ, frontend, CI, seed.
-- Mọi quyết định trong [decisions/](decisions/) đang ở trạng thái đề xuất, chờ giảng viên xác nhận ở task W1-01.
+- Đã có code: skeleton backend (W1-02), Compose dev (W1-03), outbox và inbox (W1-13), danh mục và thương hiệu ở `catalog` (W1-06), workspace frontend với đăng ký, đăng nhập và layout (W1-09), workflow CI (W1-11).
+- Chưa kiểm được: luồng đăng ký rồi đăng nhập của W1-09 trên API thật, vì `identity` (W1-04) chưa có; workflow CI của W1-11 chưa chạy trên một PR nào.
+- Chưa có: nghiệp vụ của `identity`, `core`, `channel`, `insights`; sản phẩm và SKU ở `catalog`; seed.
+- Mọi quyết định trong [decisions/](decisions/) đã được giảng viên xác nhận ngày 2026-10-04 (task W1-01), đúng như nhóm đề xuất.
 - Quy tắc cho công cụ AI nằm ở [AGENTS.md](../AGENTS.md) tại gốc repo; rule và skill riêng của Claude Code nằm trong `.claude/`.

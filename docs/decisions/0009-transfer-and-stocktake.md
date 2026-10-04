@@ -1,6 +1,6 @@
 # ADR-0009: Chuyển kho nhận đủ; kiểm kê bị chặn khi số đếm thấp hơn lượng đã giữ
 
-- Trạng thái: Đề xuất, chờ giảng viên xác nhận
+- Trạng thái: Đã xác nhận 2026-10-04
 - Gộp từ: D-13
 - Ngày: 2026-10-03
 

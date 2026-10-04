@@ -1,6 +1,6 @@
 # ADR-0005: Confirmed là lúc xuất kho; hủy chỉ trước Confirmed; mỗi bước một transaction
 
-- Trạng thái: Đề xuất, chờ giảng viên xác nhận
+- Trạng thái: Đã xác nhận 2026-10-04
 - Gộp từ: D-05, D-06, D-07, D-08
 - Ngày: 2026-10-03
 

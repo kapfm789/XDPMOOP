@@ -1,6 +1,6 @@
 # ADR-0003: Ledger chỉ thêm mới kèm bảng số dư, khóa bi quan trên dòng số dư
 
-- Trạng thái: Đề xuất, chờ giảng viên xác nhận
+- Trạng thái: Đã xác nhận 2026-10-04
 - Gộp từ: D-02, D-03
 - Ngày: 2026-10-03
 

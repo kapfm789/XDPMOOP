@@ -1,6 +1,6 @@
 # ADR-0002: Chung schema, phân tách tenant bằng cột tenant_id
 
-- Trạng thái: Đề xuất, chờ giảng viên xác nhận
+- Trạng thái: Đã xác nhận 2026-10-04
 - Gộp từ: D-01
 - Ngày: 2026-10-03
 

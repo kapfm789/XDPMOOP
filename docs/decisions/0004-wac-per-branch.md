@@ -1,6 +1,6 @@
 # ADR-0004: Giá vốn bình quân tính theo từng chi nhánh và SKU
 
-- Trạng thái: Đề xuất, chờ giảng viên xác nhận
+- Trạng thái: Đã xác nhận 2026-10-04
 - Gộp từ: D-04
 - Ngày: 2026-10-03
 

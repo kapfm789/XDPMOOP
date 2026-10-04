@@ -20,7 +20,7 @@ OISM gồm 5 service .NET 8 sau một API gateway và hai ứng dụng React, do
 | 10. Tài liệu và bàn giao | 5 | URS, RTM, ERD, kiến trúc | UML, tài liệu kiểm thử | Swagger, hướng dẫn | RTM đủ 44 mã; demo hai lần không lỗi |
 
 - Tìm việc của mình: mục 10 (Lịch 10 phase) theo cột Owner, hoặc file plan của folder mình sở hữu trong `docs/plans/` (mục 4.3).
-- Trước khi code: đọc mục 3. Cả 18 quyết định đang là mặc định, chờ giảng viên xác nhận trong phase 1.
+- Trước khi code: đọc mục 3. Cả 18 quyết định đã được giảng viên xác nhận ngày 2026-10-04 (task W1-01).
 - Tài liệu chi tiết (yêu cầu, use case, kiến trúc, quyết định, thiết kế, kiểm thử, quy ước) nằm cùng thư mục này; bản đồ ở [README.md](README.md). Quy tắc cho công cụ AI ở [AGENTS.md](../AGENTS.md).
 - Quỹ thời gian là 3 dev × 5 tuần = 75 ngày công. Riêng phần microservice tốn khoảng 22 ngày (ước lượng), nên nhóm P2 chỉ làm mức tối thiểu (mục 11).
 
@@ -42,35 +42,30 @@ Nhóm làm đủ 30 FR và 11 NFR của đề, cộng dự báo nhập hàng b�
 
 > Nguồn chuẩn: [decisions/](decisions/README.md). Bảng dưới là bản tóm tắt.
 
-Cả 18 quyết định dưới đây là lựa chọn mặc định của nhóm cho những điểm đề chưa chốt; giảng viên cần xác nhận trong phase 1 (task W1-01). Hỏi D-17 trước: đề ghi "Clean Architecture" và ".NET 8 Web API", không yêu cầu microservice.
+Cả 18 quyết định dưới đây là lựa chọn của nhóm cho những điểm đề chưa chốt. Giảng viên đã xác nhận cả 18, đúng như nhóm đề xuất, ngày 2026-10-04 (task W1-01); không task nào phải sửa.
 
 | # | Điểm đề chưa chốt | Mặc định | Trạng thái |
 | --- | --- | --- | --- |
-| D-01 | Mô hình tenant | Chung schema, cột `TenantId` trên mọi bảng nghiệp vụ, EF Core Global Query Filter | Chờ xác nhận |
-| D-02 | Ledger và cột `on_hand` | Có bảng `InventoryBalance`; chỉ đổi trong cùng transaction với một dòng ledger; ledger là nguồn chuẩn, có test đối soát | Chờ xác nhận |
-| D-03 | Cơ chế khóa | Khóa bi quan `SELECT ... FOR UPDATE` trên dòng số dư, khóa theo thứ tự SkuId | Chờ xác nhận |
-| D-04 | Phạm vi giá vốn | Theo (chi nhánh, SKU), lưu trên dòng số dư; chuyển kho mang giá vốn nơi gửi, nơi nhận tính lại WAC | Chờ xác nhận |
-| D-05 | Nghĩa của Confirmed | Confirmed là thời điểm xuất kho: trừ on_hand, giảm reserved, chốt `CostPrice`, ghi ledger. Completed là đã giao, không tác động tồn | Chờ xác nhận |
-| D-06 | Hủy đơn | Chỉ hủy từ Draft hoặc Reserved; sau Confirmed không hủy; không làm trả hàng | Chờ xác nhận |
-| D-07 | Ranh giới transaction | POS: một transaction cho cả chuỗi tới Completed. Đơn online: mỗi bước một transaction | Chờ xác nhận |
-| D-08 | Giữ hàng | Hết hạn sau 30 phút, cấu hình được; đơn nhiều SKU giữ toàn bộ hoặc từ chối toàn bộ | Chờ xác nhận |
-| D-09 | Kết nối sàn | Chỉ simulator webhook; Shopee, TikTok, Lazada cùng vào Canonical Order | Chờ xác nhận |
-| D-10 | Chống xử lý trùng | Unique (TenantId, Channel, ExternalOrderId); bảng `WebhookEvent`; header `Idempotency-Key` cho POS checkout | Chờ xác nhận |
-| D-11 | QR và offline | Hiển thị mã QR, thu ngân xác nhận tay; không bán offline, PWA chỉ cài được và cache app shell | Chờ xác nhận |
-| D-12 | Công thức báo cáo | Doanh thu thuần = Σ(SL × đơn giá − giảm giá dòng) của đơn đã Confirmed, theo `ConfirmedAt`, giờ Việt Nam; không thuế, phí; bán chạy/chậm theo SL 30 ngày | Chờ xác nhận |
-| D-13 | Chuyển kho, kiểm kê | Chuyển kho Draft → InTransit → Received, nhận đủ. Kiểm kê bị chặn khi số đếm nhỏ hơn reserved | Chờ xác nhận |
-| D-14 | AI dự báo | Exponential smoothing theo (chi nhánh, SKU), viết bằng C#, chạy đêm bằng Hangfire; backtest WAPE so với naive; mã tạm FR-AI-01..03 | Chờ xác nhận |
-| D-15 | Xác thực và quyền | BCrypt; access token 60 phút; refresh 7 ngày, xoay vòng, thu hồi khi logout; user thuộc một tenant; `Branch` có `Type` Store/Warehouse; báo cáo lợi nhuận chỉ Owner xem | Chờ xác nhận |
-| D-16 | Tổ chức frontend | npm workspaces `frontend/` gồm `admin`, `pos`, `shared` (Vite, React, TypeScript) | Chờ xác nhận |
-| D-17 | Kiến trúc triển khai | Microservice: 5 service và một gateway; đơn hàng và tồn kho chung service `core` | Chờ xác nhận |
-| D-18 | Giao tiếp và dữ liệu | RabbitMQ với transactional outbox; một database PostgreSQL dùng chung, mỗi service một schema riêng | Chờ xác nhận |
+| D-01 | Mô hình tenant | Chung schema, cột `TenantId` trên mọi bảng nghiệp vụ, EF Core Global Query Filter | Đã xác nhận 2026-10-04 |
+| D-02 | Ledger và cột `on_hand` | Có bảng `InventoryBalance`; chỉ đổi trong cùng transaction với một dòng ledger; ledger là nguồn chuẩn, có test đối soát | Đã xác nhận 2026-10-04 |
+| D-03 | Cơ chế khóa | Khóa bi quan `SELECT ... FOR UPDATE` trên dòng số dư, khóa theo thứ tự SkuId | Đã xác nhận 2026-10-04 |
+| D-04 | Phạm vi giá vốn | Theo (chi nhánh, SKU), lưu trên dòng số dư; chuyển kho mang giá vốn nơi gửi, nơi nhận tính lại WAC | Đã xác nhận 2026-10-04 |
+| D-05 | Nghĩa của Confirmed | Confirmed là thời điểm xuất kho: trừ on_hand, giảm reserved, chốt `CostPrice`, ghi ledger. Completed là đã giao, không tác động tồn | Đã xác nhận 2026-10-04 |
+| D-06 | Hủy đơn | Chỉ hủy từ Draft hoặc Reserved; sau Confirmed không hủy; không làm trả hàng | Đã xác nhận 2026-10-04 |
+| D-07 | Ranh giới transaction | POS: một transaction cho cả chuỗi tới Completed. Đơn online: mỗi bước một transaction | Đã xác nhận 2026-10-04 |
+| D-08 | Giữ hàng | Hết hạn sau 30 phút, cấu hình được; đơn nhiều SKU giữ toàn bộ hoặc từ chối toàn bộ | Đã xác nhận 2026-10-04 |
+| D-09 | Kết nối sàn | Chỉ simulator webhook; Shopee, TikTok, Lazada cùng vào Canonical Order | Đã xác nhận 2026-10-04 |
+| D-10 | Chống xử lý trùng | Unique (TenantId, Channel, ExternalOrderId); bảng `WebhookEvent`; header `Idempotency-Key` cho POS checkout | Đã xác nhận 2026-10-04 |
+| D-11 | QR và offline | Hiển thị mã QR, thu ngân xác nhận tay; không bán offline, PWA chỉ cài được và cache app shell | Đã xác nhận 2026-10-04 |
+| D-12 | Công thức báo cáo | Doanh thu thuần = Σ(SL × đơn giá − giảm giá dòng) của đơn đã Confirmed, theo `ConfirmedAt`, giờ Việt Nam; không thuế, phí; bán chạy/chậm theo SL 30 ngày | Đã xác nhận 2026-10-04 |
+| D-13 | Chuyển kho, kiểm kê | Chuyển kho Draft → InTransit → Received, nhận đủ. Kiểm kê bị chặn khi số đếm nhỏ hơn reserved | Đã xác nhận 2026-10-04 |
+| D-14 | AI dự báo | Exponential smoothing theo (chi nhánh, SKU), viết bằng C#, chạy đêm bằng Hangfire; backtest WAPE so với naive; mã tạm FR-AI-01..03 | Đã xác nhận 2026-10-04 |
+| D-15 | Xác thực và quyền | BCrypt; access token 60 phút; refresh 7 ngày, xoay vòng, thu hồi khi logout; user thuộc một tenant; `Branch` có `Type` Store/Warehouse; báo cáo lợi nhuận chỉ Owner xem | Đã xác nhận 2026-10-04 |
+| D-16 | Tổ chức frontend | npm workspaces `frontend/` gồm `admin`, `pos`, `shared` (Vite, React, TypeScript) | Đã xác nhận 2026-10-04 |
+| D-17 | Kiến trúc triển khai | Microservice: 5 service và một gateway; đơn hàng và tồn kho chung service `core` | Đã xác nhận 2026-10-04 |
+| D-18 | Giao tiếp và dữ liệu | RabbitMQ với transactional outbox; một database PostgreSQL dùng chung, mỗi service một schema riêng | Đã xác nhận 2026-10-04 |
 
-Bốn quyết định tốn công nhất nếu bị đổi:
-
-- D-17 về monolith: gộp 5 service thành một API, bỏ gateway và RabbitMQ, lấy lại khoảng 22 ngày công.
-- D-02 cấm bảng số dư: tính tồn từ ledger và đổi cách khóa; viết lại W2-01 và W2-05.
-- D-05 thêm trạng thái xuất kho riêng: dời bước trừ tồn và chốt giá vốn khỏi Confirmed.
-- D-06 bắt buộc có trả hàng: thêm luồng `ReturnIn`, khoảng 3 ngày công.
+Cái phải sửa nếu sau này một quyết định bị đổi ghi ở mục "Nếu bị đổi" của từng ADR.
 
 ## 4. Kiến trúc và cấu trúc repo
 
@@ -598,7 +593,6 @@ Rủi ro lớn nhất là chi phí microservice ăn vào thời gian của lõi 
 | Rủi ro | Cách giảm |
 | --- | --- |
 | Chi phí microservice vượt ước lượng 22 ngày công | Cổng phase 4 trượt thì gộp `catalog` và `channel` vào `core` (mục 11) |
-| Giảng viên không nhận microservice hoặc cách đọc NFR-SEC-02 ở D-07 | Hỏi trong hai ngày đầu (W1-01); `core` đã chia module nên gộp về một API được |
 | Deadlock hoặc race trong engine giữ hàng | Khóa theo thứ tự SkuId; test T01 chạy lặp 20 lần trong CI |
 | Event trễ làm SKU mới chưa có ở `core` | API trả 409 rõ lý do; giao diện tự thử lại |
 | Dev C quá tải với hai frontend và DevOps | Dùng thư viện component có sẵn; Dev A nhận màn hình kho ở phase 8 |
@@ -612,7 +606,7 @@ Rủi ro lớn nhất là chi phí microservice ăn vào thời gian của lõi 
 
 Mỗi mã trong 44 mã yêu cầu (30 FR, 11 NFR, 3 mã AI tạm) trỏ tới ít nhất một task và một cách kiểm chứng. Cột kiểm chứng ghi mã kịch bản ở mục 12, hoặc "DoD" kèm mã task khi điều kiện nằm ở cột "Xong khi" của task đó.
 
-Ba mã AI tạm, chờ giảng viên chốt (D-14): FR-AI-01 dự báo nhu cầu theo chi nhánh và SKU; FR-AI-02 hiển thị đề xuất số lượng nhập trên admin; FR-AI-03 backtest và báo cáo sai số.
+Ba mã AI do nhóm đặt, giảng viên đã xác nhận cùng D-14 ngày 2026-10-04: FR-AI-01 dự báo nhu cầu theo chi nhánh và SKU; FR-AI-02 hiển thị đề xuất số lượng nhập trên admin; FR-AI-03 backtest và báo cáo sai số.
 
 | Mã | Service | Task | Kiểm chứng |
 | --- | --- | --- | --- |

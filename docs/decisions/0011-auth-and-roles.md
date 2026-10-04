@@ -1,6 +1,6 @@
 # ADR-0011: JWT ký RS256, refresh token xoay vòng, mỗi người dùng thuộc một tenant
 
-- Trạng thái: Đề xuất, chờ giảng viên xác nhận
+- Trạng thái: Đã xác nhận 2026-10-04
 - Gộp từ: D-15
 - Ngày: 2026-10-03
 

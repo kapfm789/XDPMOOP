@@ -19,7 +19,7 @@ Xếp theo ưu tiên; khi hai động lực xung đột, cái đứng trên th�
 
 - Đề chỉ định công nghệ: .NET 8, EF Core, PostgreSQL, SignalR, Hangfire, ReactJS, Docker Compose, GitHub Actions.
 - Không kết nối sàn thật, không cổng thanh toán, không bán offline. Lý do nằm ở [decisions/](../decisions/README.md).
-- Đề ghi "Clean Architecture" và ".NET 8 Web API", không yêu cầu microservice. Việc tách service là quyết định của nhóm, chờ giảng viên xác nhận ([ADR-0001](../decisions/0001-microservices-by-transaction-boundary.md)).
+- Đề ghi "Clean Architecture" và ".NET 8 Web API", không yêu cầu microservice. Việc tách service là quyết định của nhóm, đã được giảng viên xác nhận ngày 2026-10-04 ([ADR-0001](../decisions/0001-microservices-by-transaction-boundary.md)).
 
 ## Tài liệu trong thư mục
 
