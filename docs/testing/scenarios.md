@@ -32,7 +32,7 @@
 
 | Mã | Cho trước | Khi | Thì | Đặt ở |
 | --- | --- | --- | --- | --- |
-| T14 | Tenant A và tenant B đều có đơn, SKU, chi nhánh | A gọi mọi endpoint đọc và ghi với ID của B; A tạo đơn trỏ tới SKU hoặc chi nhánh của B | 404 cho mọi lời gọi; không quan hệ chéo nào được tạo; dữ liệu của B không đổi | Mọi service, `IntegrationTests/Tenancy` |
+| T14 | Tenant A và tenant B đều có đơn, SKU, chi nhánh | A gọi mọi endpoint đọc và ghi với ID của B; A tạo đơn trỏ tới SKU hoặc chi nhánh của B | 404 cho mọi lời gọi; riêng ở `core`, chi nhánh hoặc SKU của B gửi trong body nhận 409 `reference_not_ready` ([multi-tenancy.md](../architecture/multi-tenancy.md) quy tắc 3); không quan hệ chéo nào được tạo; dữ liệu của B không đổi | Mọi service, `IntegrationTests/Tenancy` |
 | T15 | Hai phiên SignalR, một của A, một của B | Một đơn online của A được giữ hàng | Phiên của A nhận `OrderCreated`; phiên của B không nhận gì | insights, `IntegrationTests` |
 
 ## Thông điệp

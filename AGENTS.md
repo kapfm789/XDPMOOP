@@ -4,7 +4,7 @@ OISM là hệ thống quản lý bán hàng và tồn kho đa kênh, multi-tenan
 
 ## Trạng thái repo
 
-Đã có code của phase 1: skeleton backend (`backend/shared`, gateway, 5 service bốn lớp), outbox và inbox trong `Oism.BuildingBlocks/Messaging`, danh mục và thương hiệu ở `catalog` (service đầu tiên có nghiệp vụ, dùng làm khuôn), đăng ký, đăng nhập và người dùng ở `identity` (W1-04), workspace `frontend/` với đăng ký, đăng nhập và layout, Compose dev ở `deploy/`, CI ở `.github/`. Đã có code của phase 2: chi nhánh ở `identity` (W1-05), sản phẩm, SKU, mã vạch và giá ở `catalog` (W1-07), consumer dựng `sku_refs` và `branch_refs` ở `core` (W1-08), màn hình chi nhánh, người dùng, danh mục, thương hiệu trên `admin` (W1-10). `core` chưa có kho và đơn hàng; `channel`, `insights` chưa có nghiệp vụ; seed chưa có. Khi tạo file code, đặt đúng đường dẫn và tên ở `docs/architecture/source-tree.md`; không tự nghĩ ra cấu trúc khác. Service mới hoặc phần mới của service chép khuôn từ code đã có.
+Đã có code của phase 1: skeleton backend (`backend/shared`, gateway, 5 service bốn lớp), outbox và inbox trong `Oism.BuildingBlocks/Messaging`, danh mục và thương hiệu ở `catalog` (service đầu tiên có nghiệp vụ, dùng làm khuôn), đăng ký, đăng nhập và người dùng ở `identity` (W1-04), workspace `frontend/` với đăng ký, đăng nhập và layout, Compose dev ở `deploy/`, CI ở `.github/`. Đã có code của phase 2: chi nhánh ở `identity` (W1-05), sản phẩm, SKU, mã vạch và giá ở `catalog` (W1-07), consumer dựng `sku_refs` và `branch_refs` ở `core` (W1-08), màn hình chi nhánh, người dùng, danh mục, thương hiệu trên `admin` (W1-10). Đã có code của phase 3: sổ kho, số dư, `PostLedger` và API xem tồn, xem sổ ở `core` (W2-01), mô hình đơn, máy trạng thái và tạo đơn thủ công ở `core` (W2-04), màn hình sản phẩm, SKU, mã vạch, giá trên `admin` (W2-07). `core` chưa có phiếu nhập, giữ hàng và xác nhận đơn; `channel`, `insights` chưa có nghiệp vụ; seed chưa có. Khi tạo file code, đặt đúng đường dẫn và tên ở `docs/architecture/source-tree.md`; không tự nghĩ ra cấu trúc khác. Service mới hoặc phần mới của service chép khuôn từ code đã có.
 
 ## Nguyên tắc: tài liệu trước, code sau
 
@@ -69,7 +69,7 @@ Vi phạm bất kỳ điều nào dưới đây là lỗi, kể cả khi test hi
 7. Một use case là một transaction. Lỗi thì rollback toàn bộ; không commit nửa chừng.
 8. `cost_price` của dòng đơn ghi một lần lúc xác nhận và không bao giờ đổi.
 9. Mọi entity nghiệp vụ có `TenantId` và đi qua Global Query Filter. `IgnoreQueryFilters` chỉ dùng ở các chỗ liệt kê trong `docs/architecture/multi-tenancy.md`.
-10. Dữ liệu của tenant khác trả 404. Không tin `tenantId` trong body request.
+10. Dữ liệu của tenant khác trả 404; ngoại lệ duy nhất là quy tắc 3 ở `docs/architecture/multi-tenancy.md`. Không tin `tenantId` trong body request.
 11. Domain không tham chiếu EF Core hay ASP.NET Core. Application không tham chiếu Infrastructure. Controller không chứa nghiệp vụ.
 12. Hợp đồng event chỉ được thêm trường; không đổi tên, không xóa, không đổi kiểu.
 13. Mọi endpoint khai báo quyền theo vai trò; quyền kiểm ở backend.

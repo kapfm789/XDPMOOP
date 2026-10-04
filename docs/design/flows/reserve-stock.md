@@ -58,7 +58,7 @@ Transaction đã rollback nên không có đơn nào được lưu. Việc báo 
 
 - 50 request cùng mua đơn vị cuối: các request xếp hàng ở bước khóa số dư; request đầu giữ được, 49 request sau đọc thấy tồn khả dụng bằng 0 và bị từ chối.
 - SKU chưa có dòng số dư ở chi nhánh: coi như tồn khả dụng bằng 0.
-- `skuCode` không có trong `sku_refs`, SKU ngừng bán, chi nhánh đã tắt: từ chối với lý do `UnknownSku`, `InactiveSku`, `InactiveBranch`. Với đơn thủ công, SKU chưa tới do event trễ trả 409 `reference_not_ready`.
+- `skuCode` không có trong `sku_refs`, SKU ngừng bán, chi nhánh đã tắt: từ chối với lý do `UnknownSku`, `InactiveSku`, `InactiveBranch`. Với đơn thủ công, SKU hoặc chi nhánh chưa tới do event trễ trả 409 `reference_not_ready`; chi nhánh đã tắt hoặc SKU ngừng bán trả 409 `inactive_reference`.
 - Một SKU xuất hiện ở hai dòng đơn: cộng số lượng lại trước khi kiểm.
 - Thời hạn giữ hàng là 30 phút, lấy từ cấu hình `Reservation:HoldMinutes`.
 

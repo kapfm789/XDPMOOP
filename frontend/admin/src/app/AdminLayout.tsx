@@ -18,7 +18,10 @@ export function AdminLayout() {
         </Typography.Title>
         <Menu
           theme="dark"
-          selectedKeys={[location.pathname]}
+          // Trang con (ví dụ /catalog/products/:id) vẫn sáng mục menu của trang cha.
+          selectedKeys={[
+            MENU.find((entry) => entry.path !== '/' && location.pathname.startsWith(entry.path))?.path ?? location.pathname,
+          ]}
           items={visibleFor(MENU, user?.role).map((entry) => ({ key: entry.path, label: entry.label }))}
           onClick={({ key }) => navigate(key)}
         />

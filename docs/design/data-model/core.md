@@ -55,6 +55,8 @@ Sổ giao dịch chỉ thêm mới. Trigger chặn `UPDATE` và `DELETE`.
 
 Chỉ mục: `(tenant_id, created_at)`; `(tenant_id, branch_id, sku_id, seq)`; `(tenant_id, reference_type, reference_id)`.
 
+Trigger `trg_ledger_append_only` gọi hàm `core.forbid_ledger_change()` trước mỗi `UPDATE` và `DELETE`, và ném lỗi `inventory_transactions is append-only`. Dòng số dư được tạo ở 0 ngay trước lần khóa đầu tiên của SKU tại chi nhánh.
+
 ## orders
 
 | Cột | Kiểu | Ghi chú |
@@ -76,6 +78,8 @@ Chỉ mục: `(tenant_id, created_at)`; `(tenant_id, branch_id, sku_id, seq)`; `
 
 Unique: `(tenant_id, order_number)`; `(tenant_id, channel, external_order_id)` khi `external_order_id` khác null; `(tenant_id, idempotency_key)` khi khác null. Chỉ mục: `(tenant_id, created_at)`; `(tenant_id, status, reserved_until)` cho job hết hạn.
 
+`order_number` do `core` đặt lúc tạo đơn: `DH` kèm 12 ký tự hex đầu của `id`, viết hoa, ví dụ `DH3F2A9C1B7D4E`. Mã này không theo số thứ tự.
+
 ## order_items
 
 | Cột | Kiểu | Ghi chú |
@@ -88,7 +92,7 @@ Unique: `(tenant_id, order_number)`; `(tenant_id, channel, external_order_id)` k
 | `discount` | numeric(18,4) | Giảm giá của dòng, mặc định 0 |
 | `cost_price` | numeric(18,4), cho phép null | Ghi một lần lúc xác nhận; sau đó không đổi |
 
-Chỉ mục: `(tenant_id, order_id)`; `(tenant_id, sku_id)`.
+Khóa ngoại `order_id` tới `orders.id`, không cho xóa đơn còn dòng. Chỉ mục: `(tenant_id, order_id)`; `(tenant_id, sku_id)`; `(order_id)` của khóa ngoại.
 
 ## reservations
 

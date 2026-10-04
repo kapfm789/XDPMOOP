@@ -9,6 +9,9 @@ public interface IReferenceRepository
 
     Task<BranchRef?> FindBranchAsync(Guid branchId, CancellationToken ct);
 
+    // Chỉ để đọc; SKU không có bản sao thì vắng trong kết quả.
+    Task<IReadOnlyList<SkuRef>> ListSkusAsync(IReadOnlyCollection<Guid> skuIds, CancellationToken ct);
+
     void Add(SkuRef sku);
 
     void Add(BranchRef branch);

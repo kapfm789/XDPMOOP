@@ -2,6 +2,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Oism.BuildingBlocks.Messaging;
 using Oism.BuildingBlocks.Persistence;
+using Oism.Core.Application;
+using Oism.Core.Application.Inventory;
+using Oism.Core.Application.Orders;
 using Oism.Core.Application.References;
 using Oism.Core.Infrastructure.Repositories;
 
@@ -13,7 +16,12 @@ public static class DependencyInjection
         services
             .AddOismDbContext<CoreDbContext>(configuration, CoreDbContext.Schema)
             .AddOismMessaging<CoreDbContext>()
-            .AddScoped<IReferenceRepository, ReferenceRepository>();
+            .AddSingleton<IClock, SystemClock>()
+            .AddScoped<IUnitOfWork, UnitOfWork>()
+            .AddScoped<IReferenceRepository, ReferenceRepository>()
+            .AddScoped<IInventoryRepository, InventoryRepository>()
+            .AddScoped<IStockQueries, StockQueries>()
+            .AddScoped<IOrderRepository, OrderRepository>();
 
     public static Task MigrateDatabaseAsync(this IServiceProvider services) =>
         services.MigrateAsync<CoreDbContext>();

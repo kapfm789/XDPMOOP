@@ -41,4 +41,11 @@ public sealed class SkuRef(Guid skuId) : ITenantOwned
         Version = version;
         return true;
     }
+
+    // SKU ngừng bán không vào được đơn mới.
+    public void EnsureActive()
+    {
+        if (!IsActive)
+            throw new InactiveReferenceException("InactiveSku", SkuId);
+    }
 }

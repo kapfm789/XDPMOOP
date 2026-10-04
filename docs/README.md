@@ -57,6 +57,8 @@ Thấy mâu thuẫn thì dừng lại, nêu rõ hai chỗ lệch nhau và sửa 
 - Đây là bản thiết kế v0, viết ngày 2026-10-03. Khi code thật khác tài liệu, người sửa code cập nhật tài liệu trong cùng PR.
 - Đã có code: skeleton backend (W1-02), Compose dev (W1-03), outbox và inbox (W1-13), danh mục và thương hiệu ở `catalog` (W1-06), workspace frontend với đăng ký, đăng nhập và layout (W1-09), workflow CI (W1-11).
 - Đã có của phase 2: đăng ký tenant, đăng nhập, làm mới, đăng xuất và quản lý người dùng ở `identity` (W1-04); chi nhánh và `BranchUpserted` (W1-05); sản phẩm, SKU, mã vạch, giá và `SkuUpserted` ở `catalog` (W1-07); consumer dựng `sku_refs`, `branch_refs` ở `core` (W1-08); màn hình chi nhánh, người dùng, danh mục, thương hiệu trên `admin` (W1-10); ERD đã rà theo migration và test cách ly tenant của `identity`, `catalog` (W1-12).
-- Chưa có: kho, đơn hàng và giữ hàng ở `core`; nghiệp vụ của `channel`, `insights`; màn hình sản phẩm trên `admin`; seed.
+- Đã có của phase 3: sổ kho chỉ thêm mới, số dư, `PostLedger` và API xem tồn, xem sổ ở `core` (W2-01); mô hình đơn, máy trạng thái và API tạo đơn thủ công ở `core` (W2-04); màn hình sản phẩm, SKU, mã vạch, giá trên `admin` (W2-07).
+- Chỗ code đang đi sau thiết kế: `POST /api/core/orders` lưu đơn ở Draft và chưa giữ hàng, tới khi có W2-05; `PostLedger` chưa tính lại giá vốn bình quân (W2-02) và chưa phát `StockChanged` (W2-06).
+- Chưa có: phiếu nhập, giữ hàng, xác nhận đơn, POS, chuyển kho và kiểm kê ở `core`; nghiệp vụ của `channel`, `insights`; seed.
 - Mọi quyết định trong [decisions/](decisions/) đã được giảng viên xác nhận ngày 2026-10-04 (task W1-01), đúng như nhóm đề xuất.
 - Quy tắc cho công cụ AI nằm ở [AGENTS.md](../AGENTS.md) tại gốc repo; rule và skill riêng của Claude Code nằm trong `.claude/`.

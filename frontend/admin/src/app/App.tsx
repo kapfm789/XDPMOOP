@@ -6,6 +6,8 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { BranchesPage } from '../pages/branches/BranchesPage';
 import { BrandsPage } from '../pages/catalog/BrandsPage';
 import { CategoriesPage } from '../pages/catalog/CategoriesPage';
+import { ProductDetailPage } from '../pages/catalog/ProductDetailPage';
+import { ProductsPage } from '../pages/catalog/ProductsPage';
 import { HomePage } from '../pages/home/HomePage';
 import { LoginPage } from '../pages/login/LoginPage';
 import { RegisterPage } from '../pages/register/RegisterPage';
@@ -45,6 +47,8 @@ const router = createBrowserRouter([
       },
       { path: 'catalog/categories', element: <CategoriesPage /> },
       { path: 'catalog/brands', element: <BrandsPage /> },
+      { path: 'catalog/products', element: <ProductsPage /> },
+      { path: 'catalog/products/:id', element: <ProductDetailPage /> },
     ],
   },
 ]);

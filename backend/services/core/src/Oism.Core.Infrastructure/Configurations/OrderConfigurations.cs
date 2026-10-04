@@ -1,0 +1,43 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Oism.Core.Domain.Orders;
+
+namespace Oism.Core.Infrastructure.Configurations;
+
+// Bảng và ràng buộc: docs/design/data-model/core.md mục "orders" và "order_items".
+internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
+{
+    public void Configure(EntityTypeBuilder<Order> builder)
+    {
+        builder.Property(order => order.Channel).HasConversion<string>();
+        builder.Property(order => order.Status).HasConversion<string>();
+        builder.Property(order => order.CancelReason).HasConversion<string>();
+        builder.Property(order => order.TotalAmount).HasPrecision(18, 4);
+        builder.HasMany(order => order.Items).WithOne().HasForeignKey(item => item.OrderId).OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(order => new { order.TenantId, order.OrderNumber }).IsUnique();
+        // Chặn cùng một đơn của sàn tới hai lần, và bấm thanh toán hai lần ở POS.
+        builder.HasIndex(order => new { order.TenantId, order.Channel, order.ExternalOrderId })
+            .IsUnique().HasFilter("external_order_id IS NOT NULL");
+        builder.HasIndex(order => new { order.TenantId, order.IdempotencyKey })
+            .IsUnique().HasFilter("idempotency_key IS NOT NULL");
+        builder.HasIndex(order => new { order.TenantId, order.CreatedAt });
+        // Cho job hết hạn giữ hàng.
+        builder.HasIndex(order => new { order.TenantId, order.Status, order.ReservedUntil });
+    }
+}
+
+internal sealed class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
+{
+    public void Configure(EntityTypeBuilder<OrderItem> builder)
+    {
+        // Dòng đơn được thêm qua đơn chứ không qua DbContext.Add; khóa do Domain đặt sẵn (docs/conventions/backend.md).
+        builder.Property(item => item.Id).ValueGeneratedNever();
+        builder.Property(item => item.UnitPrice).HasPrecision(18, 4);
+        builder.Property(item => item.Discount).HasPrecision(18, 4);
+        builder.Property(item => item.CostPrice).HasPrecision(18, 4);
+
+        builder.HasIndex(item => new { item.TenantId, item.OrderId });
+        builder.HasIndex(item => new { item.TenantId, item.SkuId });
+    }
+}
