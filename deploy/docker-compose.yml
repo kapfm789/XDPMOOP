@@ -37,6 +37,8 @@ x-service: &service
   environment:
     <<: *dotnet-env
     ConnectionStrings__Oism: Host=postgres;Database=oism;Username=${POSTGRES_USER:-oism};Password=${POSTGRES_PASSWORD:-oism}
+    # Không chờ rabbitmq khỏe: service vẫn commit khi broker tắt, outbox gửi bù sau (docs/architecture/messaging.md).
+    ConnectionStrings__RabbitMq: amqp://${RABBITMQ_USER:-oism}:${RABBITMQ_PASSWORD:-oism}@rabbitmq:5672
   depends_on:
     postgres:
       condition: service_healthy
