@@ -101,6 +101,7 @@ Ba điểm của khuôn đã có ở `catalog`, service khác chép theo:
 - DbContext đặt schema mặc định là tên service bằng `HasDefaultSchema` ([ADR-0013](../decisions/0013-one-database-schema-per-service.md)). Không entity hay truy vấn nào trỏ sang schema của service khác.
 - Truy vấn chỉ đọc dùng `AsNoTracking` và chiếu thẳng sang DTO.
 - Không bật lazy loading.
+- Entity con được thêm qua aggregate đang được theo dõi (ví dụ `product.AddSku`, `sku.AddBarcode`) chứ không qua `DbContext.Add` thì khai báo khóa `ValueGeneratedNever`. Thiếu khai báo này, EF Core coi entity có khóa đặt sẵn là đã tồn tại và chạy `UPDATE` thay cho `INSERT`.
 - SQL thô chỉ dùng cho khóa dòng và cho migration (CHECK, trigger); luôn qua tham số, không nối chuỗi.
 - `IgnoreQueryFilters` chỉ được xuất hiện ở các phương thức liệt kê trong [multi-tenancy.md](../architecture/multi-tenancy.md).
 
