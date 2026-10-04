@@ -15,6 +15,14 @@ public interface ITransaction : IAsyncDisposable
     Task CommitAsync(CancellationToken ct);
 }
 
+public interface IEventPublisher
+{
+    // Ghi thông điệp vào outbox trong transaction của use case; không gửi thẳng lên RabbitMQ
+    // (docs/architecture/messaging.md mục "Phía phát").
+    void Enqueue<TPayload>(TPayload payload)
+        where TPayload : notnull;
+}
+
 public interface IClock
 {
     DateTimeOffset UtcNow { get; }

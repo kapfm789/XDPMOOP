@@ -1,10 +1,13 @@
 using FluentValidation;
+using Oism.Identity.Application.Branches;
 using Oism.Identity.Domain;
+using Oism.SharedKernel;
 
 namespace Oism.Identity.Application.Users.CreateUser;
 
 // UC-AUTH-03: Owner tạo tài khoản Staff hoặc Cashier trong tenant của mình.
-public sealed class CreateUserHandler(IUnitOfWork unitOfWork, IUserRepository users, IPasswordHasher passwords, IClock clock)
+public sealed class CreateUserHandler(
+    IUnitOfWork unitOfWork, IUserRepository users, IBranchRepository branches, IPasswordHasher passwords, IClock clock)
 {
     private static readonly CreateUserValidator Validator = new();
 
@@ -15,7 +18,10 @@ public sealed class CreateUserHandler(IUnitOfWork unitOfWork, IUserRepository us
 
         await using var transaction = await unitOfWork.BeginAsync(ct);
 
-        // Kiểm chi nhánh có thật trong tenant được thêm ở W1-05, khi có bảng branches.
+        // Chi nhánh của tenant khác cũng là "không tìm thấy" (docs/architecture/multi-tenancy.md quy tắc 4).
+        if (command.BranchId is { } branchId && !await branches.ExistsAsync(branchId, ct))
+            throw new NotFoundException("chi nhánh");
+
         var user = User.Create(
             command.FullName, command.Email, command.Phone, passwordHash,
             Enum.Parse<UserRole>(command.Role), command.BranchId, clock.UtcNow);

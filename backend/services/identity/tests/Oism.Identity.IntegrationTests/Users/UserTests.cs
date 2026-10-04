@@ -16,7 +16,8 @@ public sealed class UserTests(ApiFactory factory) : IClassFixture<ApiFactory>
     {
         var tenant = await _anonymous.RegisterTenantAsync();
         var owner = await factory.LoginAsOwnerAsync(tenant);
-        var (staffEmail, cashierPhone, branchId) = (ApiExtensions.NewEmail(), ApiExtensions.NewPhone(), Guid.NewGuid());
+        var (staffEmail, cashierPhone) = (ApiExtensions.NewEmail(), ApiExtensions.NewPhone());
+        var branchId = (await owner.CreateBranchAsync("CH-01")).Id;
 
         var staff = await owner.CreateUserAsync("Staff", staffEmail);
         var cashier = await owner.CreateUserAsync("Cashier", cashierPhone, branchId);
@@ -64,7 +65,7 @@ public sealed class UserTests(ApiFactory factory) : IClassFixture<ApiFactory>
     {
         var owner = await factory.LoginAsOwnerAsync(await _anonymous.RegisterTenantAsync());
         var email = ApiExtensions.NewEmail();
-        var user = await owner.CreateUserAsync(role, email, branchId: Guid.NewGuid());
+        var user = await owner.CreateUserAsync(role, email, (await owner.CreateBranchAsync("CH-01")).Id);
         var client = factory.Authorized((await _anonymous.LoginAsync(email)).AccessToken);
 
         var list = await client.GetAsync("/users");
@@ -83,7 +84,7 @@ public sealed class UserTests(ApiFactory factory) : IClassFixture<ApiFactory>
     {
         var owner = await factory.LoginAsOwnerAsync(await _anonymous.RegisterTenantAsync());
         var staff = await owner.CreateUserAsync("Staff", ApiExtensions.NewEmail());
-        var branchId = Guid.NewGuid();
+        var branchId = (await owner.CreateBranchAsync("CH-01")).Id;
 
         var response = await owner.PutAsJsonAsync(
             $"/users/{staff.Id}", new { fullName = " Thu ngân mới ", role = "Cashier", branchId, isActive = false });
@@ -108,6 +109,29 @@ public sealed class UserTests(ApiFactory factory) : IClassFixture<ApiFactory>
         await unknown.AssertProblemAsync(HttpStatusCode.NotFound, "not_found");
         await ownerAccount.AssertProblemAsync(HttpStatusCode.BadRequest, "validation_failed");
         Assert.Equal("Owner", Assert.Single((await owner.ListUsersAsync()).Items).Role);
+    }
+
+    // Cashier bắt buộc gắn với một chi nhánh có thật trong tenant (UC-AUTH-03 AC-1).
+    [Fact]
+    [Trait("UseCase", "UC-AUTH-03 AC-1")]
+    public async Task CreateOrUpdateUser_BranchNotInTenant_Returns404AndChangesNothing()
+    {
+        var owner = await factory.LoginAsOwnerAsync(await _anonymous.RegisterTenantAsync());
+        var staff = await owner.CreateUserAsync("Staff", ApiExtensions.NewEmail());
+        var unknownBranch = Guid.NewGuid();
+
+        var create = await owner.PostAsJsonAsync("/users", new
+        {
+            fullName = "Thu ngân", email = ApiExtensions.NewEmail(), password = ApiExtensions.Password, role = "Cashier", branchId = unknownBranch,
+        });
+        var update = await owner.PutAsJsonAsync(
+            $"/users/{staff.Id}", new { fullName = "Thu ngân", role = "Cashier", branchId = unknownBranch, isActive = true });
+
+        await create.AssertProblemAsync(HttpStatusCode.NotFound, "not_found");
+        await update.AssertProblemAsync(HttpStatusCode.NotFound, "not_found");
+        var users = await owner.ListUsersAsync();
+        Assert.Equal(2, users.Total);
+        Assert.Contains(staff, users.Items);
     }
 
     [Fact]

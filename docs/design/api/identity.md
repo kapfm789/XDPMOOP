@@ -24,14 +24,14 @@ Tiền tố `/api/identity`. Use case ở [auth.md](../../usecase-userstory/auth
 | Phương thức | Đường dẫn | Vai trò | Vào | Ra | Lỗi riêng |
 | --- | --- | --- | --- | --- | --- |
 | GET | `/api/identity/users` | Owner | `page`, `pageSize` | Danh sách người dùng | |
-| POST | `/api/identity/users` | Owner | `fullName`, `email?`, `phone?`, `password`, `role`, `branchId?` | 201: người dùng | 409 `duplicate`; 400 khi Cashier thiếu `branchId` |
-| PUT | `/api/identity/users/{id}` | Owner | `fullName`, `role`, `branchId?`, `isActive` | 200: người dùng | 400 khi Cashier thiếu `branchId`; 400 khi `id` là tài khoản Owner |
+| POST | `/api/identity/users` | Owner | `fullName`, `email?`, `phone?`, `password`, `role`, `branchId?` | 201: người dùng | 409 `duplicate`; 400 khi Cashier thiếu `branchId`; 404 khi `branchId` không có trong tenant |
+| PUT | `/api/identity/users/{id}` | Owner | `fullName`, `role`, `branchId?`, `isActive` | 200: người dùng | 400 khi Cashier thiếu `branchId`; 400 khi `id` là tài khoản Owner; 404 khi `branchId` không có trong tenant |
 
 `role` nhận `Staff` hoặc `Cashier`. Owner chỉ sinh ra khi đăng ký tenant, và tài khoản Owner không sửa được qua `PUT /users/{id}`.
 
 - Người dùng trả về gồm `id`, `fullName`, `email?`, `phone?`, `role`, `branchId?`, `isActive`, `createdAt`; không bao giờ có mật khẩu hay giá trị băm.
 - Danh sách xếp mới nhất trước và trả theo khuôn phân trang chung; `page` nhỏ hơn 1 hoặc `pageSize` ngoài khoảng 1 đến 100 trả 400.
-- Việc kiểm `branchId` có thật trong tenant được thêm ở task W1-05, khi có bảng `branches`.
+- `branchId` phải là chi nhánh của chính tenant; chi nhánh không tồn tại hoặc của tenant khác đều trả 404 `not_found`.
 
 ## Chi nhánh
 
@@ -43,3 +43,8 @@ Tiền tố `/api/identity`. Use case ở [auth.md](../../usecase-userstory/auth
 | PATCH | `/api/identity/branches/{id}/active` | Owner | `isActive` | 200: chi nhánh | |
 
 Mọi thay đổi chi nhánh phát `BranchUpserted` ([events.md](../events.md)).
+
+- Chi nhánh trả về gồm `id`, `code`, `name`, `type`, `address?`, `isActive`. Danh sách xếp theo `code` và không phân trang; `isActive` bỏ trống thì trả cả chi nhánh đang bật lẫn đã tắt.
+- `type` nhận `Store` hoặc `Warehouse`. `code` và `name` bị cắt khoảng trắng hai đầu và không được rỗng; `code` tối đa 50 ký tự, `name` tối đa 200, `address` tối đa 500. Sai thì 400 `validation_failed`.
+- Mã chi nhánh đặt lúc tạo và không sửa được; chi nhánh mới luôn ở trạng thái đang hoạt động.
+- `id` không có trong tenant trả 404 `not_found`.

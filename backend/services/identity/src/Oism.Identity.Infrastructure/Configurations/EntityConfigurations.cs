@@ -36,3 +36,12 @@ internal sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<Refre
         builder.HasIndex(token => new { token.TenantId, token.UserId });
     }
 }
+
+internal sealed class BranchConfiguration : IEntityTypeConfiguration<Branch>
+{
+    public void Configure(EntityTypeBuilder<Branch> builder)
+    {
+        builder.Property(branch => branch.Type).HasConversion<string>();
+        builder.HasIndex(branch => new { branch.TenantId, branch.Code }).IsUnique();
+    }
+}
