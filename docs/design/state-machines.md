@@ -56,7 +56,7 @@ stateDiagram-v2
 | --- | --- | --- |
 | Draft | Confirmed | `on_hand` tăng; tính lại `avg_cost`; ghi ledger IN lý do Purchase; phát `StockChanged` |
 
-Phiếu Draft sửa và xóa được. Phiếu Confirmed không sửa được; nhập sai thì điều chỉnh bằng kiểm kê.
+Phiếu Draft sửa được, kể cả đổi và xóa dòng; không có thao tác xóa cả phiếu. Phiếu Confirmed không sửa được; nhập sai thì điều chỉnh bằng kiểm kê.
 
 ## Phiếu chuyển kho
 

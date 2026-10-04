@@ -8,29 +8,32 @@ sequenceDiagram
   actor Staff
   participant Api as core Api
   participant UC as ConfirmPurchaseReceiptHandler
+  participant PL as PostLedgerHandler
   participant DB as schema core
 
   Staff->>Api: POST purchase-receipts/:id/confirm
   Api->>UC: ConfirmPurchaseReceiptCommand
   UC->>DB: BEGIN
-  UC->>DB: SELECT phiếu FOR UPDATE
+  UC->>DB: SELECT phiếu FOR UPDATE, nạp các dòng phiếu
   alt phiếu đã Confirmed
     UC->>DB: COMMIT, không đổi gì
     UC-->>Api: phiếu hiện có
   else phiếu đang Draft
-    UC->>DB: tạo dòng số dư còn thiếu
-    UC->>DB: SELECT số dư ORDER BY sku_id FOR UPDATE
+    UC->>UC: phiếu sang Confirmed
+    UC->>PL: PostLedgerCommand, mỗi dòng phiếu một bút toán IN lý do Purchase
+    PL->>DB: tạo dòng số dư còn thiếu
+    PL->>DB: SELECT số dư ORDER BY sku_id FOR UPDATE
     loop từng dòng phiếu
-      UC->>UC: tính avg_cost mới
-      UC->>DB: PostLedger IN, lý do Purchase
+      PL->>PL: tính avg_cost mới, tăng on_hand, dựng dòng sổ
     end
-    UC->>DB: phiếu sang Confirmed
-    UC->>DB: ghi outbox StockChanged cho từng SKU
-    UC->>DB: COMMIT
+    PL->>PL: xếp StockChanged của từng SKU vào outbox
+    UC->>DB: lưu phiếu, số dư, sổ và outbox, rồi COMMIT
     UC-->>Api: phiếu Confirmed
   end
   Api-->>Staff: 200
 ```
+
+`PostLedgerHandler` là cửa duy nhất đổi `on_hand`: nó tự khóa số dư, tính giá vốn trong `InventoryBalance.Post` và xếp `StockChanged` vào outbox. Mọi thay đổi được ghi xuống database trong một lần lưu ngay trước `COMMIT`; lỗi ở bất kỳ đâu trước đó thì không gì được ghi.
 
 ## Công thức
 
@@ -56,6 +59,8 @@ sequenceDiagram
 - Cùng một SKU xuất hiện ở hai dòng phiếu: xử lý lần lượt, dòng sau dùng kết quả của dòng trước.
 - SKU không có trong `sku_refs` hoặc chi nhánh đã tắt: từ chối ngay khi tạo phiếu Draft, không đợi tới lúc xác nhận.
 - Lỗi ở bất kỳ dòng nào: rollback toàn bộ; phiếu vẫn ở Draft.
+- Hai lời gọi xác nhận tới cùng lúc: lời gọi sau chờ ở khóa dòng phiếu, rồi thấy phiếu đã Confirmed và trả phiếu hiện có.
+- Dòng sổ ghi `created_by` là người xác nhận phiếu.
 
 ## Kiểm thử
 

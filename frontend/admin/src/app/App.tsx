@@ -9,6 +9,9 @@ import { CategoriesPage } from '../pages/catalog/CategoriesPage';
 import { ProductDetailPage } from '../pages/catalog/ProductDetailPage';
 import { ProductsPage } from '../pages/catalog/ProductsPage';
 import { HomePage } from '../pages/home/HomePage';
+import { LedgerPage } from '../pages/inventory/LedgerPage';
+import { ReceiptsPage } from '../pages/inventory/ReceiptsPage';
+import { StockPage } from '../pages/inventory/StockPage';
 import { LoginPage } from '../pages/login/LoginPage';
 import { RegisterPage } from '../pages/register/RegisterPage';
 import { UsersPage } from '../pages/users/UsersPage';
@@ -49,6 +52,9 @@ const router = createBrowserRouter([
       { path: 'catalog/brands', element: <BrandsPage /> },
       { path: 'catalog/products', element: <ProductsPage /> },
       { path: 'catalog/products/:id', element: <ProductDetailPage /> },
+      { path: 'inventory/stock', element: <StockPage /> },
+      { path: 'inventory/receipts', element: <ReceiptsPage /> },
+      { path: 'inventory/ledger', element: <LedgerPage /> },
     ],
   },
 ]);

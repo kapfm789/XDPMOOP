@@ -14,4 +14,7 @@ export const MENU: readonly MenuEntry[] = [
   { path: '/catalog/categories', label: 'Danh mục', roles: ADMIN_ROLES },
   { path: '/catalog/brands', label: 'Thương hiệu', roles: ADMIN_ROLES },
   { path: '/catalog/products', label: 'Sản phẩm', roles: ADMIN_ROLES },
+  { path: '/inventory/stock', label: 'Tồn kho', roles: ADMIN_ROLES },
+  { path: '/inventory/receipts', label: 'Phiếu nhập', roles: ADMIN_ROLES },
+  { path: '/inventory/ledger', label: 'Sổ giao dịch', roles: ADMIN_ROLES },
 ];

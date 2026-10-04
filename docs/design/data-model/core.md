@@ -107,14 +107,16 @@ Khóa ngoại `order_id` tới `orders.id`, không cho xóa đơn còn dòng. Ch
 
 Chỉ mục: `(tenant_id, order_id)`; `(status, expires_at)` cho job hết hạn quét mọi tenant.
 
+Khóa ngoại `order_id` tới `orders.id` và `order_item_id` tới `order_items.id`, không cho xóa đơn hay dòng đơn còn phần giữ; mỗi khóa ngoại có chỉ mục riêng. Mỗi dòng đơn có đúng một phần giữ.
+
 ## Chứng từ kho và bảng phụ
 
 | Bảng | Cột chính | Ràng buộc |
 | --- | --- | --- |
 | `payments` | `id`, `tenant_id`, `order_id`, `method` (`Cash`, `QR`), `amount`, `confirmed_by`, `confirmed_at` | Unique `(tenant_id, order_id)` |
 | `suppliers` | `id`, `tenant_id`, `name`, `phone`, `is_active` | |
-| `purchase_receipts` | `id`, `tenant_id`, `branch_id`, `supplier_id`, `receipt_number`, `status` (`Draft`, `Confirmed`), `note`, `confirmed_at`, `confirmed_by`, `created_at` | Unique `(tenant_id, receipt_number)` |
-| `purchase_receipt_items` | `id`, `tenant_id`, `receipt_id`, `sku_id`, `quantity`, `unit_cost` | `quantity > 0`, `unit_cost >= 0` |
+| `purchase_receipts` | `id`, `tenant_id`, `branch_id`, `supplier_id`, `receipt_number`, `status` (`Draft`, `Confirmed`), `note`, `confirmed_at`, `confirmed_by`, `created_at` | Unique `(tenant_id, receipt_number)`; khóa ngoại `supplier_id` tới `suppliers.id` |
+| `purchase_receipt_items` | `id`, `tenant_id`, `receipt_id`, `sku_id`, `quantity`, `unit_cost` | CHECK `quantity > 0`, `unit_cost >= 0`; khóa ngoại `receipt_id` tới `purchase_receipts.id`, dòng bị xóa theo phiếu |
 | `stock_transfers` | `id`, `tenant_id`, `from_branch_id`, `to_branch_id`, `transfer_number`, `status` (`Draft`, `InTransit`, `Received`), `shipped_at`, `received_at`, `created_by` | `from_branch_id <> to_branch_id` |
 | `stock_transfer_items` | `id`, `tenant_id`, `transfer_id`, `sku_id`, `quantity`, `unit_cost` | `unit_cost` ghi lúc xuất |
 | `stocktakes` | `id`, `tenant_id`, `branch_id`, `status` (`Open`, `Posted`), `created_by`, `posted_at` | |
@@ -123,6 +125,8 @@ Chỉ mục: `(tenant_id, order_id)`; `(status, expires_at)` cho job hết hạn
 | `branch_refs` | `tenant_id`, `branch_id`, `code`, `name`, `type`, `is_active`, `version` | Khóa chính `(tenant_id, branch_id)` |
 | `outbox_messages` | `id`, `tenant_id`, `type`, `payload` (jsonb), `occurred_at`, `processed_at`, `attempts` | Chỉ mục trên `occurred_at` cho các dòng có `processed_at` null |
 | `inbox_messages` | `event_id`, `type`, `processed_at` | Khóa chính `event_id` |
+
+`receipt_number` do `core` đặt lúc tạo phiếu, cùng cách với `order_number`: `PN` kèm 12 ký tự hex đầu của `id`, viết hoa, ví dụ `PN3F2A9C1B7D4E`. Sửa phiếu Draft là thay cả bộ dòng của phiếu. Hai khóa ngoại `supplier_id` và `receipt_id` có chỉ mục riêng.
 
 `sku_refs` và `branch_refs` là bản sao dựng từ event. Chỉ consumer được ghi vào hai bảng này, và chỉ ghi đè khi `version` của event lớn hơn `version` đang lưu.
 

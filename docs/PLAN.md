@@ -370,7 +370,7 @@ Mỗi phase dài nửa tuần (khoảng 2,5 ngày làm việc) và kết thúc b
 | 1 | W1-02, W1-03, W1-13 | W1-06 | | | W1-09 | W1-03, W1-11 | W1-01 |
 | 2 | | W1-04, W1-05, W1-07, W1-12 | W1-08 | | W1-10 | | W1-12 |
 | 3 | | | W2-01, W2-04 | | W2-07 | | |
-| 4 | | | W2-02, W2-03, W2-05, W2-06 | | W2-08 | | W2-09 |
+| 4 | | | W2-02, W2-03, W2-05, W2-06, W2-08 | | W2-08 | | W2-09 |
 | 5 | | | W3-01, W3-02, W3-05 | | W3-07 | | |
 | 6 | | | W3-04, W3-06 | W3-03 | W3-08 | | W3-09 |
 | 7 | | | | W4-01, W4-02, W4-04 | W4-08 | | |
@@ -422,10 +422,10 @@ Cổng phase 3: UPDATE/DELETE ledger bị database từ chối; bước chuyển
 | Mã | Việc | Owner | Yêu cầu | Xong khi |
 | --- | --- | --- | --- | --- |
 | W2-02 | core/Inventory: phiếu nhập nháp rồi xác nhận, tăng OnHand, tính lại WAC | A | FR-INV-02, FR-COST-01 | 10 × 100.000 rồi 5 × 130.000 ra 110.000; xác nhận lại không đổi tồn |
-| W2-03 | core: chỉ mục (TenantId, CreatedAt) và (TenantId, BranchId, SkuId) cho ledger và đơn | A | NFR-TENANT-02 | Migration có chỉ mục; EXPLAIN dùng index |
+| W2-03 | core: chỉ mục (TenantId, CreatedAt) cho ledger và đơn, (TenantId, BranchId, SkuId, Seq) cho ledger, (TenantId, SkuId) cho dòng đơn | A | NFR-TENANT-02 | Migration có chỉ mục; EXPLAIN dùng index |
 | W2-05 | core/Orders: engine giữ hàng, khóa FOR UPDATE theo thứ tự SkuId, giữ toàn bộ hoặc từ chối | B | FR-RSE-01, FR-RSE-02, NFR-PERF-02 | 50 request đồng thời cho 1 sản phẩm: đúng 1 thành công |
 | W2-06 | core: phát `OrderReserved`, `OrderRejected`, `StockChanged` qua outbox | B | NFR-SEC-02 | Event chỉ phát khi transaction commit; RabbitMQ tắt vẫn commit được |
-| W2-08 | admin: phiếu nhập, tồn theo chi nhánh, xem ledger | C | FR-INV-01, FR-INV-02 | Nhập hàng từ giao diện, thấy dòng ledger và giá vốn mới |
+| W2-08 | admin: phiếu nhập, tồn theo chi nhánh và ngưỡng tồn, xem ledger; core: API đặt ngưỡng tồn | C | FR-INV-01, FR-INV-02, FR-REP-03 | Nhập hàng từ giao diện, thấy dòng ledger và giá vốn mới; đặt được ngưỡng tồn |
 | W2-09 | Rà sequence diagram nhập hàng, giữ hàng theo code thật | A, B | Mục e.3 của đề | Sơ đồ ở `docs/design/flows/` khớp code đã merge |
 
 Cổng phase 4: test WAC ra 110.000; test 50 request chỉ 1 thành công và tồn không âm; RabbitMQ tắt vẫn commit được.
@@ -636,7 +636,7 @@ Ba mã AI do nhóm đặt, giảng viên đã xác nhận cùng D-14 ngày 2026-
 | FR-POS-04 | core | W3-02 | T02, T03 |
 | FR-REP-01 | insights, admin | W4-01, W4-02, W4-07 | T10 |
 | FR-REP-02 | insights, admin | W4-01, W4-03, W4-07 | DoD W4-03 |
-| FR-REP-03 | insights, admin | W4-03, W4-07 | DoD W4-03 |
+| FR-REP-03 | core, insights, admin | W2-08, W4-03, W4-07 | DoD W4-03 |
 | FR-SIM-01 | channel | W3-03 | T03 |
 | FR-SIM-02 | insights, frontend | W4-04, W4-08 | T15 |
 | FR-SIM-03 | core, insights | W3-04, W4-02 | T06, T07 |

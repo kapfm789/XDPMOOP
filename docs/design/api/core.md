@@ -16,7 +16,7 @@ Tiền tố `/api/core`. Use case ở [inventory.md](../../usecase-userstory/inv
 | Phương thức | Đường dẫn | Vai trò | Vào | Ra | Lỗi riêng |
 | --- | --- | --- | --- | --- | --- |
 | GET | `/api/core/stock` | Owner, Staff | `branchId?`, `skuId?`, `query?`, `page`, `pageSize` | Dòng số dư: `branchId`, `skuId`, `skuCode`, `name`, `onHand`, `reserved`, `available`, `avgCost`, `threshold?` | |
-| PUT | `/api/core/stock/threshold` | Owner, Staff | `branchId`, `skuId`, `threshold?` | 200: dòng số dư | 400 khi âm |
+| PUT | `/api/core/stock/threshold` | Owner, Staff | `branchId`, `skuId`, `threshold?` | 200: dòng số dư | 400 khi âm; 409 `reference_not_ready` |
 | GET | `/api/core/ledger` | Owner, Staff | `branchId?`, `skuId?`, `from?`, `to?`, `page`, `pageSize` | Dòng sổ theo thứ tự ghi | |
 
 Staff không thấy `avgCost` trong phản hồi của `/stock` và `unitCost` trong `/ledger`; hai trường này chỉ trả cho Owner.
@@ -24,6 +24,7 @@ Staff không thấy `avgCost` trong phản hồi của `/stock` và `unitCost` t
 - `/stock` trả theo khuôn phân trang chung, xếp theo `skuCode` rồi `branchId`. `query` khớp một phần mã hoặc tên SKU, không phân biệt hoa thường. `available` bằng `onHand - reserved`.
 - `/ledger` trả theo khuôn phân trang chung, xếp theo `seq` tăng dần. Mỗi dòng gồm `seq`, `id`, `branchId`, `skuId`, `skuCode`, `name`, `type` (`IN`, `OUT`), `reason`, `quantity`, `balanceAfter`, `unitCost` (chỉ Owner), `referenceType`, `referenceId`, `reversalOfId?`, `createdBy?`, `createdAt`. `from` và `to` lọc theo `createdAt`, tính cả hai đầu.
 - `page` nhỏ hơn 1 hoặc `pageSize` ngoài khoảng 1 đến 100 trả 400 `validation_failed`.
+- `/stock/threshold` trả dòng số dư theo đúng khuôn một dòng của `/stock`. `threshold` bỏ trống hoặc `null` là bỏ ngưỡng, SKU đó không còn sinh cảnh báo; số âm trả 400 `validation_failed`. `branchId` hoặc `skuId` chưa có bản sao ở `core` trả 409 `reference_not_ready`. SKU chưa có dòng số dư tại chi nhánh thì dòng được tạo với tồn 0. Mỗi lần đặt làm `version` của dòng số dư tăng 1 và phát `StockChanged` mang ngưỡng mới.
 - Sổ chỉ có đường đọc: không endpoint nào sửa hay xóa dòng sổ (NFR-SEC-03).
 
 ## Nhập hàng
@@ -32,11 +33,17 @@ Staff không thấy `avgCost` trong phản hồi của `/stock` và `unitCost` t
 | --- | --- | --- | --- | --- | --- |
 | GET, POST | `/api/core/suppliers` | Owner, Staff | `name`, `phone?` | Nhà cung cấp | |
 | GET | `/api/core/purchase-receipts` | Owner, Staff | `branchId?`, `status?`, `page`, `pageSize` | Danh sách phiếu | |
-| POST | `/api/core/purchase-receipts` | Owner, Staff | `branchId`, `supplierId`, `note?`, `items[]` | 201: phiếu Draft | 409 `reference_not_ready` |
-| PUT | `/api/core/purchase-receipts/{id}` | Owner, Staff | `supplierId`, `note?`, `items[]` | 200: phiếu | 409 khi không còn Draft |
+| POST | `/api/core/purchase-receipts` | Owner, Staff | `branchId`, `supplierId`, `note?`, `items[]` | 201: phiếu Draft | 409 `reference_not_ready`, `inactive_reference` |
+| PUT | `/api/core/purchase-receipts/{id}` | Owner, Staff | `supplierId`, `note?`, `items[]` | 200: phiếu | 409 `invalid_state_transition` khi không còn Draft |
 | POST | `/api/core/purchase-receipts/{id}/confirm` | Owner, Staff | | 200: phiếu Confirmed | |
 
 `items[]`: `skuId`, `quantity`, `unitCost`. Xác nhận lại phiếu đã Confirmed trả 200 với cùng phiếu, không tác động lần hai.
+
+- Nhà cung cấp trả về gồm `id`, `name`, `phone?`, `isActive`; danh sách xếp theo `name`. `name` bị cắt khoảng trắng hai đầu, không được rỗng, tối đa 200 ký tự; `phone` tối đa 20 ký tự; sai thì 400 `validation_failed`.
+- Phiếu trả về gồm `id`, `receiptNumber`, `branchId`, `supplierId`, `status` (`Draft`, `Confirmed`), `note?`, `confirmedAt?`, `confirmedBy?`, `createdAt` và `items[]` xếp theo `skuCode`; mỗi dòng gồm `id`, `skuId`, `skuCode`, `skuName`, `quantity`, `unitCost`. Đơn giá nhập trên phiếu trả cho cả Owner lẫn Staff, vì Staff là người nhập nó.
+- Danh sách phiếu trả theo khuôn phân trang chung, phiếu mới nhất trước, mỗi phiếu kèm các dòng của nó. `status` nhận `Draft` hoặc `Confirmed`; giá trị khác, `page` nhỏ hơn 1 hoặc `pageSize` ngoài khoảng 1 đến 100 trả 400 `validation_failed`.
+- Tạo và sửa phiếu: `items[]` rỗng, `quantity` không dương, `unitCost` âm đều trả 400 `validation_failed`. `supplierId` hoặc `id` phiếu không có trong tenant trả 404 `not_found`. `branchId` hoặc `skuId` chưa có bản sao ở `core` trả 409 `reference_not_ready`; chi nhánh đã tắt trả 409 `inactive_reference`.
+- Sửa phiếu thay toàn bộ nhà cung cấp, ghi chú và các dòng; chi nhánh của phiếu không đổi. Tồn chỉ bị tác động khi xác nhận.
 
 ## Chuyển kho và kiểm kê
 
