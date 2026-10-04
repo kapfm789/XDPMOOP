@@ -20,6 +20,8 @@ internal sealed class CategoryRepository(CatalogDbContext db, ITenantContext ten
             .FromSql($"SELECT * FROM catalog.categories WHERE tenant_id = {tenant.TenantId} ORDER BY id FOR UPDATE")
             .ToListAsync(ct);
 
+    public Task<bool> ExistsAsync(Guid id, CancellationToken ct) => db.Categories.AnyAsync(category => category.Id == id, ct);
+
     public void Add(Category category) => db.Add(category);
 
     public void Remove(Category category) => db.Remove(category);

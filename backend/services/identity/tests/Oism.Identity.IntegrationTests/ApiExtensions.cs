@@ -2,10 +2,17 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Oism.BuildingBlocks.Messaging;
+using Oism.BuildingBlocks.Tenancy;
+using Oism.Contracts;
 using Oism.Identity.Application;
 using Oism.Identity.Application.Auth;
+using Oism.Identity.Application.Branches;
 using Oism.Identity.Application.Tenants.RegisterTenant;
 using Oism.Identity.Application.Users;
+using Oism.Identity.Infrastructure;
 
 namespace Oism.Identity.IntegrationTests;
 
@@ -71,6 +78,32 @@ internal static class ApiExtensions
 
     public static async Task<PagedResult<UserDto>> ListUsersAsync(this HttpClient owner, string query = "") =>
         (await owner.GetFromJsonAsync<PagedResult<UserDto>>($"/users{query}"))!;
+
+    public static async Task<BranchDto> CreateBranchAsync(
+        this HttpClient owner, string code, string type = "Store", string name = "Chi nhánh thử", string? address = null)
+    {
+        var response = await owner.PostAsJsonAsync("/branches", new { code, name, type, address });
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        return (await response.Content.ReadFromJsonAsync<BranchDto>())!;
+    }
+
+    public static async Task<IReadOnlyList<BranchDto>> ListBranchesAsync(this HttpClient client, string query = "") =>
+        (await client.GetFromJsonAsync<IReadOnlyList<BranchDto>>($"/branches{query}"))!;
+
+    // Các BranchUpserted tenant đã ghi vào outbox, theo thứ tự version.
+    public static async Task<IReadOnlyList<BranchUpserted>> BranchEventsAsync(this ApiFactory factory, Guid tenantId)
+    {
+        await using var scope = factory.Services.CreateAsyncScope();
+        scope.ServiceProvider.GetRequiredService<ITenantContext>().Set(tenantId);
+        var payloads = await scope.ServiceProvider.GetRequiredService<IdentityDbContext>().Set<OutboxMessage>()
+            .Where(message => message.Type == nameof(BranchUpserted))
+            .Select(message => message.Payload)
+            .ToListAsync();
+        return payloads
+            .Select(payload => JsonSerializer.Deserialize<BranchUpserted>(payload, EventEnvelope.JsonOptions)!)
+            .OrderBy(message => message.BranchId).ThenBy(message => message.Version)
+            .ToList();
+    }
 
     // Kiểm mã HTTP và trường `code` của ProblemDetails (docs/design/api/README.md).
     public static async Task<JsonElement> AssertProblemAsync(this HttpResponseMessage response, HttpStatusCode status, string code)

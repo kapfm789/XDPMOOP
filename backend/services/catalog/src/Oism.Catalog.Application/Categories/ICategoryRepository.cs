@@ -11,6 +11,8 @@ public interface ICategoryRepository
     // nên hai lần sửa đồng thời phải lần lượt.
     Task<List<Category>> ListForUpdateAsync(CancellationToken ct);
 
+    Task<bool> ExistsAsync(Guid id, CancellationToken ct);
+
     void Add(Category category);
 
     void Remove(Category category);

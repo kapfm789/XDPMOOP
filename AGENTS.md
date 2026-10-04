@@ -4,7 +4,7 @@ OISM là hệ thống quản lý bán hàng và tồn kho đa kênh, multi-tenan
 
 ## Trạng thái repo
 
-Đã có code của phase 1: skeleton backend (`backend/shared`, gateway, 5 service bốn lớp), outbox và inbox trong `Oism.BuildingBlocks/Messaging`, danh mục và thương hiệu ở `catalog` (service đầu tiên có nghiệp vụ, dùng làm khuôn), đăng ký, đăng nhập và người dùng ở `identity` (W1-04), workspace `frontend/` với đăng ký, đăng nhập và layout, Compose dev ở `deploy/`, CI ở `.github/`. `core`, `channel`, `insights` chưa có nghiệp vụ; seed chưa có. Khi tạo file code, đặt đúng đường dẫn và tên ở `docs/architecture/source-tree.md`; không tự nghĩ ra cấu trúc khác. Service mới hoặc phần mới của service chép khuôn từ code đã có.
+Đã có code của phase 1: skeleton backend (`backend/shared`, gateway, 5 service bốn lớp), outbox và inbox trong `Oism.BuildingBlocks/Messaging`, danh mục và thương hiệu ở `catalog` (service đầu tiên có nghiệp vụ, dùng làm khuôn), đăng ký, đăng nhập và người dùng ở `identity` (W1-04), workspace `frontend/` với đăng ký, đăng nhập và layout, Compose dev ở `deploy/`, CI ở `.github/`. Đã có code của phase 2: chi nhánh ở `identity` (W1-05), sản phẩm, SKU, mã vạch và giá ở `catalog` (W1-07), consumer dựng `sku_refs` và `branch_refs` ở `core` (W1-08), màn hình chi nhánh, người dùng, danh mục, thương hiệu trên `admin` (W1-10). `core` chưa có kho và đơn hàng; `channel`, `insights` chưa có nghiệp vụ; seed chưa có. Khi tạo file code, đặt đúng đường dẫn và tên ở `docs/architecture/source-tree.md`; không tự nghĩ ra cấu trúc khác. Service mới hoặc phần mới của service chép khuôn từ code đã có.
 
 ## Nguyên tắc: tài liệu trước, code sau
 

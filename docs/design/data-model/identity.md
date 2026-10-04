@@ -34,7 +34,7 @@ erDiagram
 | `is_active` | boolean | |
 | `created_at` | timestamptz | |
 
-Ràng buộc: ít nhất một trong `email`, `phone` khác null (CHECK `ck_users_email_or_phone`); khóa ngoại `tenant_id` tới `tenants.id`. Email lưu chữ thường nên chỉ mục unique thường là đủ để so khớp không phân biệt hoa thường. Chỉ mục `(tenant_id, created_at)` cho danh sách người dùng. Email và số điện thoại unique toàn cục vì lúc đăng nhập chưa biết tenant ([ADR-0011](../../decisions/0011-auth-and-roles.md)).
+Ràng buộc: ít nhất một trong `email`, `phone` khác null (CHECK `ck_users_email_or_phone`); khóa ngoại `tenant_id` tới `tenants.id`. `branch_id` không có khóa ngoại: handler tra chi nhánh trong tenant hiện tại trước khi gán, nên chi nhánh của tenant khác bị từ chối như chi nhánh không tồn tại. Email lưu chữ thường nên chỉ mục unique thường là đủ để so khớp không phân biệt hoa thường. Chỉ mục `(tenant_id, created_at)` cho danh sách người dùng. Email và số điện thoại unique toàn cục vì lúc đăng nhập chưa biết tenant ([ADR-0011](../../decisions/0011-auth-and-roles.md)).
 
 ## refresh_tokens
 
@@ -61,8 +61,10 @@ Khóa ngoại `user_id` tới `users.id`; chỉ mục `(tenant_id, user_id)` đ�
 | `type` | text | `Store`, `Warehouse` |
 | `address` | text, cho phép null | |
 | `is_active` | boolean | |
-| `version` | bigint | Tăng 1 mỗi lần sửa; đi kèm `BranchUpserted` |
+| `version` | bigint | Bắt đầu từ 1, tăng 1 mỗi lần sửa, bật hoặc tắt; đi kèm `BranchUpserted` |
+
+Mã chi nhánh đặt một lần lúc tạo và không đổi. Mọi lần sửa khóa dòng chi nhánh bằng `FOR UPDATE` để `version` tăng đúng từng bước.
 
 ## Bảng hạ tầng
 
-`outbox_messages` có cùng cấu trúc như ở [core](core.md). `identity` không nhận event nên không có `inbox_messages`.
+`outbox_messages` có cùng cấu trúc như ở [core](core.md), tạo cùng migration với `branches`. `identity` không nhận event nên không có `inbox_messages`.

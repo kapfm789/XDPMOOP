@@ -34,7 +34,7 @@ Mọi thông điệp nằm trong phong bì chung có `eventId`, `type`, `tenantI
 | `name` | string | Tên hiển thị gồm thuộc tính |
 | `barcodes` | string[] | Mọi mã vạch đang gán |
 | `retailPrice`, `wholesalePrice` | decimal | |
-| `isActive` | boolean | |
+| `isActive` | boolean | False khi SKU hoặc sản phẩm của nó ngừng bán |
 | `version` | long | Bên nhận bỏ qua nếu nhỏ hơn hoặc bằng bản đang giữ |
 
 ## SubmitOrder
