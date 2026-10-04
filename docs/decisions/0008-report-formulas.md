@@ -1,6 +1,6 @@
 # ADR-0008: Công thức và mốc thời gian của báo cáo
 
-- Trạng thái: Đề xuất, chờ giảng viên xác nhận
+- Trạng thái: Đã xác nhận 2026-10-04
 - Gộp từ: D-12
 - Ngày: 2026-10-03
 

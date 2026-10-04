@@ -1,0 +1,19 @@
+{
+  "name": "@oism/pos",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@oism/shared": "*",
+    "@tanstack/react-query": "^5.104.1",
+    "antd": "^6.6.5",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-router-dom": "^7.18.4"
+  }
+}

@@ -1,6 +1,6 @@
 # ADR-0010: Dự báo nhập hàng bằng phương pháp thống kê, chạy trong insights
 
-- Trạng thái: Đề xuất, chờ giảng viên xác nhận
+- Trạng thái: Đã xác nhận 2026-10-04
 - Gộp từ: D-14
 - Ngày: 2026-10-03
 

@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using Oism.BuildingBlocks.Messaging;
 using Oism.BuildingBlocks.Tenancy;
 using Oism.SharedKernel;
 
@@ -17,6 +18,10 @@ public abstract class OismDbContext(DbContextOptions options, ITenantContext ten
     {
         modelBuilder.HasDefaultSchema(schema);
         modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
+        if (this is IHasOutbox)
+            modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
+        if (this is IHasInbox)
+            modelBuilder.ApplyConfiguration(new InboxMessageConfiguration());
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes().Select(t => t.ClrType).Where(IsTenantOwned).ToList())
             modelBuilder.Entity(entityType).HasQueryFilter(TenantFilter(entityType));

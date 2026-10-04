@@ -33,6 +33,23 @@ flowchart LR
 2. Consumer mở transaction, chèn `eventId` vào `inbox_messages`. Nếu đã có thì bỏ qua và xác nhận thông điệp; nếu chưa thì xử lý, commit, rồi xác nhận.
 3. Xử lý lỗi thì thử lại 3 lần có giãn cách. Vẫn lỗi thì chuyển thông điệp sang queue `<queue>.error` và ghi log; không chặn các thông điệp sau.
 
+## Dùng trong một service
+
+Cơ chế nằm ở `Oism.BuildingBlocks/Messaging`; service chỉ khai báo mình phát hay nhận.
+
+| Việc | Làm ở | Cách làm |
+| --- | --- | --- |
+| Có bảng `outbox_messages` và tiến trình đẩy | Infrastructure | DbContext cài `IHasOutbox`; `AddInfrastructure` gọi `AddOismMessaging<TContext>()`; migration của service tạo bảng |
+| Phát một thông điệp | Infrastructure, sau interface `IEventPublisher` của Application | Thêm `OutboxMessage.Create(payload, thời điểm)` vào DbContext trong transaction của use case; `TenantId` do DbContext base gán |
+| Có bảng `inbox_messages` và nhận thông điệp | Infrastructure | DbContext cài `IHasInbox`; `AddInfrastructure` gọi `AddOismMessaging<TContext>()` |
+| Xử lý một loại thông điệp | Api, thư mục `Consumers` | Lớp kế thừa `EventConsumer<TPayload>`, đăng ký bằng `AddEventConsumer<TConsumer, TPayload>()` ở `Program.cs` |
+
+- Địa chỉ RabbitMQ lấy từ `ConnectionStrings:RabbitMq`, dạng `amqp://user:password@host:5672`. Bỏ trống thì service không gửi và không nhận; thông điệp vẫn nằm trong outbox.
+- Exchange `oism.events` là loại topic, bền; routing key là tên thông điệp. Tên service trong tên queue lấy từ schema mặc định của DbContext.
+- Phần chung đặt tenant context theo thông điệp, mở transaction, ghi inbox, gọi consumer, lưu thay đổi rồi commit. Vì vậy consumer và handler nó gọi không tự mở transaction và không tự commit.
+- Thử lại cách nhau 0,5 giây, 1 giây, 1,5 giây. Một queue xử lý lần lượt từng thông điệp.
+- Thông điệp phát ra khi chưa service nào khai báo queue cho loại đó thì broker bỏ đi: bên phát không biết ai nghe. Queue là bền, nên việc này chỉ xảy ra trước lần chạy đầu tiên của bên nhận.
+
 ## Bảo đảm và không bảo đảm
 
 | Tính chất | Có hay không | Hệ quả cho người viết consumer |

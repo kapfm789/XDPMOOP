@@ -150,10 +150,21 @@ Lần đầu mất vài phút để tải image, tải package và build trong c
 - Chạy toàn bộ test mà không cần cài .NET: `docker compose -f deploy/docker-compose.yml run --rm tests`.
 - Dừng: `docker compose -f deploy/docker-compose.yml down`; thêm `-v` để xóa luôn dữ liệu PostgreSQL.
 
+Frontend chạy trên máy host, cần Node 20.19 trở lên:
+
+```bash
+npm --prefix frontend ci
+npm --prefix frontend run dev:admin
+npm --prefix frontend run dev:pos
+```
+
+`admin` mở ở `http://localhost:5173`, `pos` ở `http://localhost:5174`; cả hai gọi gateway ở `http://localhost:8080` (đổi bằng biến `VITE_API_URL`). Kiểm kiểu, test và build: `npm --prefix frontend run typecheck`, `npm --prefix frontend test`, `npm --prefix frontend run build`.
+
 ## Trạng thái
 
-- Đã có skeleton backend (W1-02) và Compose dev (W1-03): gateway định tuyến tới 5 service rỗng, chưa có nghiệp vụ. Frontend, CI, seed chưa có.
-- 18 quyết định của nhóm, gồm cả việc chia microservice (D-17), đang chờ giảng viên xác nhận ở task W1-01: [docs/decisions/](docs/decisions/README.md).
+- Đã có code của phase 1: skeleton backend và Compose dev (W1-02, W1-03), outbox và inbox qua RabbitMQ (W1-13), danh mục và thương hiệu ở `catalog` (W1-06), hai ứng dụng React với đăng ký, đăng nhập và layout (W1-09), workflow CI (W1-11).
+- Đăng ký và đăng nhập trên giao diện chỉ chạy được trên API thật sau khi có `identity` (W1-04, phase 2). Bốn service còn lại chưa có nghiệp vụ; seed chưa có.
+- 18 quyết định của nhóm, gồm cả việc chia microservice (D-17), đã được giảng viên xác nhận ngày 2026-10-04 (task W1-01): [docs/decisions/](docs/decisions/README.md).
 
 ## Tài liệu
 

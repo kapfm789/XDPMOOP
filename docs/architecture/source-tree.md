@@ -2,7 +2,7 @@
 
 Đây là cây thư mục mà repo phải có khi dựng xong skeleton (task W1-02). Tên folder, tên project và namespace dùng đúng như dưới đây; đừng đặt tên khác dù thấy hợp lý hơn, vì tài liệu, rule và CI đều trỏ theo các đường dẫn này.
 
-Skeleton backend (W1-02) và Compose dev (W1-03) đã dựng; `frontend/`, `deploy/seed/`, `tools/k6/` và `.github/` chưa có.
+Backend, `frontend/`, `deploy/` và `.github/` đã dựng; `deploy/seed/` và `tools/k6/` chưa có. `catalog` là service đầu tiên có nghiệp vụ: phần mới của service khác chép khuôn từ đó.
 
 ## Cây thư mục
 

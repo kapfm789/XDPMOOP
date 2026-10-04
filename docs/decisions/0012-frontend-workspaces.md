@@ -1,6 +1,6 @@
 # ADR-0012: Một workspace npm chứa admin, pos và phần dùng chung
 
-- Trạng thái: Đề xuất, chờ giảng viên xác nhận
+- Trạng thái: Đã xác nhận 2026-10-04
 - Gộp từ: D-16
 - Ngày: 2026-10-03
 

@@ -9,10 +9,15 @@ Tiền tố `/api/catalog`. Use case ở [catalog.md](../../usecase-userstory/ca
 | GET | `/api/catalog/categories` | Owner, Staff | | Cây danh mục | |
 | POST | `/api/catalog/categories` | Owner, Staff | `name`, `parentId?` | 201: danh mục | 409 `duplicate` |
 | PUT | `/api/catalog/categories/{id}` | Owner, Staff | `name`, `parentId?` | 200: danh mục | 400 khi tạo vòng lặp cha con |
-| DELETE | `/api/catalog/categories/{id}` | Owner, Staff | | 204 | 409 khi còn sản phẩm hoặc danh mục con |
+| DELETE | `/api/catalog/categories/{id}` | Owner, Staff | | 204 | 409 `category_in_use` khi còn sản phẩm hoặc danh mục con |
 | GET | `/api/catalog/brands` | Owner, Staff | | Danh sách thương hiệu | |
 | POST | `/api/catalog/brands` | Owner, Staff | `name` | 201: thương hiệu | 409 `duplicate` |
 | PUT | `/api/catalog/brands/{id}` | Owner, Staff | `name` | 200: thương hiệu | 409 `duplicate` |
+
+- Danh mục trả về gồm `id`, `name`, `parentId`, `sortOrder`. Cây danh mục là mảng các danh mục gốc, mỗi nút có thêm `children`; các nút cùng cha xếp theo `sortOrder` rồi `name`.
+- Thương hiệu trả về gồm `id`, `name`; danh sách xếp theo `name`.
+- `name` bị cắt khoảng trắng hai đầu, không được rỗng và dài tối đa 200 ký tự; sai thì 400 `validation_failed`.
+- Tạo hoặc sửa danh mục trùng tên với một danh mục cùng cha (kể cả cùng là danh mục gốc) trả 409 `duplicate`. `parentId` không có trong tenant trả 404.
 
 ## Sản phẩm và SKU
 

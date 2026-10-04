@@ -4,7 +4,7 @@ OISM là hệ thống quản lý bán hàng và tồn kho đa kênh, multi-tenan
 
 ## Trạng thái repo
 
-Đã có skeleton backend (`backend/shared`, gateway, 5 service bốn lớp, chưa có nghiệp vụ) và Compose dev ở `deploy/`. Frontend, CI, seed chưa có. Khi tạo file code, đặt đúng đường dẫn và tên ở `docs/architecture/source-tree.md`; không tự nghĩ ra cấu trúc khác. Service mới hoặc phần mới của service chép khuôn từ code đã có.
+Đã có code của phase 1: skeleton backend (`backend/shared`, gateway, 5 service bốn lớp), outbox và inbox trong `Oism.BuildingBlocks/Messaging`, danh mục và thương hiệu ở `catalog` (service đầu tiên có nghiệp vụ, dùng làm khuôn), workspace `frontend/` với đăng ký, đăng nhập và layout, Compose dev ở `deploy/`, CI ở `.github/`. Bốn service còn lại chưa có nghiệp vụ; seed chưa có. Khi tạo file code, đặt đúng đường dẫn và tên ở `docs/architecture/source-tree.md`; không tự nghĩ ra cấu trúc khác. Service mới hoặc phần mới của service chép khuôn từ code đã có.
 
 ## Nguyên tắc: tài liệu trước, code sau
 
@@ -89,12 +89,18 @@ dotnet build backend/Oism.sln
 dotnet test backend/Oism.sln
 docker compose -f deploy/docker-compose.yml up -d
 docker compose -f deploy/docker-compose.yml run --rm tests
+npm --prefix frontend ci
+npm --prefix frontend run typecheck
+npm --prefix frontend test
+npm --prefix frontend run build
+npm --prefix frontend run dev:admin
+npm --prefix frontend run dev:pos
 ```
 
 - Compose dev chạy service bằng `dotnet watch` trên mã nguồn mount: sửa code hay thêm migration không cần build lại image.
 - Hai lệnh `dotnet` cần .NET 8 runtime; máy không có .NET 8 thì dùng lệnh `run --rm tests`, chỉ cần Docker.
 - Test tích hợp cần Docker đang chạy vì dùng Testcontainers.
-- Lệnh frontend (`npm --prefix frontend ...`) chạy được sau task W1-09.
+- Frontend cần Node 20.19 trở lên; `admin` chạy ở cổng 5173, `pos` ở 5174, cả hai gọi gateway ở `http://localhost:8080`.
 
 ## Việc không tự làm
 

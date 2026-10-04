@@ -117,7 +117,7 @@ Chỉ mục: `(tenant_id, order_id)`; `(status, expires_at)` cho job hết hạn
 | `stocktake_items` | `id`, `tenant_id`, `stocktake_id`, `sku_id`, `counted_qty`, `system_qty`, `difference` | `system_qty` và `difference` ghi lúc chốt; unique `(stocktake_id, sku_id)` |
 | `sku_refs` | `tenant_id`, `sku_id`, `sku_code`, `name`, `barcodes` (mảng text), `retail_price`, `wholesale_price`, `is_active`, `version` | Khóa chính `(tenant_id, sku_id)`; unique `(tenant_id, sku_code)` |
 | `branch_refs` | `tenant_id`, `branch_id`, `code`, `name`, `type`, `is_active`, `version` | Khóa chính `(tenant_id, branch_id)` |
-| `outbox_messages` | `id`, `tenant_id`, `type`, `payload` (jsonb), `occurred_at`, `processed_at`, `attempts` | Chỉ mục trên `processed_at` khi null |
+| `outbox_messages` | `id`, `tenant_id`, `type`, `payload` (jsonb), `occurred_at`, `processed_at`, `attempts` | Chỉ mục trên `occurred_at` cho các dòng có `processed_at` null |
 | `inbox_messages` | `event_id`, `type`, `processed_at` | Khóa chính `event_id` |
 
 `sku_refs` và `branch_refs` là bản sao dựng từ event. Chỉ consumer được ghi vào hai bảng này, và chỉ ghi đè khi `version` của event lớn hơn `version` đang lưu.

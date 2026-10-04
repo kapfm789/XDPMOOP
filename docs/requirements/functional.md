@@ -81,7 +81,7 @@ Task và kịch bản kiểm chứng của từng mã nằm ở RTM, [PLAN.md](.
 
 ## FR-AI: dự báo nhập hàng (mã tạm)
 
-Đề chỉ ghi "tích hợp dự báo bằng AI để đề xuất nhập hàng bổ sung" ở gói công việc 5, không có mã. Ba mã dưới đây do nhóm đặt, chờ giảng viên chốt theo [ADR-0010](../decisions/0010-ai-forecast.md).
+Đề chỉ ghi "tích hợp dự báo bằng AI để đề xuất nhập hàng bổ sung" ở gói công việc 5, không có mã. Ba mã dưới đây do nhóm đặt, giảng viên đã xác nhận ngày 2026-10-04 theo [ADR-0010](../decisions/0010-ai-forecast.md).
 
 | Mã | Yêu cầu | Use case | Service |
 | --- | --- | --- | --- |

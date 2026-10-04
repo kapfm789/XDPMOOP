@@ -1,6 +1,6 @@
 # ADR-0006: Kênh sàn chỉ là simulator; ba hàng rào chống xử lý trùng
 
-- Trạng thái: Đề xuất, chờ giảng viên xác nhận
+- Trạng thái: Đã xác nhận 2026-10-04
 - Gộp từ: D-09, D-10
 - Ngày: 2026-10-03
 

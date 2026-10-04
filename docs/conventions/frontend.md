@@ -11,7 +11,28 @@
 - Một thư viện component cho cả hai ứng dụng: Ant Design. Không trộn thêm thư viện component khác.
 - Chuỗi hiển thị viết tiếng Việt trực tiếp trong component; dự án không dùng khung đa ngôn ngữ.
 
-Các lựa chọn thư viện trên do Dev C chốt lại ở task W1-09; đổi thì sửa file này trước.
+Các lựa chọn trên đã chốt ở task W1-09 với các bản: React 19, Vite 8, TypeScript 7, TanStack Query 5, React Router 7 (gói `react-router-dom`), Ant Design 6, Vitest 5. Đổi thì sửa file này trước.
+
+## Workspace và lệnh
+
+`frontend/package.json` khai báo ba gói `@oism/shared`, `@oism/admin`, `@oism/pos`. `shared` không có bước build: hai ứng dụng import thẳng mã TypeScript của nó qua `@oism/shared`, và chỉ dùng những gì `shared/src/index.ts` xuất ra.
+
+| Lệnh, chạy với `npm --prefix frontend` | Việc |
+| --- | --- |
+| `ci` | Cài package theo `package-lock.json` |
+| `run dev:admin`, `run dev:pos` | Chạy `admin` ở cổng 5173, `pos` ở cổng 5174 |
+| `run typecheck` | Kiểm kiểu cả ba gói |
+| `test` | Chạy test Vitest của `shared` |
+| `run build` | Kiểm kiểu rồi build `admin` và `pos` |
+
+Địa chỉ gateway lấy từ biến `VITE_API_URL`, mặc định `http://localhost:8080`.
+
+## Phiên đăng nhập
+
+- Access token chỉ nằm trong bộ nhớ. Refresh token nằm ở `localStorage` để mở lại phiên sau khi tải lại trang; `AuthProvider` đổi nó lấy cặp token mới lúc ứng dụng khởi động.
+- Các request gặp 401 cùng lúc dùng chung một lần làm mới, vì refresh token xoay vòng: dùng lại token cũ thì cả chuỗi bị thu hồi.
+- Làm mới bị từ chối thì phiên kết thúc và `RequireRole` đưa người dùng về `/login`.
+- Vai trò lấy từ `user` trong phản hồi đăng nhập, cùng giá trị với claim `role` của token.
 
 ## Cấu trúc thư mục
 

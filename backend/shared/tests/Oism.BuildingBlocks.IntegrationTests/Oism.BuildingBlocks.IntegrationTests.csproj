@@ -1,5 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <PackageReference Include="Testcontainers.RabbitMq" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="../../Oism.BuildingBlocks/Oism.BuildingBlocks.csproj" />
+    <ProjectReference Include="../../Oism.Contracts/Oism.Contracts.csproj" />
   </ItemGroup>
 </Project>

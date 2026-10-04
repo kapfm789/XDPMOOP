@@ -44,7 +44,8 @@ Lỗi trả theo ProblemDetails, kèm trường `code` để giao diện xử l�
 | 401 | `invalid_signature` | Chữ ký webhook sai |
 | 403 | `forbidden` | Vai trò không đủ quyền |
 | 404 | `not_found` | Không có, hoặc thuộc tenant khác |
-| 409 | `duplicate` | Trùng mã SKU, mã vạch, mã chi nhánh, email |
+| 409 | `duplicate` | Trùng mã SKU, mã vạch, mã chi nhánh, email, tên danh mục, tên thương hiệu |
+| 409 | `category_in_use` | Xóa danh mục còn sản phẩm hoặc danh mục con |
 | 409 | `invalid_state_transition` | Bước chuyển trạng thái không hợp lệ |
 | 409 | `insufficient_stock` | Không đủ tồn khả dụng; `details` nêu từng SKU |
 | 409 | `stocktake_below_reserved` | Số đếm thấp hơn lượng đã giữ; `details` nêu các đơn |
