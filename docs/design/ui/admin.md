@@ -17,7 +17,7 @@ Trang quản trị cho Owner và Staff, nằm ở `frontend/admin`. Mỗi dòng 
 | `/catalog/products/:id` | Sản phẩm, SKU, mã vạch, giá | Owner, Staff; ô giá chỉ Owner sửa | `/api/catalog/products/{id}`, `/skus/{id}/barcodes`, `/skus/{id}/prices` | UC-PROD-02, 03, 04 | W2-07 |
 | `/inventory/stock` | Tồn theo chi nhánh, đặt ngưỡng | Owner, Staff | `GET /api/core/stock`, `PUT /api/core/stock/threshold` | UC-INV-01, UC-INV-05 | W2-08 |
 | `/inventory/ledger` | Sổ giao dịch, chỉ xem | Owner, Staff | `GET /api/core/ledger` | UC-INV-01 | W2-08 |
-| `/inventory/receipts` | Phiếu nhập: danh sách, tạo, xác nhận | Owner, Staff | `/api/core/purchase-receipts` | UC-INV-02 | W2-08 |
+| `/inventory/receipts` | Phiếu nhập: danh sách, tạo, sửa, xác nhận; thêm nhà cung cấp | Owner, Staff | `/api/core/purchase-receipts`, `/api/core/suppliers`; tìm SKU qua `/api/catalog/products` | UC-INV-02 | W2-08 |
 | `/inventory/transfers` | Chuyển kho: tạo, xuất, nhận | Owner, Staff | `/api/core/transfers` | UC-INV-03 | W4-06 |
 | `/inventory/stocktakes` | Kiểm kê: mở phiên, nhập số đếm, chốt | Owner, Staff | `/api/core/stocktakes` | UC-INV-04 | W4-06 |
 | `/orders` | Đơn đa kênh, lọc theo trạng thái, kênh, chi nhánh | Owner, Staff | `GET /api/core/orders` | UC-ORD-06 | W3-08 |

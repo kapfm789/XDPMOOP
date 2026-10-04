@@ -3,9 +3,9 @@ using Oism.Core.Domain.Inventory;
 namespace Oism.Core.Application.Inventory.PostLedger;
 
 // Cửa duy nhất đổi on_hand (docs/architecture/transactions-and-concurrency.md mục "Một cửa duy nhất để đổi tồn"):
-// khóa các dòng số dư, rồi mỗi bút toán đổi số dư và để lại đúng một dòng sổ.
-// Không mở transaction: chạy trong transaction của use case gọi nó, sau khi use case đó đã khóa chứng từ.
-public sealed class PostLedgerHandler(IInventoryRepository inventory, IClock clock)
+// khóa các dòng số dư, rồi mỗi bút toán đổi số dư và để lại đúng một dòng sổ; cuối cùng ghi outbox StockChanged
+// cho từng SKU đã đổi. Không mở transaction: chạy trong transaction của use case gọi nó, sau khi use case đó đã khóa chứng từ.
+public sealed class PostLedgerHandler(IInventoryRepository inventory, IEventPublisher events, IClock clock)
 {
     public async Task<IReadOnlyList<InventoryTransaction>> Handle(PostLedgerCommand command, CancellationToken ct)
     {
@@ -22,6 +22,10 @@ public sealed class PostLedgerHandler(IInventoryRepository inventory, IClock clo
             inventory.Add(line);
             posted.Add(line);
         }
+
+        // Một thông điệp cho mỗi SKU, mang số dư sau bút toán cuối của SKU đó.
+        foreach (var balance in balances.Values)
+            events.EnqueueStockChanged(balance);
 
         return posted;
     }

@@ -9,7 +9,7 @@ using Oism.Core.Domain.References;
 namespace Oism.Core.Infrastructure;
 
 public sealed class CoreDbContext(DbContextOptions<CoreDbContext> options, ITenantContext tenant)
-    : OismDbContext(options, tenant, Schema), IHasInbox
+    : OismDbContext(options, tenant, Schema), IHasOutbox, IHasInbox
 {
     public const string Schema = "core";
 
@@ -21,7 +21,15 @@ public sealed class CoreDbContext(DbContextOptions<CoreDbContext> options, ITena
 
     public DbSet<InventoryTransaction> InventoryTransactions => Set<InventoryTransaction>();
 
+    public DbSet<Supplier> Suppliers => Set<Supplier>();
+
+    public DbSet<PurchaseReceipt> PurchaseReceipts => Set<PurchaseReceipt>();
+
+    public DbSet<PurchaseReceiptItem> PurchaseReceiptItems => Set<PurchaseReceiptItem>();
+
     public DbSet<Order> Orders => Set<Order>();
 
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+
+    public DbSet<Reservation> Reservations => Set<Reservation>();
 }

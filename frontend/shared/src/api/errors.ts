@@ -8,6 +8,9 @@ const MESSAGES: Record<string, string> = {
   not_found: 'Không tìm thấy dữ liệu; có thể nó vừa bị xóa',
   category_in_use: 'Danh mục còn danh mục con hoặc sản phẩm nên chưa xóa được',
   validation_failed: 'Dữ liệu không hợp lệ',
+  invalid_state_transition: 'Trạng thái của bản ghi đã đổi; dữ liệu đã được tải lại',
+  reference_not_ready: 'Chi nhánh hoặc SKU vừa tạo chưa được đồng bộ tới kho; thử lại sau ít giây',
+  inactive_reference: 'Chi nhánh đã tắt hoặc SKU đã ngừng bán',
 };
 
 export function errorMessage(error: unknown): string {

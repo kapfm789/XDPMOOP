@@ -40,7 +40,7 @@
 | Mã | Cho trước | Khi | Thì | Đặt ở |
 | --- | --- | --- | --- | --- |
 | T22 | Một `OrderConfirmed` đã được `insights` xử lý | Giao lại đúng thông điệp đó | `sales_facts` không thêm dòng; số liệu báo cáo không đổi | insights, `IntegrationTests/Messaging` |
-| T23 | RabbitMQ đang tắt | Duyệt một đơn | Transaction commit; thông điệp nằm trong outbox; khi RabbitMQ chạy lại, thông điệp được gửi đúng một lượt | core, `IntegrationTests/Messaging` |
+| T23 | RabbitMQ đang tắt | Tạo một đơn giữ hàng, hoặc duyệt một đơn | Transaction commit; thông điệp nằm trong outbox; khi RabbitMQ chạy lại, thông điệp được gửi đúng một lượt | core, `IntegrationTests/Messaging` |
 
 ## Hiệu năng
 

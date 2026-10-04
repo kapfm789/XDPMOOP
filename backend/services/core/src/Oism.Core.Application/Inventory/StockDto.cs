@@ -49,4 +49,14 @@ public interface IStockQueries
 
     // Dòng sổ theo thứ tự ghi (seq tăng dần).
     Task<PagedResult<LedgerLineDto>> ListLedgerAsync(ListLedger.ListLedgerQuery query, CancellationToken ct);
+
+    // Nhà cung cấp của tenant, xếp theo tên.
+    Task<IReadOnlyList<SupplierDto>> ListSuppliersAsync(CancellationToken ct);
+
+    // Phiếu nhập kèm các dòng, mới nhất trước.
+    Task<PagedResult<PurchaseReceiptDto>> ListPurchaseReceiptsAsync(
+        ListPurchaseReceipts.ListPurchaseReceiptsQuery query, CancellationToken ct);
+
+    // Null khi phiếu không có trong tenant.
+    Task<PurchaseReceiptDto?> FindPurchaseReceiptAsync(Guid id, CancellationToken ct);
 }

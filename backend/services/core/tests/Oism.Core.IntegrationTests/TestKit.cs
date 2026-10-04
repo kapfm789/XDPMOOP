@@ -3,10 +3,14 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Oism.BuildingBlocks.Messaging;
 using Oism.BuildingBlocks.Tenancy;
+using Oism.Contracts;
 using Oism.Core.Application;
 using Oism.Core.Application.Inventory.PostLedger;
+using Oism.Core.Application.Orders.ReserveStock;
 using Oism.Core.Domain.Inventory;
+using Oism.Core.Domain.Orders;
 using Oism.Core.Domain.References;
 using Oism.Core.Infrastructure;
 
@@ -78,6 +82,31 @@ internal static class TestKit
     public static Task<List<InventoryTransaction>> LedgerAsync(this ApiFactory factory, Guid tenantId) =>
         factory.QueryAsync(tenantId, db => db.InventoryTransactions.AsNoTracking().OrderBy(line => line.Seq).ToListAsync());
 
+    public static Task<List<Order>> OrdersAsync(this ApiFactory factory, Guid tenantId) =>
+        factory.QueryAsync(tenantId, db => db.Orders.AsNoTracking().Include(order => order.Items).ToListAsync());
+
+    public static Task<List<Reservation>> ReservationsAsync(this ApiFactory factory, Guid tenantId) =>
+        factory.QueryAsync(tenantId, db => db.Reservations.AsNoTracking().ToListAsync());
+
+    // Đơn online như consumer SubmitOrder đưa vào: cùng handler, không qua RabbitMQ.
+    public static Task SubmitOrderAsync(this ApiFactory factory, Guid tenantId, SubmitOrder message) =>
+        factory.InTenantAsync(tenantId, async services =>
+        {
+            await services.GetRequiredService<ReserveStockHandler>().Handle(message, default);
+            return true;
+        });
+
+    public static SubmitOrder Online(string externalOrderId, Guid branchId, params SubmitOrderLine[] lines) =>
+        new("Shopee", externalOrderId, branchId, DateTimeOffset.UtcNow, lines);
+
+    // Thông điệp loại TPayload trong outbox của tenant.
+    public static async Task<List<TPayload>> OutboxAsync<TPayload>(this ApiFactory factory, Guid tenantId)
+    {
+        var messages = await factory.QueryAsync(tenantId, db => db.Set<OutboxMessage>().AsNoTracking()
+            .Where(message => message.Type == typeof(TPayload).Name).OrderBy(message => message.OccurredAt).ToListAsync());
+        return messages.Select(message => JsonSerializer.Deserialize<TPayload>(message.Payload, EventEnvelope.JsonOptions)!).ToList();
+    }
+
     // Kiểm mã HTTP và trường `code` của ProblemDetails (docs/design/api/README.md).
     public static async Task AssertProblemAsync(this HttpResponseMessage response, HttpStatusCode status, string code)
     {
@@ -91,6 +120,7 @@ internal static class TestKit
         {
             var balances = await db.InventoryBalances.AsNoTracking().ToListAsync();
             var ledger = await db.InventoryTransactions.AsNoTracking().OrderBy(line => line.Seq).ToListAsync();
+            var held = await db.Reservations.AsNoTracking().Where(hold => hold.Status == ReservationStatus.Active).ToListAsync();
 
             foreach (var balance in balances)
             {
@@ -106,11 +136,15 @@ internal static class TestKit
                 Assert.Equal(running, balance.OnHand);
                 // Không âm.
                 Assert.True(balance.OnHand >= 0 && balance.Reserved >= 0 && balance.Reserved <= balance.OnHand);
-                // Phần giữ khớp số dư: chưa có bảng reservations (W2-05), nên chưa có gì được giữ.
-                Assert.Equal(0, balance.Reserved);
+                // Phần giữ khớp số dư: reserved bằng tổng số lượng các phần giữ Active.
+                Assert.Equal(
+                    held.Where(hold => hold.BranchId == balance.BranchId && hold.SkuId == balance.SkuId).Sum(hold => hold.Quantity),
+                    balance.Reserved);
             }
 
-            // Không dòng sổ nào nằm ngoài một dòng số dư.
+            // Không dòng sổ hay phần giữ nào nằm ngoài một dòng số dư.
+            Assert.All(held, hold =>
+                Assert.Contains(balances, balance => balance.BranchId == hold.BranchId && balance.SkuId == hold.SkuId));
             Assert.All(ledger, line =>
                 Assert.Contains(balances, balance => balance.BranchId == line.BranchId && balance.SkuId == line.SkuId));
             return true;

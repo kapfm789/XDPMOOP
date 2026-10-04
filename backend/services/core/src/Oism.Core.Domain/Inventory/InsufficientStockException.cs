@@ -6,4 +6,7 @@ namespace Oism.Core.Domain.Inventory;
 public sealed record StockShortage(Guid SkuId, int Requested, int Available);
 
 public sealed class InsufficientStockException(IReadOnlyList<StockShortage> shortages)
-    : OismException("insufficient_stock", "Không đủ tồn khả dụng", shortages);
+    : OismException("insufficient_stock", "Không đủ tồn khả dụng", shortages)
+{
+    public IReadOnlyList<StockShortage> Shortages { get; } = shortages;
+}

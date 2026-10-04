@@ -2,7 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Oism.Core.Application;
 using Oism.Core.Application.Inventory;
 using Oism.Core.Application.Inventory.ListLedger;
+using Oism.Core.Application.Inventory.ListPurchaseReceipts;
 using Oism.Core.Application.Inventory.ListStock;
+using Oism.Core.Domain.Inventory;
 
 namespace Oism.Core.Infrastructure.Repositories;
 
@@ -54,5 +56,47 @@ internal sealed class StockQueries(CoreDbContext db) : IStockQueries
         return new PagedResult<LedgerLineDto>(
             page.Select(row => LedgerLineDto.From(row.line, row.SkuCode, row.Name, query.IncludeCost)).ToList(),
             query.Page, query.PageSize, await rows.CountAsync(ct));
+    }
+
+    public async Task<IReadOnlyList<SupplierDto>> ListSuppliersAsync(CancellationToken ct) =>
+        await db.Suppliers.AsNoTracking()
+            .OrderBy(supplier => supplier.Name)
+            .Select(supplier => new SupplierDto(supplier.Id, supplier.Name, supplier.Phone, supplier.IsActive))
+            .ToListAsync(ct);
+
+    public async Task<PagedResult<PurchaseReceiptDto>> ListPurchaseReceiptsAsync(ListPurchaseReceiptsQuery query, CancellationToken ct)
+    {
+        var status = query.Status is null ? (PurchaseReceiptStatus?)null : Enum.Parse<PurchaseReceiptStatus>(query.Status);
+        var receipts = db.PurchaseReceipts.AsNoTracking().Where(receipt =>
+            (query.BranchId == null || receipt.BranchId == query.BranchId) && (status == null || receipt.Status == status));
+
+        var page = await receipts
+            .OrderByDescending(receipt => receipt.CreatedAt).ThenBy(receipt => receipt.Id)
+            .Skip((query.Page - 1) * query.PageSize).Take(query.PageSize)
+            .Include(receipt => receipt.Items)
+            .ToListAsync(ct);
+        return new PagedResult<PurchaseReceiptDto>(await ToDtosAsync(page, ct), query.Page, query.PageSize, await receipts.CountAsync(ct));
+    }
+
+    public async Task<PurchaseReceiptDto?> FindPurchaseReceiptAsync(Guid id, CancellationToken ct)
+    {
+        var receipts = await db.PurchaseReceipts.AsNoTracking()
+            .Where(receipt => receipt.Id == id).Include(receipt => receipt.Items).ToListAsync(ct);
+        return (await ToDtosAsync(receipts, ct)).SingleOrDefault();
+    }
+
+    private async Task<List<PurchaseReceiptDto>> ToDtosAsync(List<PurchaseReceipt> receipts, CancellationToken ct)
+    {
+        var skuIds = receipts.SelectMany(receipt => receipt.Items).Select(item => item.SkuId).Distinct().ToList();
+        var skus = await db.SkuRefs.AsNoTracking().Where(sku => skuIds.Contains(sku.SkuId)).ToDictionaryAsync(sku => sku.SkuId, ct);
+
+        return receipts.Select(receipt => new PurchaseReceiptDto(
+            receipt.Id, receipt.ReceiptNumber, receipt.BranchId, receipt.SupplierId, receipt.Status.ToString(), receipt.Note,
+            receipt.ConfirmedAt, receipt.ConfirmedBy, receipt.CreatedAt,
+            receipt.Items
+                .Select(item => new PurchaseReceiptItemDto(
+                    item.Id, item.SkuId, skus[item.SkuId].SkuCode, skus[item.SkuId].Name, item.Quantity, item.UnitCost))
+                .OrderBy(item => item.SkuCode).ThenBy(item => item.Id)
+                .ToList())).ToList();
     }
 }

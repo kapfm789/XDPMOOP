@@ -44,6 +44,49 @@ namespace Oism.Core.Infrastructure.Migrations
                     b.ToTable("inbox_messages", "core");
                 });
 
+            modelBuilder.Entity("Oism.BuildingBlocks.Messaging.OutboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempts");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("payload");
+
+                    b.Property<DateTimeOffset?>("ProcessedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processed_at");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("type");
+
+                    b.HasKey("Id")
+                        .HasName("pk_outbox_messages");
+
+                    b.HasIndex("OccurredAt")
+                        .HasDatabaseName("ix_outbox_messages_occurred_at")
+                        .HasFilter("processed_at IS NULL");
+
+                    b.ToTable("outbox_messages", "core");
+                });
+
             modelBuilder.Entity("Oism.Core.Domain.Inventory.InventoryBalance", b =>
                 {
                     b.Property<Guid>("TenantId")
@@ -178,6 +221,135 @@ namespace Oism.Core.Infrastructure.Migrations
                         .HasDatabaseName("ix_inventory_transactions_tenant_id_branch_id_sku_id_seq");
 
                     b.ToTable("inventory_transactions", "core");
+                });
+
+            modelBuilder.Entity("Oism.Core.Domain.Inventory.PurchaseReceipt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<DateTimeOffset?>("ConfirmedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("confirmed_at");
+
+                    b.Property<Guid?>("ConfirmedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("confirmed_by");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text")
+                        .HasColumnName("note");
+
+                    b.Property<string>("ReceiptNumber")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("receipt_number");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("SupplierId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("supplier_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_purchase_receipts");
+
+                    b.HasIndex("SupplierId")
+                        .HasDatabaseName("ix_purchase_receipts_supplier_id");
+
+                    b.HasIndex("TenantId", "ReceiptNumber")
+                        .IsUnique()
+                        .HasDatabaseName("ix_purchase_receipts_tenant_id_receipt_number");
+
+                    b.ToTable("purchase_receipts", "core");
+                });
+
+            modelBuilder.Entity("Oism.Core.Domain.Inventory.PurchaseReceiptItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<Guid>("ReceiptId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("receipt_id");
+
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sku_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)")
+                        .HasColumnName("unit_cost");
+
+                    b.HasKey("Id")
+                        .HasName("pk_purchase_receipt_items");
+
+                    b.HasIndex("ReceiptId")
+                        .HasDatabaseName("ix_purchase_receipt_items_receipt_id");
+
+                    b.ToTable("purchase_receipt_items", "core", t =>
+                        {
+                            t.HasCheckConstraint("ck_purchase_receipt_items_quantity_positive", "quantity > 0");
+
+                            t.HasCheckConstraint("ck_purchase_receipt_items_unit_cost_non_negative", "unit_cost >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Oism.Core.Domain.Inventory.Supplier", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("text")
+                        .HasColumnName("phone");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_suppliers");
+
+                    b.ToTable("suppliers", "core");
                 });
 
             modelBuilder.Entity("Oism.Core.Domain.Orders.Order", b =>
@@ -343,6 +515,72 @@ namespace Oism.Core.Infrastructure.Migrations
                     b.ToTable("order_items", "core");
                 });
 
+            modelBuilder.Entity("Oism.Core.Domain.Orders.Reservation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<DateTimeOffset?>("ClosedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("closed_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<Guid>("OrderItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_item_id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sku_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_reservations");
+
+                    b.HasIndex("OrderId")
+                        .HasDatabaseName("ix_reservations_order_id");
+
+                    b.HasIndex("OrderItemId")
+                        .HasDatabaseName("ix_reservations_order_item_id");
+
+                    b.HasIndex("Status", "ExpiresAt")
+                        .HasDatabaseName("ix_reservations_status_expires_at");
+
+                    b.HasIndex("TenantId", "OrderId")
+                        .HasDatabaseName("ix_reservations_tenant_id_order_id");
+
+                    b.ToTable("reservations", "core");
+                });
+
             modelBuilder.Entity("Oism.Core.Domain.References.BranchRef", b =>
                 {
                     b.Property<Guid>("TenantId")
@@ -435,6 +673,26 @@ namespace Oism.Core.Infrastructure.Migrations
                     b.ToTable("sku_refs", "core");
                 });
 
+            modelBuilder.Entity("Oism.Core.Domain.Inventory.PurchaseReceipt", b =>
+                {
+                    b.HasOne("Oism.Core.Domain.Inventory.Supplier", null)
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_purchase_receipts_suppliers_supplier_id");
+                });
+
+            modelBuilder.Entity("Oism.Core.Domain.Inventory.PurchaseReceiptItem", b =>
+                {
+                    b.HasOne("Oism.Core.Domain.Inventory.PurchaseReceipt", null)
+                        .WithMany("Items")
+                        .HasForeignKey("ReceiptId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_purchase_receipt_items_purchase_receipts_receipt_id");
+                });
+
             modelBuilder.Entity("Oism.Core.Domain.Orders.OrderItem", b =>
                 {
                     b.HasOne("Oism.Core.Domain.Orders.Order", null)
@@ -443,6 +701,28 @@ namespace Oism.Core.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_order_items_orders_order_id");
+                });
+
+            modelBuilder.Entity("Oism.Core.Domain.Orders.Reservation", b =>
+                {
+                    b.HasOne("Oism.Core.Domain.Orders.Order", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_reservations_orders_order_id");
+
+                    b.HasOne("Oism.Core.Domain.Orders.OrderItem", null)
+                        .WithMany()
+                        .HasForeignKey("OrderItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_reservations_order_items_order_item_id");
+                });
+
+            modelBuilder.Entity("Oism.Core.Domain.Inventory.PurchaseReceipt", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("Oism.Core.Domain.Orders.Order", b =>

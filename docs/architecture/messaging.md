@@ -47,6 +47,7 @@ Cơ chế nằm ở `Oism.BuildingBlocks/Messaging`; service chỉ khai báo mì
 - Địa chỉ RabbitMQ lấy từ `ConnectionStrings:RabbitMq`, dạng `amqp://user:password@host:5672`. Bỏ trống thì service không gửi và không nhận; thông điệp vẫn nằm trong outbox.
 - Exchange `oism.events` là loại topic, bền; routing key là tên thông điệp. Tên service trong tên queue lấy từ schema mặc định của DbContext.
 - Phần chung đặt tenant context theo thông điệp, mở transaction, ghi inbox, gọi consumer, lưu thay đổi rồi commit. Vì vậy consumer và handler nó gọi không tự mở transaction và không tự commit.
+- Handler của `core` dùng chung cho cả đường HTTP lẫn consumer (ví dụ `ReserveStockHandler`) vẫn mở transaction qua `IUnitOfWork`. Khi đã ở trong transaction của consumer, `IUnitOfWork` tạo một savepoint thay cho transaction mới: handler rollback thì chỉ phần của nó bị bỏ, dòng inbox ở lại, và việc commit thật vẫn do phần chung làm.
 - Thử lại cách nhau 0,5 giây, 1 giây, 1,5 giây. Một queue xử lý lần lượt từng thông điệp.
 - Thông điệp phát ra khi chưa service nào khai báo queue cho loại đó thì broker bỏ đi: bên phát không biết ai nghe. Queue là bền, nên việc này chỉ xảy ra trước lần chạy đầu tiên của bên nhận.
 

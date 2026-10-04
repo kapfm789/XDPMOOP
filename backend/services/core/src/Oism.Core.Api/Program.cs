@@ -14,6 +14,7 @@ foreach (var handler in typeof(IReferenceRepository).Assembly.GetTypes().Where(t
     builder.Services.AddScoped(handler);
 builder.Services.AddEventConsumer<SkuUpsertedConsumer, SkuUpserted>();
 builder.Services.AddEventConsumer<BranchUpsertedConsumer, BranchUpserted>();
+builder.Services.AddEventConsumer<SubmitOrderConsumer, SubmitOrder>();
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
 

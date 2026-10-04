@@ -17,6 +17,17 @@ export {
   updateSku,
 } from './api/catalog';
 export { api, ApiError } from './api/client';
+export {
+  confirmPurchaseReceipt,
+  createPurchaseReceipt,
+  createSupplier,
+  listLedger,
+  listPurchaseReceipts,
+  listStock,
+  listSuppliers,
+  setStockThreshold,
+  updatePurchaseReceipt,
+} from './api/core';
 export { errorMessage } from './api/errors';
 export {
   createBranch,
@@ -32,7 +43,8 @@ export { AuthProvider, useAuth } from './auth/AuthProvider';
 export { LoginForm } from './auth/LoginForm';
 export { RequireRole } from './auth/RequireRole';
 export { canAccess, visibleFor } from './auth/roles';
-export { formatMoney } from './format';
+export { formatDateTime, formatMoney } from './format';
 export type * from './types/catalog';
 export type * from './types/common';
+export type * from './types/core';
 export type * from './types/identity';

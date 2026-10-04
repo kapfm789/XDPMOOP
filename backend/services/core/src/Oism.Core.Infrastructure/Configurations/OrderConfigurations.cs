@@ -41,3 +41,18 @@ internal sealed class OrderItemConfiguration : IEntityTypeConfiguration<OrderIte
         builder.HasIndex(item => new { item.TenantId, item.SkuId });
     }
 }
+
+// Bảng và chỉ mục: docs/design/data-model/core.md mục "reservations".
+internal sealed class ReservationConfiguration : IEntityTypeConfiguration<Reservation>
+{
+    public void Configure(EntityTypeBuilder<Reservation> builder)
+    {
+        builder.Property(reservation => reservation.Status).HasConversion<string>();
+        builder.HasOne<Order>().WithMany().HasForeignKey(reservation => reservation.OrderId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<OrderItem>().WithMany().HasForeignKey(reservation => reservation.OrderItemId).OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(reservation => new { reservation.TenantId, reservation.OrderId });
+        // Cho job hết hạn quét mọi tenant.
+        builder.HasIndex(reservation => new { reservation.Status, reservation.ExpiresAt });
+    }
+}

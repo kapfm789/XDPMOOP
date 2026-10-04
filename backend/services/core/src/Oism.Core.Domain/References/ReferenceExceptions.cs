@@ -10,4 +10,9 @@ public sealed class ReferenceNotReadyException(string resource, Guid id)
 
 // Chi nhánh đã tắt hoặc SKU đã ngừng bán. `reason` dùng cùng giá trị với OrderRejected (docs/design/events.md).
 public sealed class InactiveReferenceException(string reason, Guid id)
-    : OismException("inactive_reference", "Chi nhánh đã tắt hoặc SKU đã ngừng bán", new { reason, id });
+    : OismException("inactive_reference", "Chi nhánh đã tắt hoặc SKU đã ngừng bán", new { reason, id })
+{
+    public string Reason { get; } = reason;
+
+    public Guid Id { get; } = id;
+}
