@@ -1,0 +1,25 @@
+{
+  "name": "oism-frontend",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "shared",
+    "admin",
+    "pos"
+  ],
+  "scripts": {
+    "dev:admin": "npm run dev -w @oism/admin",
+    "dev:pos": "npm run dev -w @oism/pos",
+    "build": "npm run build -w @oism/admin -w @oism/pos",
+    "typecheck": "npm run typecheck --workspaces",
+    "test": "npm run test -w @oism/shared"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.2",
+    "vitest": "^5.0.3"
+  }
+}
