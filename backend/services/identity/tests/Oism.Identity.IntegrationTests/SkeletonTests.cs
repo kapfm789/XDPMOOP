@@ -1,5 +1,6 @@
 using System.Net;
 using Microsoft.Extensions.DependencyInjection;
+using Oism.Identity.Domain;
 using Oism.Identity.Infrastructure;
 using Oism.SharedKernel;
 
@@ -22,6 +23,7 @@ public sealed class SkeletonTests(ApiFactory factory) : IClassFixture<ApiFactory
         using var scope = factory.Services.CreateScope();
         var model = scope.ServiceProvider.GetRequiredService<IdentityDbContext>().Model;
 
-        Assert.DoesNotContain(model.GetEntityTypes(), entity => !typeof(ITenantOwned).IsAssignableFrom(entity.ClrType));
+        Assert.DoesNotContain(model.GetEntityTypes(), entity =>
+            entity.ClrType != typeof(Tenant) && !typeof(ITenantOwned).IsAssignableFrom(entity.ClrType));
     }
 }

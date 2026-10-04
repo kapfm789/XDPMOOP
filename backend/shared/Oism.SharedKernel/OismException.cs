@@ -14,3 +14,8 @@ public sealed class NotFoundException(string resource)
 
 public sealed class DuplicateException(string message)
     : OismException("duplicate", message);
+
+// Sai thông tin đăng nhập hoặc refresh token không dùng được. Một thông báo chung cho mọi trường hợp,
+// để phản hồi không lộ tài khoản có tồn tại hay không.
+public sealed class UnauthenticatedException()
+    : OismException("unauthenticated", "Thông tin đăng nhập không đúng hoặc phiên đã hết hạn");

@@ -144,6 +144,7 @@ Lần đầu mất vài phút để tải image, tải package và build trong c
 | `localhost:5432`, database `oism`, user và mật khẩu `oism` | PostgreSQL, mỗi service một schema |
 | `http://localhost:15672`, user và mật khẩu `oism` | Giao diện quản trị RabbitMQ |
 
+- Muốn đăng nhập được, sinh cặp khóa JWT cho máy mình theo hướng dẫn trong `deploy/.env.example` rồi dán vào `deploy/.env`; thiếu khóa thì đăng nhập trả 500 và mọi endpoint cần đăng nhập trả 401.
 - Máy đã có PostgreSQL chiếm cổng 5432: tạo `deploy/.env` chứa `POSTGRES_PORT=5433`. Các biến khác xem `deploy/.env.example`.
 - Sửa code không cần build lại image: mã nguồn `backend/` được mount vào container và chạy bằng `dotnet watch`, lưu file xong khoảng 10 đến 15 giây là service tự build và khởi động lại. Migration mới được áp ngay lúc service khởi động lại.
 - Xem log build của một service: `docker compose -f deploy/docker-compose.yml logs -f core`. Build lỗi thì service dừng ở bản lỗi và tự chạy lại khi file được sửa.
@@ -163,7 +164,7 @@ npm --prefix frontend run dev:pos
 ## Trạng thái
 
 - Đã có code của phase 1: skeleton backend và Compose dev (W1-02, W1-03), outbox và inbox qua RabbitMQ (W1-13), danh mục và thương hiệu ở `catalog` (W1-06), hai ứng dụng React với đăng ký, đăng nhập và layout (W1-09), workflow CI (W1-11).
-- Đăng ký và đăng nhập trên giao diện chỉ chạy được trên API thật sau khi có `identity` (W1-04, phase 2). Bốn service còn lại chưa có nghiệp vụ; seed chưa có.
+- Đã có thêm của phase 2: `identity` với đăng ký tenant, đăng nhập, làm mới, đăng xuất và quản lý người dùng (W1-04). Chi nhánh (W1-05), `core`, `channel`, `insights` chưa có nghiệp vụ; seed chưa có.
 - 18 quyết định của nhóm, gồm cả việc chia microservice (D-17), đã được giảng viên xác nhận ngày 2026-10-04 (task W1-01): [docs/decisions/](docs/decisions/README.md).
 
 ## Tài liệu

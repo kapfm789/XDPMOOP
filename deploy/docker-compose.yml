@@ -34,7 +34,7 @@ x-dotnet: &dotnet
 
 x-service: &service
   <<: *dotnet
-  environment:
+  environment: &service-env
     <<: *dotnet-env
     ConnectionStrings__Oism: Host=postgres;Database=oism;Username=${POSTGRES_USER:-oism};Password=${POSTGRES_PASSWORD:-oism}
     # Không chờ rabbitmq khỏe: service vẫn commit khi broker tắt, outbox gửi bù sau (docs/architecture/messaging.md).
@@ -87,6 +87,10 @@ services:
 
   identity:
     <<: *service
+    environment:
+      <<: *service-env
+      # Khóa bí mật ký JWT chỉ cấp cho identity; các service khác chỉ nhận khóa công khai.
+      Jwt__PrivateKey: ${JWT_PRIVATE_KEY:-}
     command: dotnet watch --no-hot-reload --project services/identity/src/Oism.Identity.Api
     ports:
       - "5101:8080"

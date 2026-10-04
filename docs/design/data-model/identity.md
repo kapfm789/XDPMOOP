@@ -34,7 +34,7 @@ erDiagram
 | `is_active` | boolean | |
 | `created_at` | timestamptz | |
 
-Ràng buộc: ít nhất một trong `email`, `phone` khác null. Email và số điện thoại unique toàn cục vì lúc đăng nhập chưa biết tenant ([ADR-0011](../../decisions/0011-auth-and-roles.md)).
+Ràng buộc: ít nhất một trong `email`, `phone` khác null (CHECK `ck_users_email_or_phone`); khóa ngoại `tenant_id` tới `tenants.id`. Email lưu chữ thường nên chỉ mục unique thường là đủ để so khớp không phân biệt hoa thường. Chỉ mục `(tenant_id, created_at)` cho danh sách người dùng. Email và số điện thoại unique toàn cục vì lúc đăng nhập chưa biết tenant ([ADR-0011](../../decisions/0011-auth-and-roles.md)).
 
 ## refresh_tokens
 
@@ -47,6 +47,8 @@ Ràng buộc: ít nhất một trong `email`, `phone` khác null. Email và số
 | `revoked_at` | timestamptz, cho phép null | |
 | `replaced_by_id` | uuid, cho phép null | Token mới sau khi xoay vòng |
 | `created_at` | timestamptz | |
+
+Khóa ngoại `user_id` tới `users.id`; chỉ mục `(tenant_id, user_id)` để thu hồi mọi token của một người dùng.
 
 ## branches
 

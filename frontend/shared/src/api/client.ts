@@ -71,7 +71,8 @@ let refreshing: Promise<boolean> | null = null;
 // Đổi refresh token lấy cặp token mới. Các request gặp 401 cùng lúc dùng chung một lần gọi:
 // refresh token xoay vòng, gọi hai lần với cùng token thì lần sau bị coi là dùng lại và cả chuỗi bị thu hồi.
 export function refreshSession(): Promise<boolean> {
-  refreshing ??= (async () => {
+  refreshing ??= acrossTabs(async () => {
+    // Đọc sau khi đã giữ khóa: tab khác có thể vừa xoay vòng token.
     const refreshToken = getRefreshToken();
     if (!refreshToken) {
       endSession(false);
@@ -91,6 +92,11 @@ export function refreshSession(): Promise<boolean> {
     } finally {
       refreshing = null;
     }
-  })();
+  });
   return refreshing;
+}
+
+// Các tab dùng chung refresh token trong localStorage, nên việc làm mới phải lần lượt giữa các tab (Web Locks).
+function acrossTabs(run: () => Promise<boolean>): Promise<boolean> {
+  return 'locks' in navigator ? navigator.locks.request('oism.refresh', run) : run();
 }

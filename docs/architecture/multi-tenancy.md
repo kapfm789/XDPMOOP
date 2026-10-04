@@ -42,6 +42,7 @@ flowchart LR
 | --- | --- | --- | --- |
 | identity | Tìm user theo email hoặc số điện thoại khi đăng nhập | Người dùng chưa có token | Lấy `TenantId` từ user tìm được |
 | identity | Tìm refresh token theo giá trị băm | Token cũ đã hết hạn | Lấy `TenantId` từ bản ghi token |
+| identity | Đăng ký tenant (không dùng `IgnoreQueryFilters`, chỉ đặt tenant context) | Tenant vừa được tạo trong chính request đó | Đặt tenant context theo tenant mới rồi mới tạo Owner |
 | channel | Tìm `ChannelShop` theo kênh và mã shop | Webhook không mang JWT | Đặt tenant context theo shop |
 | core | Job tìm phần giữ hàng đã hết hạn của mọi tenant | Job chạy không gắn request | Xử lý từng đơn trong tenant context của đơn đó |
 | insights | Job tổng hợp ngày và job dự báo | Job chạy không gắn request | Lặp qua từng tenant, mỗi vòng một tenant context |

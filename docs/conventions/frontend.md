@@ -30,7 +30,7 @@ Các lựa chọn trên đã chốt ở task W1-09 với các bản: React 19, V
 ## Phiên đăng nhập
 
 - Access token chỉ nằm trong bộ nhớ. Refresh token nằm ở `localStorage` để mở lại phiên sau khi tải lại trang; `AuthProvider` đổi nó lấy cặp token mới lúc ứng dụng khởi động.
-- Các request gặp 401 cùng lúc dùng chung một lần làm mới, vì refresh token xoay vòng: dùng lại token cũ thì cả chuỗi bị thu hồi.
+- Các request gặp 401 cùng lúc dùng chung một lần làm mới, vì refresh token xoay vòng: dùng lại token cũ thì cả chuỗi bị thu hồi. Giữa các tab, việc làm mới xếp hàng bằng Web Locks và mỗi tab đọc lại token trong `localStorage` sau khi tới lượt.
 - Làm mới bị từ chối thì phiên kết thúc và `RequireRole` đưa người dùng về `/login`.
 - Vai trò lấy từ `user` trong phản hồi đăng nhập, cùng giá trị với claim `role` của token.
 

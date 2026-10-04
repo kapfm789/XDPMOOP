@@ -27,9 +27,12 @@ internal sealed class OismExceptionHandler(IProblemDetailsService problemDetails
                 break;
 
             case OismException business:
-                problem.Status = business is NotFoundException
-                    ? StatusCodes.Status404NotFound
-                    : StatusCodes.Status409Conflict;
+                problem.Status = business switch
+                {
+                    NotFoundException => StatusCodes.Status404NotFound,
+                    UnauthenticatedException => StatusCodes.Status401Unauthorized,
+                    _ => StatusCodes.Status409Conflict,
+                };
                 problem.Title = business.Message;
                 problem.Extensions["code"] = business.Code;
                 if (business.Details is not null)

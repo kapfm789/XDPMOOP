@@ -1,13 +1,27 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Oism.BuildingBlocks.Persistence;
+using Oism.Identity.Application;
+using Oism.Identity.Application.Auth;
+using Oism.Identity.Application.Tenants;
+using Oism.Identity.Application.Users;
+using Oism.Identity.Infrastructure.Repositories;
+using Oism.Identity.Infrastructure.Security;
 
 namespace Oism.Identity.Infrastructure;
 
 public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration) =>
-        services.AddOismDbContext<IdentityDbContext>(configuration, IdentityDbContext.Schema);
+        services
+            .AddOismDbContext<IdentityDbContext>(configuration, IdentityDbContext.Schema)
+            .AddScoped<IUnitOfWork, UnitOfWork>()
+            .AddScoped<ITenantRepository, TenantRepository>()
+            .AddScoped<IUserRepository, UserRepository>()
+            .AddScoped<IRefreshTokenRepository, RefreshTokenRepository>()
+            .AddSingleton<IClock, SystemClock>()
+            .AddSingleton<IPasswordHasher, BCryptPasswordHasher>()
+            .AddSingleton<IAccessTokenIssuer, JwtAccessTokenIssuer>();
 
     public static Task MigrateDatabaseAsync(this IServiceProvider services) =>
         services.MigrateAsync<IdentityDbContext>();
