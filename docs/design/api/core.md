@@ -21,6 +21,11 @@ Tiền tố `/api/core`. Use case ở [inventory.md](../../usecase-userstory/inv
 
 Staff không thấy `avgCost` trong phản hồi của `/stock` và `unitCost` trong `/ledger`; hai trường này chỉ trả cho Owner.
 
+- `/stock` trả theo khuôn phân trang chung, xếp theo `skuCode` rồi `branchId`. `query` khớp một phần mã hoặc tên SKU, không phân biệt hoa thường. `available` bằng `onHand - reserved`.
+- `/ledger` trả theo khuôn phân trang chung, xếp theo `seq` tăng dần. Mỗi dòng gồm `seq`, `id`, `branchId`, `skuId`, `skuCode`, `name`, `type` (`IN`, `OUT`), `reason`, `quantity`, `balanceAfter`, `unitCost` (chỉ Owner), `referenceType`, `referenceId`, `reversalOfId?`, `createdBy?`, `createdAt`. `from` và `to` lọc theo `createdAt`, tính cả hai đầu.
+- `page` nhỏ hơn 1 hoặc `pageSize` ngoài khoảng 1 đến 100 trả 400 `validation_failed`.
+- Sổ chỉ có đường đọc: không endpoint nào sửa hay xóa dòng sổ (NFR-SEC-03).
+
 ## Nhập hàng
 
 | Phương thức | Đường dẫn | Vai trò | Vào | Ra | Lỗi riêng |
@@ -51,12 +56,16 @@ Staff không thấy `avgCost` trong phản hồi của `/stock` và `unitCost` t
 | --- | --- | --- | --- | --- | --- |
 | GET | `/api/core/orders` | Owner, Staff | `status?`, `channel?`, `branchId?`, `from?`, `to?`, `page`, `pageSize` | Danh sách đơn | |
 | GET | `/api/core/orders/{id}` | Owner, Staff | | Đơn kèm dòng đơn, phần giữ hàng, thanh toán | |
-| POST | `/api/core/orders` | Owner, Staff | `branchId`, `note?`, `items[]` (`skuId`, `quantity`, `unitPrice?`, `discount?`) | 201: đơn Reserved, kênh Admin | 409 `insufficient_stock` |
+| POST | `/api/core/orders` | Owner, Staff | `branchId`, `note?`, `items[]` (`skuId`, `quantity`, `unitPrice?`, `discount?`) | 201: đơn Reserved, kênh Admin | 409 `insufficient_stock`, `reference_not_ready`, `inactive_reference` |
 | POST | `/api/core/orders/{id}/confirm` | Owner, Staff | | 200: đơn Confirmed | 409 `invalid_state_transition` |
 | POST | `/api/core/orders/{id}/complete` | Owner, Staff | | 200: đơn Completed | 409 `invalid_state_transition` |
 | POST | `/api/core/orders/{id}/cancel` | Owner, Staff | `reason?` | 200: đơn Cancelled | 409 `invalid_state_transition` |
 
 Hủy lại đơn đã Cancelled trả 200 với cùng đơn, không tác động lần hai. `costPrice` trên dòng đơn chỉ trả cho Owner.
+
+- Đơn trả về gồm `id`, `orderNumber`, `branchId`, `channel`, `externalOrderId?`, `status`, `totalAmount`, `reservedUntil?`, `confirmedAt?`, `completedAt?`, `cancelledAt?`, `cancelReason?`, `note?`, `createdBy?`, `createdAt` và `items[]`; mỗi dòng gồm `id`, `skuId`, `skuCode`, `skuName`, `quantity`, `unitPrice`, `discount`.
+- Tạo đơn: bỏ trống `unitPrice` thì dùng giá lẻ hiện tại của SKU; bỏ trống `discount` là 0. `items[]` rỗng, `quantity` không dương, `unitPrice` hoặc `discount` âm, `discount` vượt `quantity × unitPrice` của dòng đều trả 400 `validation_failed`.
+- Tạo đơn: `branchId` hoặc `skuId` chưa có bản sao ở `core` trả 409 `reference_not_ready`. `core` không phân biệt được bản sao chưa tới với ID của tenant khác, nên ID của tenant khác cũng nhận mã này. Chi nhánh đã tắt hoặc SKU ngừng bán trả 409 `inactive_reference`, `details` gồm `reason` (`InactiveBranch` hoặc `InactiveSku`) và `id`.
 
 ## Đường vào không phải HTTP
 

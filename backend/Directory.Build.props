@@ -7,6 +7,12 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
+  <!-- Api của mỗi service là startup project của `dotnet ef`. Gói Design chỉ dùng lúc sinh migration
+       và không lan sang project tham chiếu Api. -->
+  <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.Api'))">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+  </ItemGroup>
+
   <!-- Project test nhận package theo tên, để từng csproj chỉ còn khai báo tham chiếu project. -->
   <ItemGroup Condition="$(MSBuildProjectName.EndsWith('Tests'))">
     <PackageReference Include="coverlet.collector" />

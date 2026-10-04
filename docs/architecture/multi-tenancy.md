@@ -28,7 +28,7 @@ flowchart LR
 
 1. Mọi entity nghiệp vụ cài `ITenantOwned`. Bảng không có `tenant_id` chỉ gồm `tenants` và các bảng hạ tầng (`inbox_messages`, Hangfire).
 2. Mọi unique index và mọi chỉ mục tra cứu bắt đầu bằng `tenant_id`.
-3. ID do client gửi lên luôn được tra qua repository có filter. ID của tenant khác vì thế trả về "không tìm thấy" và API trả 404, không trả 403, để không lộ việc bản ghi có tồn tại.
+3. ID do client gửi lên luôn được tra qua repository có filter. ID của tenant khác vì thế trả về "không tìm thấy" và API trả 404, không trả 403, để không lộ việc bản ghi có tồn tại. Ngoại lệ duy nhất nằm ở `core`: chi nhánh và SKU ở đó chỉ là bản sao dựng từ event, nên `branchId` hoặc `skuId` gửi trong body mà không có bản sao trả 409 `reference_not_ready` ([messaging.md](messaging.md)). `core` không phân biệt được bản sao chưa tới với ID của tenant khác; phản hồi giống nhau cho cả hai nên không lộ gì, và không quan hệ chéo nào được tạo.
 4. Khi nối hai bản ghi (đơn với chi nhánh, dòng đơn với SKU), cả hai phải được tra trong cùng tenant context. Không tin `tenantId` nằm trong body request.
 5. Event luôn mang `tenantId`. Consumer đặt `ITenantContext` từ event trước khi chạm vào database.
 6. SignalR chỉ gửi vào group `tenant:{tenantId}` hoặc `tenant:{tenantId}:branch:{branchId}`. Không gửi cho tất cả kết nối.
@@ -50,7 +50,7 @@ flowchart LR
 
 ## Kiểm thử
 
-- T14: tenant A dùng ID đơn, SKU, chi nhánh của tenant B trên mọi API đọc và ghi; kết quả phải là 404 và không có quan hệ chéo nào được tạo.
+- T14: tenant A dùng ID đơn, SKU, chi nhánh của tenant B trên mọi API đọc và ghi; kết quả phải là 404 (hoặc 409 theo ngoại lệ ở quy tắc 3) và không có quan hệ chéo nào được tạo.
 - T15: phiên SignalR của tenant B không nhận thông báo của tenant A.
 - Mỗi service có một test tự động duyệt mọi entity của DbContext và báo lỗi nếu entity nghiệp vụ nào không cài `ITenantOwned`.
 - Bộ test toàn hệ thống ở task W5-02 phủ thêm event và job.

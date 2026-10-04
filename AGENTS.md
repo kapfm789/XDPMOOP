@@ -69,7 +69,7 @@ Vi phạm bất kỳ điều nào dưới đây là lỗi, kể cả khi test hi
 7. Một use case là một transaction. Lỗi thì rollback toàn bộ; không commit nửa chừng.
 8. `cost_price` của dòng đơn ghi một lần lúc xác nhận và không bao giờ đổi.
 9. Mọi entity nghiệp vụ có `TenantId` và đi qua Global Query Filter. `IgnoreQueryFilters` chỉ dùng ở các chỗ liệt kê trong `docs/architecture/multi-tenancy.md`.
-10. Dữ liệu của tenant khác trả 404. Không tin `tenantId` trong body request.
+10. Dữ liệu của tenant khác trả 404; ngoại lệ duy nhất là quy tắc 3 ở `docs/architecture/multi-tenancy.md`. Không tin `tenantId` trong body request.
 11. Domain không tham chiếu EF Core hay ASP.NET Core. Application không tham chiếu Infrastructure. Controller không chứa nghiệp vụ.
 12. Hợp đồng event chỉ được thêm trường; không đổi tên, không xóa, không đổi kiểu.
 13. Mọi endpoint khai báo quyền theo vai trò; quyền kiểm ở backend.

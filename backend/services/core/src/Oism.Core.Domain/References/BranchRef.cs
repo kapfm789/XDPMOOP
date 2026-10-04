@@ -35,4 +35,11 @@ public sealed class BranchRef(Guid branchId) : ITenantOwned
         Version = version;
         return true;
     }
+
+    // UC-ORD-02 AC-4: chi nhánh đã tắt không nhận đơn mới.
+    public void EnsureActive()
+    {
+        if (!IsActive)
+            throw new InactiveReferenceException("InactiveBranch", BranchId);
+    }
 }

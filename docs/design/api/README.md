@@ -50,6 +50,7 @@ Lỗi trả theo ProblemDetails, kèm trường `code` để giao diện xử l�
 | 409 | `insufficient_stock` | Không đủ tồn khả dụng; `details` nêu từng SKU |
 | 409 | `stocktake_below_reserved` | Số đếm thấp hơn lượng đã giữ; `details` nêu các đơn |
 | 409 | `reference_not_ready` | SKU hoặc chi nhánh chưa tới service do event trễ; thử lại sau |
+| 409 | `inactive_reference` | Chi nhánh đã tắt hoặc SKU đã ngừng bán; `details` nêu `reason` và `id` |
 
 ## Chống gửi trùng
 

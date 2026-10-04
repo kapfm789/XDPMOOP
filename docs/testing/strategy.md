@@ -80,7 +80,7 @@ public async Task Reserve_FiftyRequestsForLastUnit_ExactlyOneSucceeds()
 
 ## Mẫu test cách ly tenant
 
-Tạo dữ liệu ở tenant B, đăng nhập tenant A, rồi gọi mọi endpoint đọc và ghi với ID của B. Kỳ vọng 404 cho mọi lời gọi, và sau đó dữ liệu của B không đổi. Mỗi service có thêm một test duyệt mọi entity của DbContext và báo lỗi nếu entity nghiệp vụ nào không cài `ITenantOwned`.
+Tạo dữ liệu ở tenant B, đăng nhập tenant A, rồi gọi mọi endpoint đọc và ghi với ID của B. Kỳ vọng 404 cho mọi lời gọi, trừ ngoại lệ 409 ở `core` ghi tại [multi-tenancy.md](../architecture/multi-tenancy.md) quy tắc 3, và sau đó dữ liệu của B không đổi. Mỗi service có thêm một test duyệt mọi entity của DbContext và báo lỗi nếu entity nghiệp vụ nào không cài `ITenantOwned`.
 
 ## Độ bao phủ
 

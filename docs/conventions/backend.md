@@ -83,6 +83,7 @@ Domain và Application ném exception có mã; middleware trong `Oism.BuildingBl
 | `InsufficientStockException` | 409 | `insufficient_stock` |
 | `StocktakeBelowReservedException` | 409 | `stocktake_below_reserved` |
 | `ReferenceNotReadyException` | 409 | `reference_not_ready` |
+| `InactiveReferenceException` | 409 | `inactive_reference` |
 | Exception khác | 500 | Không lộ chi tiết; ghi log kèm correlation id |
 
 Không dùng exception cho luồng bình thường (ví dụ "không có kết quả tìm kiếm").
@@ -108,6 +109,7 @@ Ba điểm của khuôn đã có ở `catalog`, service khác chép theo:
 ## Migration
 
 - Mỗi service giữ migration của mình trong `Oism.<Service>.Infrastructure/Migrations`.
+- Sinh migration từ thư mục `backend/`: `dotnet ef migrations add <Tên> --project services/<service>/src/Oism.<Service>.Infrastructure --startup-project services/<service>/src/Oism.<Service>.Api --output-dir Migrations`. Cần tool `dotnet-ef` bản 8 (`dotnet tool install --global dotnet-ef --version "8.*"`) và .NET 8; máy không có .NET 8 thì chạy lệnh này trong image `mcr.microsoft.com/dotnet/sdk:8.0`. Project Api nhận gói `Microsoft.EntityFrameworkCore.Design` từ `backend/Directory.Build.props`.
 - Bảng lịch sử migration nằm trong schema của service: `MigrationsHistoryTable("__EFMigrationsHistory", "<service>")`. Để mặc định thì 5 service dùng chung một bảng lịch sử.
 - Một PR tối đa một migration cho mỗi service. Không sửa migration đã merge; sai thì thêm migration mới.
 - CHECK, trigger và chỉ mục đặc biệt viết bằng `migrationBuilder.Sql` trong chính migration tạo bảng.
@@ -126,6 +128,7 @@ Danh sách đã chọn; thêm package ngoài danh sách phải hỏi nhóm trư�
 | Việc | Package |
 | --- | --- |
 | ORM và PostgreSQL | Microsoft.EntityFrameworkCore, Npgsql.EntityFrameworkCore.PostgreSQL, EFCore.NamingConventions |
+| Sinh migration | Microsoft.EntityFrameworkCore.Design, chỉ ở project Api và chỉ dùng lúc chạy `dotnet ef` |
 | Kiểm tra đầu vào | FluentValidation |
 | Băm mật khẩu | BCrypt.Net-Next |
 | Xác thực | Microsoft.AspNetCore.Authentication.JwtBearer |
