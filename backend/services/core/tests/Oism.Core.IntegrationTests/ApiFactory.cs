@@ -17,6 +17,9 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     public RabbitMqContainer Broker { get; } = new RabbitMqBuilder("rabbitmq:4-management-alpine").Build();
 
+    // Đặt trước khi service khởi động để nó trỏ tới một địa chỉ khác broker thật, ví dụ một cổng không ai nghe (T23).
+    public string? RabbitMqUri { get; set; }
+
     public Task InitializeAsync() => Task.WhenAll(_postgres.StartAsync(), Broker.StartAsync());
 
     async Task IAsyncLifetime.DisposeAsync()
@@ -29,7 +32,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     protected override void ConfigureWebHost(IWebHostBuilder builder) => builder
         .UseSetting("ConnectionStrings:Oism", _postgres.GetConnectionString())
-        .UseSetting("ConnectionStrings:RabbitMq", Broker.GetConnectionString())
+        .UseSetting("ConnectionStrings:RabbitMq", RabbitMqUri ?? Broker.GetConnectionString())
         .UseSetting("Jwt:PublicKey", Convert.ToBase64String(_rsa.ExportSubjectPublicKeyInfo()));
 
     // Client mang JWT như identity cấp: claim sub, tenant_id, role (docs/architecture/security.md).

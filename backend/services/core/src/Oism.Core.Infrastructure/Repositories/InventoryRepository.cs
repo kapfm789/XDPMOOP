@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Oism.BuildingBlocks.Tenancy;
 using Oism.Core.Application.Inventory;
 using Oism.Core.Domain.Inventory;
+using Oism.Core.Domain.Orders;
 
 namespace Oism.Core.Infrastructure.Repositories;
 
@@ -46,4 +47,6 @@ internal sealed class InventoryRepository(CoreDbContext db, ITenantContext tenan
     }
 
     public void Add(InventoryTransaction entry) => db.Add(entry);
+
+    public void Add(Reservation reservation) => db.Add(reservation);
 }

@@ -15,6 +15,9 @@ internal sealed class ReferenceRepository(CoreDbContext db) : IReferenceReposito
     public async Task<IReadOnlyList<SkuRef>> ListSkusAsync(IReadOnlyCollection<Guid> skuIds, CancellationToken ct) =>
         await db.SkuRefs.AsNoTracking().Where(sku => skuIds.Contains(sku.SkuId)).ToListAsync(ct);
 
+    public async Task<IReadOnlyList<SkuRef>> ListSkusByCodeAsync(IReadOnlyCollection<string> skuCodes, CancellationToken ct) =>
+        await db.SkuRefs.AsNoTracking().Where(sku => skuCodes.Contains(sku.SkuCode)).ToListAsync(ct);
+
     public void Add(SkuRef sku) => db.Add(sku);
 
     public void Add(BranchRef branch) => db.Add(branch);

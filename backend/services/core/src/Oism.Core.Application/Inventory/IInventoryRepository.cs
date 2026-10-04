@@ -1,4 +1,5 @@
 using Oism.Core.Domain.Inventory;
+using Oism.Core.Domain.Orders;
 
 namespace Oism.Core.Application.Inventory;
 
@@ -11,4 +12,6 @@ public interface IInventoryRepository
         Guid branchId, IReadOnlyCollection<Guid> skuIds, CancellationToken ct);
 
     void Add(InventoryTransaction entry);
+
+    void Add(Reservation reservation);
 }

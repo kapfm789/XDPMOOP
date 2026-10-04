@@ -17,10 +17,15 @@ public static class DependencyInjection
             .AddOismDbContext<CoreDbContext>(configuration, CoreDbContext.Schema)
             .AddOismMessaging<CoreDbContext>()
             .AddSingleton<IClock, SystemClock>()
+            // Thời hạn giữ hàng mặc định 30 phút (ADR-0005).
+            .AddSingleton(new ReservationSettings(configuration.GetValue("Reservation:HoldMinutes", 30)))
             .AddScoped<IUnitOfWork, UnitOfWork>()
+            .AddScoped<IEventPublisher, OutboxEventPublisher>()
             .AddScoped<IReferenceRepository, ReferenceRepository>()
             .AddScoped<IInventoryRepository, InventoryRepository>()
+            .AddScoped<IPurchaseReceiptRepository, PurchaseReceiptRepository>()
             .AddScoped<IStockQueries, StockQueries>()
+            .AddScoped<IStockService, StockService>()
             .AddScoped<IOrderRepository, OrderRepository>();
 
     public static Task MigrateDatabaseAsync(this IServiceProvider services) =>

@@ -59,6 +59,84 @@ public sealed class InventoryBalanceTests
         Assert.Equal((2, 1L), (balance.OnHand, balance.Version));
     }
 
+    // FR-COST-01: nhập mua và nhận chuyển kho tính lại giá vốn bình quân; mọi bút toán khác giữ nguyên giá vốn.
+    [Fact]
+    [Trait("Scenario", "T09")]
+    [Trait("UseCase", "UC-INV-02 AC-3")]
+    [Trait("UseCase", "UC-INV-02 AC-4")]
+    public void Post_PurchaseOrTransferIn_RecalculatesAverageCostAndOtherEntriesLeaveIt()
+    {
+        var balance = new InventoryBalance(Guid.NewGuid(), Guid.NewGuid());
+
+        // SKU chưa từng có ở chi nhánh: giá vốn bằng đúng đơn giá nhập.
+        balance.Post(LedgerType.IN, LedgerReason.Purchase, 10, 100_000, LedgerReference.PurchaseReceipt, Receipt, null, Now);
+        Assert.Equal(100_000m, balance.AvgCost);
+
+        var second = balance.Post(LedgerType.IN, LedgerReason.Purchase, 5, 130_000, LedgerReference.PurchaseReceipt, Receipt, null, Now);
+        Assert.Equal((15, 110_000m), (balance.OnHand, balance.AvgCost));
+        // Dòng sổ mang đơn giá nhập, không mang giá vốn bình quân.
+        Assert.Equal(130_000m, second.UnitCost);
+
+        balance.Post(LedgerType.OUT, LedgerReason.Sale, 5, 110_000, LedgerReference.Order, Receipt, null, Now);
+        balance.Post(LedgerType.IN, LedgerReason.StocktakeAdjust, 5, 999_000, LedgerReference.Stocktake, Receipt, null, Now);
+        Assert.Equal((15, 110_000m), (balance.OnHand, balance.AvgCost));
+
+        balance.Post(LedgerType.IN, LedgerReason.TransferIn, 15, 120_000, LedgerReference.StockTransfer, Receipt, null, Now);
+        Assert.Equal((30, 115_000m), (balance.OnHand, balance.AvgCost));
+    }
+
+    // FR-RSE-01: giữ hàng tăng reserved, không đổi on_hand; tồn khả dụng là on_hand trừ reserved.
+    [Fact]
+    [Trait("UseCase", "UC-ORD-01 AC-2")]
+    public void Reserve_WithinAvailable_RaisesReservedAndLeavesOnHand()
+    {
+        var balance = new InventoryBalance(Guid.NewGuid(), Guid.NewGuid());
+        balance.Post(LedgerType.IN, LedgerReason.Purchase, 5, 100_000, LedgerReference.PurchaseReceipt, Receipt, null, Now);
+
+        balance.Reserve(3, Now.AddMinutes(1));
+
+        Assert.Equal((5, 3, 2, 2L, Now.AddMinutes(1)), (balance.OnHand, balance.Reserved, balance.Available, balance.Version, balance.UpdatedAt));
+    }
+
+    [Fact]
+    [Trait("UseCase", "UC-ORD-01 AC-5")]
+    public void Reserve_BeyondAvailable_ThrowsInsufficientStockAndChangesNothing()
+    {
+        var skuId = Guid.NewGuid();
+        var balance = new InventoryBalance(Guid.NewGuid(), skuId);
+        balance.Post(LedgerType.IN, LedgerReason.Purchase, 5, 100_000, LedgerReference.PurchaseReceipt, Receipt, null, Now);
+        balance.Reserve(4, Now);
+
+        var failure = Assert.Throws<InsufficientStockException>(() => balance.Reserve(2, Now));
+        // Hàng đang được giữ cũng không xuất được.
+        Assert.Throws<InsufficientStockException>(() =>
+            balance.Post(LedgerType.OUT, LedgerReason.TransferOut, 2, 100_000, LedgerReference.StockTransfer, Receipt, null, Now));
+        Assert.Throws<ArgumentOutOfRangeException>(() => balance.Reserve(0, Now));
+
+        Assert.Equal(new StockShortage(skuId, Requested: 2, Available: 1), Assert.Single(failure.Shortages));
+        Assert.Equal((5, 4, 2L), (balance.OnHand, balance.Reserved, balance.Version));
+    }
+
+    [Fact]
+    [Trait("UseCase", "UC-INV-05 AC-1")]
+    [Trait("UseCase", "UC-INV-05 AC-2")]
+    [Trait("UseCase", "UC-INV-05 AC-3")]
+    public void SetThreshold_ValueThenNullThenNegative_SetsClearsAndRejects()
+    {
+        var balance = new InventoryBalance(Guid.NewGuid(), Guid.NewGuid());
+
+        balance.SetThreshold(0, Now);
+        balance.SetThreshold(5, Now.AddMinutes(1));
+        Assert.Equal((5, 2L, Now.AddMinutes(1)), (balance.ReorderThreshold, balance.Version, balance.UpdatedAt));
+
+        balance.SetThreshold(null, Now.AddMinutes(2));
+        Assert.Equal((null, 3L), (balance.ReorderThreshold, balance.Version));
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => balance.SetThreshold(-1, Now));
+        // Ngưỡng không đụng tới tồn và giá vốn.
+        Assert.Equal((null, 3L, 0, 0, 0m), (balance.ReorderThreshold, balance.Version, balance.OnHand, balance.Reserved, balance.AvgCost));
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(-5)]
