@@ -26,7 +26,7 @@ flowchart LR
 
 ## Quy tắc
 
-1. Mọi entity nghiệp vụ cài `ITenantOwned`. Bảng không có `tenant_id` chỉ gồm `tenants` và các bảng hạ tầng (Hangfire).
+1. Mọi entity nghiệp vụ cài `ITenantOwned`. Bảng không có `tenant_id` chỉ gồm `tenants` và các bảng hạ tầng (`inbox_messages`, Hangfire).
 2. Mọi unique index và mọi chỉ mục tra cứu bắt đầu bằng `tenant_id`.
 3. ID do client gửi lên luôn được tra qua repository có filter. ID của tenant khác vì thế trả về "không tìm thấy" và API trả 404, không trả 403, để không lộ việc bản ghi có tồn tại.
 4. Khi nối hai bản ghi (đơn với chi nhánh, dòng đơn với SKU), cả hai phải được tra trong cùng tenant context. Không tin `tenantId` nằm trong body request.

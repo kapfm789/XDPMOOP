@@ -74,6 +74,8 @@ flowchart LR
 | Inventory | Số dư, ledger, phiếu nhập, chuyển kho, kiểm kê, giá vốn | Dev A |
 | Orders | Đơn, dòng đơn, phần giữ hàng, thanh toán, POS checkout, job hết hạn | Dev B |
 
+Ngoài hai module, thư mục `References` ở Domain và Application giữ bản sao SKU và chi nhánh dựng từ event (`SkuRef`, `BranchRef`); cả hai module chỉ đọc chúng, chỉ consumer ghi.
+
 Orders đổi tồn qua interface `IStockService` của Inventory (giữ hàng, tiêu thụ phần giữ, giải phóng phần giữ). Orders không tự sửa `InventoryBalance` và không tự ghi ledger. Hai module dùng chung một `CoreDbContext` và một transaction, nên lời gọi qua interface vẫn nguyên tử.
 
 ## Ba lớp của frontend

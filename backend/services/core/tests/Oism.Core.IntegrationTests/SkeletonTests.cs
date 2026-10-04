@@ -1,5 +1,6 @@
 using System.Net;
 using Microsoft.Extensions.DependencyInjection;
+using Oism.BuildingBlocks.Messaging;
 using Oism.Core.Infrastructure;
 using Oism.SharedKernel;
 
@@ -15,13 +16,15 @@ public sealed class SkeletonTests(ApiFactory factory) : IClassFixture<ApiFactory
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    // docs/architecture/multi-tenancy.md: entity không có tenant_id (bảng tenants) phải được loại trừ tường minh ở đây.
+    // docs/architecture/multi-tenancy.md: entity không có tenant_id phải được loại trừ tường minh ở đây.
+    // inbox_messages là bảng hạ tầng: khóa là eventId của thông điệp, không thuộc tenant nào.
     [Fact]
     public void DbContext_EveryEntity_ImplementsITenantOwned()
     {
         using var scope = factory.Services.CreateScope();
         var model = scope.ServiceProvider.GetRequiredService<CoreDbContext>().Model;
 
-        Assert.DoesNotContain(model.GetEntityTypes(), entity => !typeof(ITenantOwned).IsAssignableFrom(entity.ClrType));
+        Assert.DoesNotContain(model.GetEntityTypes(), entity =>
+            entity.ClrType != typeof(InboxMessage) && !typeof(ITenantOwned).IsAssignableFrom(entity.ClrType));
     }
 }

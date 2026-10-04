@@ -8,9 +8,11 @@
 core/
 ├─ src/
 │  ├─ Oism.Core.Domain/
+│  │  ├─ References/    SkuRef, BranchRef
 │  │  ├─ Inventory/     InventoryBalance, InventoryTransaction, PurchaseReceipt, StockTransfer, Stocktake, WeightedAverageCost
 │  │  └─ Orders/        Order, OrderItem, Reservation, Payment, OrderStateMachine
 │  ├─ Oism.Core.Application/
+│  │  ├─ References/    UpsertSkuRef, UpsertBranchRef
 │  │  ├─ Inventory/     PostLedger, ConfirmPurchaseReceipt, ShipTransfer, ReceiveTransfer, PostStocktake
 │  │  └─ Orders/        ReserveStock, ConfirmOrder, CancelOrder, PosCheckout, ExpireReservations
 │  ├─ Oism.Core.Infrastructure/   CoreDbContext, migration, trigger chặn UPDATE/DELETE ledger, outbox, inbox, Hangfire
