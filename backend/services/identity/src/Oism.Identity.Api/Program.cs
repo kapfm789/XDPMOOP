@@ -1,10 +1,14 @@
 using Oism.BuildingBlocks.Web;
+using Oism.Identity.Application;
 using Oism.Identity.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOismWeb(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
+// Mỗi use case là một lớp *Handler ở Application, đăng ký thẳng vào DI.
+foreach (var handler in typeof(IUnitOfWork).Assembly.GetTypes().Where(type => type.Name.EndsWith("Handler")))
+    builder.Services.AddScoped(handler);
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
 

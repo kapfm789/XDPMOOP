@@ -4,6 +4,7 @@
   </PropertyGroup>
   <!-- Danh sách package được phép: docs/conventions/backend.md mục "Package". -->
   <ItemGroup>
+    <PackageVersion Include="BCrypt.Net-Next" Version="4.2.1" />
     <PackageVersion Include="EFCore.NamingConventions" Version="8.0.3" />
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.31" />

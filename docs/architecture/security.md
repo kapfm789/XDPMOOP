@@ -18,7 +18,9 @@ Quyết định liên quan: [ADR-0011](../decisions/0011-auth-and-roles.md).
 | Kiểm JWT | Gateway kiểm trước; service kiểm lại bằng khóa công khai lấy từ cấu hình |
 | Giới hạn thử đăng nhập | Rate limit ở gateway cho `/api/identity/auth/login` |
 
-`identity` giữ khóa bí mật để ký. Khóa công khai được cấp cho gateway và các service qua biến môi trường `Jwt__PublicKey`, dạng SubjectPublicKeyInfo mã hóa base64 trên một dòng. Thiếu khóa thì không token nào hợp lệ.
+`identity` giữ khóa bí mật để ký, nhận qua biến môi trường `Jwt__PrivateKey`, dạng PKCS#8 mã hóa base64 trên một dòng; thiếu khóa thì đăng nhập trả 500. Khóa công khai được cấp cho gateway và các service qua biến môi trường `Jwt__PublicKey`, dạng SubjectPublicKeyInfo mã hóa base64 trên một dòng. Thiếu khóa thì không token nào hợp lệ. Cách sinh một cặp khóa cho máy dev ghi ở `deploy/.env.example`.
+
+Refresh token là 32 byte ngẫu nhiên viết dạng hex; database chỉ giữ SHA-256 của nó. Mật khẩu băm bằng BCrypt sau khi băm trước SHA-384, để mật khẩu dài hơn 72 byte không bị cắt bớt.
 
 ## Phân quyền theo vai trò
 

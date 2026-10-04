@@ -75,6 +75,7 @@ Domain và Application ném exception có mã; middleware trong `Oism.BuildingBl
 | Exception | HTTP | `code` |
 | --- | --- | --- |
 | `ValidationException` | 400 | `validation_failed` |
+| `UnauthenticatedException` | 401 | `unauthenticated` |
 | `NotFoundException` | 404 | `not_found` |
 | `DuplicateException` | 409 | `duplicate` |
 | `CategoryInUseException` | 409 | `category_in_use` |
