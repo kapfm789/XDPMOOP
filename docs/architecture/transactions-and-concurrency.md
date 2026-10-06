@@ -68,6 +68,8 @@ Mức cô lập là READ COMMITTED mặc định của PostgreSQL, kèm khóa d�
 | `IStockService.Consume` | `reserved` giảm; gọi `PostLedger(OUT, Sale)`; `Reservation` sang Consumed; trả giá vốn đã dùng | Có | Use case của Orders |
 | `IStockService.Release` | `reserved` giảm; `Reservation` sang Released | Không | Use case của Orders |
 
+Bút toán xuất theo giá vốn (bán hàng, xuất chuyển kho) gọi `PostLedger` với đơn giá bỏ trống: `unit_cost` của dòng sổ khi đó là `avg_cost` của dòng số dư, đọc dưới khóa. `Consume` giảm `reserved` trước rồi mới gọi `PostLedger`, vì `PostLedger` chỉ cho xuất trong tồn khả dụng.
+
 `BalanceAfter` của dòng ledger được tính khi đang giữ khóa dòng số dư, nên thứ tự theo `seq` trong cùng tenant, chi nhánh, SKU luôn nhất quán. Không sắp ledger theo `created_at` để suy ra thứ tự.
 
 ## Chống xử lý trùng

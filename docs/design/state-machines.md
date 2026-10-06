@@ -73,6 +73,8 @@ stateDiagram-v2
 | Draft | InTransit | Nơi gửi đủ tồn khả dụng | `on_hand` nơi gửi giảm; ghi ledger OUT lý do TransferOut; ghi `unit_cost` lên dòng phiếu |
 | InTransit | Received | | `on_hand` nơi nhận tăng; tính lại `avg_cost` nơi nhận; ghi ledger IN lý do TransferIn |
 
+Phiếu Draft chưa tác động tồn nên xóa được và không để lại gì. Phiếu InTransit hoặc Received không xóa và không hủy được ([ADR-0009](../decisions/0009-transfer-and-stocktake.md)).
+
 ## Phiên kiểm kê
 
 ```mermaid

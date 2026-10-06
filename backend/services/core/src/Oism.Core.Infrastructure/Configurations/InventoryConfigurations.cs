@@ -63,3 +63,26 @@ internal sealed class PurchaseReceiptItemConfiguration : IEntityTypeConfiguratio
         });
     }
 }
+
+internal sealed class StockTransferConfiguration : IEntityTypeConfiguration<StockTransfer>
+{
+    public void Configure(EntityTypeBuilder<StockTransfer> builder)
+    {
+        builder.Property(transfer => transfer.Status).HasConversion<string>();
+        builder.HasMany(transfer => transfer.Items).WithOne().HasForeignKey(item => item.TransferId).OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(transfer => new { transfer.TenantId, transfer.TransferNumber }).IsUnique();
+        builder.ToTable(table => table.HasCheckConstraint("ck_stock_transfers_two_branches", "from_branch_id <> to_branch_id"));
+    }
+}
+
+internal sealed class StockTransferItemConfiguration : IEntityTypeConfiguration<StockTransferItem>
+{
+    public void Configure(EntityTypeBuilder<StockTransferItem> builder)
+    {
+        // Dòng phiếu được thêm qua phiếu chứ không qua DbContext.Add; khóa do Domain đặt sẵn (docs/conventions/backend.md).
+        builder.Property(item => item.Id).ValueGeneratedNever();
+        builder.Property(item => item.UnitCost).HasPrecision(18, 4);
+        builder.ToTable(table => table.HasCheckConstraint("ck_stock_transfer_items_quantity_positive", "quantity > 0"));
+    }
+}

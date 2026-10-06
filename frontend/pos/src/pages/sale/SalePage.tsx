@@ -1,6 +1,6 @@
-import { Empty } from 'antd';
+import { SaleScreen } from '../../features/sale/SaleScreen';
 
-// Tìm SKU, giỏ hàng, thanh toán được dựng ở task W3-07 (docs/design/ui/pos.md).
+// Route `/`: màn hình bán hàng (docs/design/ui/pos.md).
 export function SalePage() {
-  return <Empty description="Màn hình bán hàng" />;
+  return <SaleScreen />;
 }

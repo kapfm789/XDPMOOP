@@ -3,6 +3,9 @@ import type {
   CreatePurchaseReceiptRequest,
   LedgerFilter,
   LedgerLine,
+  Order,
+  PosCheckoutRequest,
+  PosSku,
   PurchaseReceipt,
   PurchaseReceiptFilter,
   SetThresholdRequest,
@@ -49,3 +52,11 @@ export const updatePurchaseReceipt = (id: string, request: UpdatePurchaseReceipt
 // Xác nhận lại phiếu đã Confirmed trả lại cùng phiếu, không tác động lần hai.
 export const confirmPurchaseReceipt = (id: string) =>
   api<PurchaseReceipt>(`/api/core/purchase-receipts/${id}/confirm`, { method: 'POST' });
+
+// Tối đa 20 SKU đang bán kèm tồn khả dụng tại chi nhánh. Tồn ở đây chỉ để báo sớm; checkout mới là nơi quyết định.
+export const searchPosSkus = (branchId: string, query: string) =>
+  api<PosSku[]>(`/api/core/pos/skus?${toQuery({ branchId, query: query.trim() })}`);
+
+// Mỗi lần bấm thanh toán mang một `Idempotency-Key`; gửi lại cùng khóa nhận lại đúng đơn đã tạo.
+export const posCheckout = (request: PosCheckoutRequest, idempotencyKey: string) =>
+  api<Order>('/api/core/pos/checkout', { method: 'POST', body: request, headers: { 'Idempotency-Key': idempotencyKey } });

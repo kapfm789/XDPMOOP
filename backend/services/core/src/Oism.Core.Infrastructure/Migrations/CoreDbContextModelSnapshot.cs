@@ -322,6 +322,99 @@ namespace Oism.Core.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Oism.Core.Domain.Inventory.StockTransfer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("FromBranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("from_branch_id");
+
+                    b.Property<DateTimeOffset?>("ReceivedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("received_at");
+
+                    b.Property<DateTimeOffset?>("ShippedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("shipped_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<Guid>("ToBranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("to_branch_id");
+
+                    b.Property<string>("TransferNumber")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("transfer_number");
+
+                    b.HasKey("Id")
+                        .HasName("pk_stock_transfers");
+
+                    b.HasIndex("TenantId", "TransferNumber")
+                        .IsUnique()
+                        .HasDatabaseName("ix_stock_transfers_tenant_id_transfer_number");
+
+                    b.ToTable("stock_transfers", "core", t =>
+                        {
+                            t.HasCheckConstraint("ck_stock_transfers_two_branches", "from_branch_id <> to_branch_id");
+                        });
+                });
+
+            modelBuilder.Entity("Oism.Core.Domain.Inventory.StockTransferItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sku_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<Guid>("TransferId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("transfer_id");
+
+                    b.Property<decimal?>("UnitCost")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)")
+                        .HasColumnName("unit_cost");
+
+                    b.HasKey("Id")
+                        .HasName("pk_stock_transfer_items");
+
+                    b.HasIndex("TransferId")
+                        .HasDatabaseName("ix_stock_transfer_items_transfer_id");
+
+                    b.ToTable("stock_transfer_items", "core", t =>
+                        {
+                            t.HasCheckConstraint("ck_stock_transfer_items_quantity_positive", "quantity > 0");
+                        });
+                });
+
             modelBuilder.Entity("Oism.Core.Domain.Inventory.Supplier", b =>
                 {
                     b.Property<Guid>("Id")
@@ -515,6 +608,52 @@ namespace Oism.Core.Infrastructure.Migrations
                     b.ToTable("order_items", "core");
                 });
 
+            modelBuilder.Entity("Oism.Core.Domain.Orders.Payment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)")
+                        .HasColumnName("amount");
+
+                    b.Property<DateTimeOffset>("ConfirmedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("confirmed_at");
+
+                    b.Property<Guid>("ConfirmedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("confirmed_by");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("method");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_payments");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_payments_order_id");
+
+                    b.HasIndex("TenantId", "OrderId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_payments_tenant_id_order_id");
+
+                    b.ToTable("payments", "core");
+                });
+
             modelBuilder.Entity("Oism.Core.Domain.Orders.Reservation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -693,6 +832,16 @@ namespace Oism.Core.Infrastructure.Migrations
                         .HasConstraintName("fk_purchase_receipt_items_purchase_receipts_receipt_id");
                 });
 
+            modelBuilder.Entity("Oism.Core.Domain.Inventory.StockTransferItem", b =>
+                {
+                    b.HasOne("Oism.Core.Domain.Inventory.StockTransfer", null)
+                        .WithMany("Items")
+                        .HasForeignKey("TransferId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_stock_transfer_items_stock_transfers_transfer_id");
+                });
+
             modelBuilder.Entity("Oism.Core.Domain.Orders.OrderItem", b =>
                 {
                     b.HasOne("Oism.Core.Domain.Orders.Order", null)
@@ -701,6 +850,16 @@ namespace Oism.Core.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_order_items_orders_order_id");
+                });
+
+            modelBuilder.Entity("Oism.Core.Domain.Orders.Payment", b =>
+                {
+                    b.HasOne("Oism.Core.Domain.Orders.Order", null)
+                        .WithOne("Payment")
+                        .HasForeignKey("Oism.Core.Domain.Orders.Payment", "OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_payments_orders_order_id");
                 });
 
             modelBuilder.Entity("Oism.Core.Domain.Orders.Reservation", b =>
@@ -725,9 +884,16 @@ namespace Oism.Core.Infrastructure.Migrations
                     b.Navigation("Items");
                 });
 
+            modelBuilder.Entity("Oism.Core.Domain.Inventory.StockTransfer", b =>
+                {
+                    b.Navigation("Items");
+                });
+
             modelBuilder.Entity("Oism.Core.Domain.Orders.Order", b =>
                 {
                     b.Navigation("Items");
+
+                    b.Navigation("Payment");
                 });
 #pragma warning restore 612, 618
         }

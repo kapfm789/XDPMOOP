@@ -66,6 +66,9 @@ public sealed class Order : ITenantOwned
 
     public IReadOnlyCollection<OrderItem> Items => _items;
 
+    // Chỉ đơn POS.
+    public Payment? Payment { get; private set; }
+
     public static Order Create(
         Guid branchId,
         OrderChannel channel,
@@ -114,6 +117,23 @@ public sealed class Order : ITenantOwned
     {
         MoveTo(OrderStatus.Confirmed);
         ConfirmedAt = now;
+    }
+
+    // Giá vốn bình quân lúc xuất, tra theo Id của dòng đơn; ghi một lần ngay sau Confirm (FR-COST-02).
+    public void SnapshotCosts(IReadOnlyDictionary<Guid, decimal> costPrices)
+    {
+        foreach (var item in _items)
+            item.FixCostPrice(costPrices[item.Id]);
+    }
+
+    // Đơn POS: thu ngân đã nhận đủ tiền trước khi bấm thanh toán (ADR-0007).
+    public void Pay(PaymentMethod method, decimal amount, Guid confirmedBy, DateTimeOffset now)
+    {
+        if (Payment is not null)
+            throw new InvalidOperationException("The order is already paid.");
+        ArgumentOutOfRangeException.ThrowIfLessThan(amount, TotalAmount);
+
+        Payment = Payment.Create(Id, method, amount, confirmedBy, now);
     }
 
     public void Complete(DateTimeOffset now)

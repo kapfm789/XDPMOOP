@@ -434,8 +434,8 @@ Cổng phase 4: test WAC ra 110.000; test 50 request chỉ 1 thành công và t�
 
 | Mã | Việc | Owner | Yêu cầu | Xong khi |
 | --- | --- | --- | --- | --- |
-| W3-05 | core/Inventory: chuyển kho hai bước, mang giá vốn | A | FR-INV-03 | B chưa nhận thì available của B không tăng; tổng A + đang chuyển + B không đổi |
-| W3-01 | core/Orders: xác nhận đơn (trừ tồn, chốt `CostPrice`, ghi ledger), hoàn tất, hủy từ Reserved | B | FR-RSE-03, FR-COST-02, FR-ORD-03, NFR-SEC-02 | Lỗi giữa chừng rollback hết; hủy hai lần chỉ giải phóng một lần |
+| W3-05 | core/Inventory: chuyển kho hai bước, mang giá vốn; API xem danh sách và xóa phiếu Draft | A | FR-INV-03 | B chưa nhận thì available của B không tăng; tổng A + đang chuyển + B không đổi |
+| W3-01 | core/Orders: xác nhận đơn (trừ tồn, chốt `CostPrice`, ghi ledger), hoàn tất, hủy từ Reserved; API xem danh sách và chi tiết đơn | B | FR-RSE-03, FR-COST-02, FR-ORD-03, NFR-SEC-02 | Lỗi giữa chừng rollback hết; hủy hai lần chỉ giải phóng một lần |
 | W3-02 | core: POS checkout một transaction, `Idempotency-Key`, endpoint tìm SKU kèm available | B | FR-POS-02, FR-POS-04, NFR-SEC-02 | Bấm thanh toán hai lần chỉ một đơn; POS và online tranh đơn vị cuối không vượt tồn |
 | W3-07 | pos: tìm theo tên, SKU, mã vạch; giỏ hàng; phím tắt; tiền mặt và QR; in qua trình duyệt | C | FR-POS-01, FR-POS-03, NFR-USA-02 | Quét mã rồi Enter là xong đơn; chạy tốt trên desktop, tablet, điện thoại |
 

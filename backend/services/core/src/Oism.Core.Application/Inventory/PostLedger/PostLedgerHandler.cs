@@ -16,8 +16,9 @@ public sealed class PostLedgerHandler(IInventoryRepository inventory, IEventPubl
         var posted = new List<InventoryTransaction>(command.Entries.Count);
         foreach (var entry in command.Entries)
         {
-            var line = balances[entry.SkuId].Post(
-                entry.Type, entry.Reason, entry.Quantity, entry.UnitCost,
+            var balance = balances[entry.SkuId];
+            var line = balance.Post(
+                entry.Type, entry.Reason, entry.Quantity, entry.UnitCost ?? balance.AvgCost,
                 command.ReferenceType, command.ReferenceId, command.CreatedBy, now, entry.ReversalOfId);
             inventory.Add(line);
             posted.Add(line);

@@ -36,16 +36,21 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         .UseSetting("Jwt:PublicKey", Convert.ToBase64String(_rsa.ExportSubjectPublicKeyInfo()));
 
     // Client mang JWT như identity cấp: claim sub, tenant_id, role (docs/architecture/security.md).
-    public HttpClient CreateClient(string role, Guid tenantId)
+    // branchId: claim branch_id của người dùng gắn với một chi nhánh, ví dụ Cashier.
+    public HttpClient CreateClient(string role, Guid tenantId, Guid? branchId = null)
     {
+        var claims = new Dictionary<string, object>
+        {
+            ["sub"] = Guid.NewGuid().ToString(),
+            ["tenant_id"] = tenantId.ToString(),
+            ["role"] = role,
+        };
+        if (branchId is { } branch)
+            claims["branch_id"] = branch.ToString();
+
         var token = new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
         {
-            Claims = new Dictionary<string, object>
-            {
-                ["sub"] = Guid.NewGuid().ToString(),
-                ["tenant_id"] = tenantId.ToString(),
-                ["role"] = role,
-            },
+            Claims = claims,
             Expires = DateTime.UtcNow.AddMinutes(5),
             SigningCredentials = new SigningCredentials(new RsaSecurityKey(_rsa), SecurityAlgorithms.RsaSha256),
         });

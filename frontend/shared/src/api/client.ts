@@ -22,6 +22,8 @@ export class ApiError extends Error {
 type Options = {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
+  // Header riêng của lời gọi, ví dụ `Idempotency-Key`; được gửi lại nguyên vẹn khi client tự thử lại.
+  headers?: Record<string, string>;
   // Endpoint công khai (đăng ký, đăng nhập, làm mới token): không gắn token và không tự làm mới khi gặp 401.
   anonymous?: boolean;
 };
@@ -44,8 +46,8 @@ async function request<T>(path: string, options: Options): Promise<T> {
   return read<T>(response);
 }
 
-function send(path: string, { method = 'GET', body, anonymous }: Options) {
-  const headers: Record<string, string> = {};
+function send(path: string, { method = 'GET', body, anonymous, headers: extra }: Options) {
+  const headers: Record<string, string> = { ...extra };
   if (body !== undefined) headers['Content-Type'] = 'application/json';
   const token = getAccessToken();
   if (token && !anonymous) headers.Authorization = `Bearer ${token}`;

@@ -24,9 +24,11 @@ public static class DependencyInjection
             .AddScoped<IReferenceRepository, ReferenceRepository>()
             .AddScoped<IInventoryRepository, InventoryRepository>()
             .AddScoped<IPurchaseReceiptRepository, PurchaseReceiptRepository>()
+            .AddScoped<IStockTransferRepository, StockTransferRepository>()
             .AddScoped<IStockQueries, StockQueries>()
             .AddScoped<IStockService, StockService>()
-            .AddScoped<IOrderRepository, OrderRepository>();
+            .AddScoped<IOrderRepository, OrderRepository>()
+            .AddScoped<IOrderQueries, OrderQueries>();
 
     public static Task MigrateDatabaseAsync(this IServiceProvider services) =>
         services.MigrateAsync<CoreDbContext>();

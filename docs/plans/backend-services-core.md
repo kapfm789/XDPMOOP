@@ -36,8 +36,8 @@ Hai module dùng chung một DbContext và một transaction. Module Orders ch�
 | 4 | W2-05 | core/Orders: engine giữ hàng, khóa FOR UPDATE theo thứ tự SkuId, giữ toàn bộ hoặc từ chối | B | FR-RSE-01, FR-RSE-02, NFR-PERF-02 | 50 request đồng thời cho 1 sản phẩm: đúng 1 thành công |
 | 4 | W2-06 | core: phát `OrderReserved`, `OrderRejected`, `StockChanged` qua outbox | B | NFR-SEC-02 | Event chỉ phát khi transaction commit; RabbitMQ tắt vẫn commit được |
 | 4 | W2-08 | admin: phiếu nhập, tồn theo chi nhánh và ngưỡng tồn, xem ledger; core: API đặt ngưỡng tồn | C | FR-INV-01, FR-INV-02, FR-REP-03 | Nhập hàng từ giao diện, thấy dòng ledger và giá vốn mới; đặt được ngưỡng tồn |
-| 5 | W3-05 | core/Inventory: chuyển kho hai bước, mang giá vốn | A | FR-INV-03 | B chưa nhận thì available của B không tăng; tổng A + đang chuyển + B không đổi |
-| 5 | W3-01 | core/Orders: xác nhận đơn (trừ tồn, chốt `CostPrice`, ghi ledger), hoàn tất, hủy từ Reserved | B | FR-RSE-03, FR-COST-02, FR-ORD-03, NFR-SEC-02 | Lỗi giữa chừng rollback hết; hủy hai lần chỉ giải phóng một lần |
+| 5 | W3-05 | core/Inventory: chuyển kho hai bước, mang giá vốn; API xem danh sách và xóa phiếu Draft | A | FR-INV-03 | B chưa nhận thì available của B không tăng; tổng A + đang chuyển + B không đổi |
+| 5 | W3-01 | core/Orders: xác nhận đơn (trừ tồn, chốt `CostPrice`, ghi ledger), hoàn tất, hủy từ Reserved; API xem danh sách và chi tiết đơn | B | FR-RSE-03, FR-COST-02, FR-ORD-03, NFR-SEC-02 | Lỗi giữa chừng rollback hết; hủy hai lần chỉ giải phóng một lần |
 | 5 | W3-02 | core: POS checkout một transaction, `Idempotency-Key`, endpoint tìm SKU kèm available | B | FR-POS-02, FR-POS-04, NFR-SEC-02 | Bấm thanh toán hai lần chỉ một đơn; POS và online tranh đơn vị cuối không vượt tồn |
 | 6 | W3-06 | core/Inventory: kiểm kê, bút toán điều chỉnh, chặn khi số đếm nhỏ hơn reserved | A | FR-INV-04 | Điều chỉnh tạo dòng ledger; ca thiếu bị chặn kèm danh sách đơn |
 | 6 | W3-04 | core: job Hangfire hủy đơn Reserved hết hạn | B | FR-SIM-03 | Xác nhận đúng lúc job chạy: chỉ một kết quả thắng |

@@ -7,7 +7,7 @@ export function PosLayout() {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Layout.Header style={{ paddingInline: 16 }}>
+      <Layout.Header className="no-print" style={{ paddingInline: 16 }}>
         <Flex justify="space-between" align="center" style={{ height: '100%' }}>
           <Typography.Title level={4} style={{ color: '#fff', margin: 0 }}>
             OISM POS

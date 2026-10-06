@@ -46,6 +46,12 @@ internal sealed class InventoryRepository(CoreDbContext db, ITenantContext tenan
         return balances.ToDictionary(balance => balance.SkuId);
     }
 
+    public async Task<IReadOnlyList<Reservation>> ListActiveReservationsAsync(Guid orderId, CancellationToken ct) =>
+        await db.Reservations
+            .Where(hold => hold.OrderId == orderId && hold.Status == ReservationStatus.Active)
+            .OrderBy(hold => hold.SkuId).ThenBy(hold => hold.Id)
+            .ToListAsync(ct);
+
     public void Add(InventoryTransaction entry) => db.Add(entry);
 
     public void Add(Reservation reservation) => db.Add(reservation);
