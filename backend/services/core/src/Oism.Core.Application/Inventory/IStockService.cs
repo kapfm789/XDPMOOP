@@ -1,4 +1,5 @@
 using Oism.Contracts;
+using Oism.Core.Application.Inventory.PostLedger;
 using Oism.Core.Domain.Inventory;
 using Oism.Core.Domain.Orders;
 
@@ -12,9 +13,17 @@ public interface IStockService
     // Giữ hàng cho mọi dòng của đơn, hoặc ném InsufficientStockException nêu mọi SKU thiếu mà không giữ dòng nào.
     // Không ghi sổ vì on_hand không đổi.
     Task ReserveAsync(Order order, DateTimeOffset expiresAt, CancellationToken ct);
+
+    // Xuất hàng cho đơn: mỗi phần giữ Active giảm `reserved`, ghi một dòng sổ OUT lý do Sale qua PostLedger
+    // và sang Consumed. Trả giá vốn bình quân đã dùng, tra theo Id của dòng đơn.
+    Task<IReadOnlyDictionary<Guid, decimal>> ConsumeAsync(Order order, Guid? createdBy, CancellationToken ct);
+
+    // Trả hàng đã giữ về tồn khả dụng: mỗi phần giữ Active giảm `reserved` và sang Released. Không ghi sổ.
+    Task ReleaseAsync(Order order, CancellationToken ct);
 }
 
-public sealed class StockService(IInventoryRepository inventory, IEventPublisher events, IClock clock) : IStockService
+public sealed class StockService(
+    IInventoryRepository inventory, PostLedgerHandler postLedger, IEventPublisher events, IClock clock) : IStockService
 {
     public async Task ReserveAsync(Order order, DateTimeOffset expiresAt, CancellationToken ct)
     {
@@ -42,6 +51,51 @@ public sealed class StockService(IInventoryRepository inventory, IEventPublisher
 
         foreach (var balance in balances.Values)
             events.EnqueueStockChanged(balance);
+    }
+
+    public async Task<IReadOnlyDictionary<Guid, decimal>> ConsumeAsync(Order order, Guid? createdBy, CancellationToken ct)
+    {
+        var (holds, balances) = await LockHeldAsync(order, ct);
+
+        // Bỏ giữ trước rồi mới xuất: PostLedger chỉ cho xuất trong tồn khả dụng.
+        var now = clock.UtcNow;
+        foreach (var hold in holds)
+        {
+            balances[hold.SkuId].Release(hold.Quantity, now);
+            hold.Consume(now);
+        }
+
+        // PostLedger khóa lại đúng các dòng số dư đang giữ, ghi sổ và phát StockChanged mang số dư sau khi xuất.
+        var posted = await postLedger.Handle(
+            new PostLedgerCommand(
+                order.BranchId, LedgerReference.Order, order.Id,
+                holds.Select(hold => new LedgerEntry(hold.SkuId, LedgerType.OUT, LedgerReason.Sale, hold.Quantity, UnitCost: null)).ToList(),
+                createdBy),
+            ct);
+        return holds.Zip(posted).ToDictionary(pair => pair.First.OrderItemId, pair => pair.Second.UnitCost);
+    }
+
+    public async Task ReleaseAsync(Order order, CancellationToken ct)
+    {
+        var (holds, balances) = await LockHeldAsync(order, ct);
+
+        var now = clock.UtcNow;
+        foreach (var hold in holds)
+        {
+            balances[hold.SkuId].Release(hold.Quantity, now);
+            hold.Release(now);
+        }
+
+        foreach (var balance in balances.Values)
+            events.EnqueueStockChanged(balance);
+    }
+
+    private async Task<(IReadOnlyList<Reservation> Holds, IReadOnlyDictionary<Guid, InventoryBalance> Balances)> LockHeldAsync(
+        Order order, CancellationToken ct)
+    {
+        var holds = await inventory.ListActiveReservationsAsync(order.Id, ct);
+        var balances = await inventory.LockBalancesAsync(order.BranchId, holds.Select(hold => hold.SkuId).ToHashSet(), ct);
+        return (holds, balances);
     }
 }
 

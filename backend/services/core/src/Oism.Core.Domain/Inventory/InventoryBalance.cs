@@ -74,6 +74,18 @@ public sealed class InventoryBalance(Guid branchId, Guid skuId) : ITenantOwned
         UpdatedAt = now;
     }
 
+    // Bỏ giữ hàng khi phần giữ được tiêu thụ hoặc giải phóng: giảm Reserved, không đổi OnHand nên không ghi sổ.
+    // Chỉ IStockService gọi, khi đang giữ khóa dòng số dư.
+    public void Release(int quantity, DateTimeOffset now)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(quantity, Reserved);
+
+        Reserved -= quantity;
+        Version++;
+        UpdatedAt = now;
+    }
+
     // UC-INV-05: ngưỡng tồn tối thiểu; null là không cảnh báo. Gọi khi đang giữ khóa dòng số dư.
     public void SetThreshold(int? threshold, DateTimeOffset now)
     {

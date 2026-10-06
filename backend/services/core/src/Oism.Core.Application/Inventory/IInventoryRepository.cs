@@ -11,6 +11,10 @@ public interface IInventoryRepository
     Task<IReadOnlyDictionary<Guid, InventoryBalance>> LockBalancesAsync(
         Guid branchId, IReadOnlyCollection<Guid> skuIds, CancellationToken ct);
 
+    // Các phần giữ còn Active của đơn, có theo dõi. Gọi sau khi đã khóa dòng đơn:
+    // phần giữ của một đơn chỉ đổi dưới khóa đó.
+    Task<IReadOnlyList<Reservation>> ListActiveReservationsAsync(Guid orderId, CancellationToken ct);
+
     void Add(InventoryTransaction entry);
 
     void Add(Reservation reservation);

@@ -53,4 +53,19 @@ public sealed class Reservation : ITenantOwned
         ExpiresAt = expiresAt,
         CreatedAt = now,
     };
+
+    // Đơn được xác nhận. Chỉ IStockService gọi, cùng lúc với việc giảm `reserved` trên dòng số dư.
+    public void Consume(DateTimeOffset now) => Close(ReservationStatus.Consumed, now);
+
+    // Đơn bị hủy hoặc hết hạn. Chỉ IStockService gọi, cùng lúc với việc giảm `reserved` trên dòng số dư.
+    public void Release(DateTimeOffset now) => Close(ReservationStatus.Released, now);
+
+    private void Close(ReservationStatus status, DateTimeOffset now)
+    {
+        if (Status != ReservationStatus.Active)
+            throw new InvalidStateTransitionException("phần giữ hàng", Status.ToString(), status.ToString());
+
+        Status = status;
+        ClosedAt = now;
+    }
 }

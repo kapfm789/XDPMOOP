@@ -4,6 +4,8 @@ using Oism.Core.Application.Inventory;
 using Oism.Core.Application.Inventory.ListLedger;
 using Oism.Core.Application.Inventory.ListPurchaseReceipts;
 using Oism.Core.Application.Inventory.ListStock;
+using Oism.Core.Application.Inventory.ListTransfers;
+using Oism.Core.Application.Orders.SearchPosSkus;
 using Oism.Core.Domain.Inventory;
 
 namespace Oism.Core.Infrastructure.Repositories;
@@ -83,6 +85,58 @@ internal sealed class StockQueries(CoreDbContext db) : IStockQueries
         var receipts = await db.PurchaseReceipts.AsNoTracking()
             .Where(receipt => receipt.Id == id).Include(receipt => receipt.Items).ToListAsync(ct);
         return (await ToDtosAsync(receipts, ct)).SingleOrDefault();
+    }
+
+    public async Task<PagedResult<TransferDto>> ListTransfersAsync(ListTransfersQuery query, CancellationToken ct)
+    {
+        var status = query.Status is null ? (StockTransferStatus?)null : Enum.Parse<StockTransferStatus>(query.Status);
+        var transfers = db.StockTransfers.AsNoTracking().Where(transfer => status == null || transfer.Status == status);
+
+        // Phiếu chưa xuất (shipped_at null) đứng trước vì còn việc phải làm, rồi tới phiếu xuất gần nhất.
+        var page = await transfers
+            .OrderByDescending(transfer => transfer.ShippedAt == null).ThenByDescending(transfer => transfer.ShippedAt)
+            .ThenBy(transfer => transfer.TransferNumber)
+            .Skip((query.Page - 1) * query.PageSize).Take(query.PageSize)
+            .Include(transfer => transfer.Items)
+            .ToListAsync(ct);
+
+        var skuIds = page.SelectMany(transfer => transfer.Items).Select(item => item.SkuId).Distinct().ToList();
+        var skus = await db.SkuRefs.AsNoTracking().Where(sku => skuIds.Contains(sku.SkuId)).ToDictionaryAsync(sku => sku.SkuId, ct);
+        return new PagedResult<TransferDto>(
+            page.Select(transfer => TransferDto.From(transfer, skus, query.IncludeCost)).ToList(),
+            query.Page, query.PageSize, await transfers.CountAsync(ct));
+    }
+
+    public async Task<IReadOnlyList<PosSkuDto>> SearchPosSkusAsync(SearchPosSkusQuery query, int limit, CancellationToken ct)
+    {
+        // UC-POS-01 AC-5: SKU đã ngừng bán không hiện.
+        var skus = db.SkuRefs.AsNoTracking().Where(sku => sku.IsActive);
+        if (string.IsNullOrWhiteSpace(query.Query))
+        {
+            skus = skus.OrderBy(sku => sku.SkuCode);
+        }
+        else
+        {
+            var term = query.Query.Trim();
+            var pattern = $"%{term}%";
+            skus = skus
+                .Where(sku => EF.Functions.ILike(sku.SkuCode, pattern) || EF.Functions.ILike(sku.Name, pattern)
+                    || sku.Barcodes.Any(barcode => EF.Functions.ILike(barcode, pattern)))
+                // Mã quét từ máy quét khớp đúng một SKU: SKU đó phải nằm trong các dòng đầu.
+                .OrderByDescending(sku => EF.Functions.ILike(sku.SkuCode, term) || sku.Barcodes.Contains(term))
+                .ThenBy(sku => sku.SkuCode);
+        }
+
+        // SKU chưa có dòng số dư ở chi nhánh thì tồn khả dụng bằng 0.
+        return await skus
+            .Take(limit)
+            .Select(sku => new PosSkuDto(
+                sku.SkuId, sku.SkuCode, sku.Name, sku.Barcodes, sku.RetailPrice,
+                db.InventoryBalances
+                    .Where(balance => balance.BranchId == query.BranchId && balance.SkuId == sku.SkuId)
+                    .Select(balance => balance.OnHand - balance.Reserved)
+                    .FirstOrDefault()))
+            .ToListAsync(ct);
     }
 
     private async Task<List<PurchaseReceiptDto>> ToDtosAsync(List<PurchaseReceipt> receipts, CancellationToken ct)

@@ -1,13 +1,16 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Oism.BuildingBlocks.Messaging;
 using Oism.BuildingBlocks.Tenancy;
 using Oism.Contracts;
 using Oism.Core.Application;
+using Oism.Core.Application.Inventory;
 using Oism.Core.Application.Inventory.PostLedger;
+using Oism.Core.Application.Orders;
 using Oism.Core.Application.Orders.ReserveStock;
 using Oism.Core.Domain.Inventory;
 using Oism.Core.Domain.Orders;
@@ -44,10 +47,11 @@ internal static class TestKit
 
     // Bản sao SKU, như consumer SkuUpserted dựng.
     public static async Task<Guid> SeedSkuAsync(
-        this ApiFactory factory, Guid tenantId, string skuCode, string name = "Áo thun", decimal retailPrice = 150_000, bool isActive = true)
+        this ApiFactory factory, Guid tenantId, string skuCode, string name = "Áo thun", decimal retailPrice = 150_000, bool isActive = true,
+        params string[] barcodes)
     {
         var sku = new SkuRef(Guid.NewGuid());
-        sku.Apply(skuCode, name, [], retailPrice, wholesalePrice: retailPrice, isActive, version: 1);
+        sku.Apply(skuCode, name, barcodes, retailPrice, wholesalePrice: retailPrice, isActive, version: 1);
         await factory.QueryAsync(tenantId, db =>
         {
             db.Add(sku);
@@ -99,6 +103,51 @@ internal static class TestKit
     public static SubmitOrder Online(string externalOrderId, Guid branchId, params SubmitOrderLine[] lines) =>
         new("Shopee", externalOrderId, branchId, DateTimeOffset.UtcNow, lines);
 
+    // Đơn thủ công qua POST /orders: đơn ở Reserved, hàng đã được giữ.
+    public static async Task<OrderDto> CreateOrderAsync(this HttpClient client, Guid branchId, params object[] items)
+    {
+        var response = await client.PostAsJsonAsync("/orders", new { branchId, items });
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        return (await response.Content.ReadFromJsonAsync<OrderDto>())!;
+    }
+
+    public static async Task<(int OnHand, int Reserved, int Available)> StockAsync(
+        this ApiFactory factory, Guid tenantId, Guid branchId, Guid skuId)
+    {
+        var balance = (await factory.BalanceAsync(tenantId, branchId, skuId))!;
+        return (balance.OnHand, balance.Reserved, balance.Available);
+    }
+
+    // Mẫu test rollback (docs/testing/strategy.md): một Api giống hệt, chỉ khác là bước ghi dòng sổ ném lỗi.
+    // Client của nó dùng lại token của một client đã có.
+    public static HttpClient CreateClientWithFailingLedger(this ApiFactory factory, HttpClient authorized)
+    {
+        var client = factory
+            .WithWebHostBuilder(builder => builder.ConfigureTestServices(services =>
+            {
+                var real = services.Single(service => service.ServiceType == typeof(IInventoryRepository)).ImplementationType!;
+                services.AddScoped(real);
+                services.AddScoped<IInventoryRepository>(provider =>
+                    new FailingLedgerRepository((IInventoryRepository)provider.GetRequiredService(real)));
+            }))
+            .CreateClient();
+        client.DefaultRequestHeaders.Authorization = authorized.DefaultRequestHeaders.Authorization;
+        return client;
+    }
+
+    private sealed class FailingLedgerRepository(IInventoryRepository inner) : IInventoryRepository
+    {
+        public Task<IReadOnlyDictionary<Guid, InventoryBalance>> LockBalancesAsync(
+            Guid branchId, IReadOnlyCollection<Guid> skuIds, CancellationToken ct) => inner.LockBalancesAsync(branchId, skuIds, ct);
+
+        public Task<IReadOnlyList<Reservation>> ListActiveReservationsAsync(Guid orderId, CancellationToken ct) =>
+            inner.ListActiveReservationsAsync(orderId, ct);
+
+        public void Add(InventoryTransaction entry) => throw new InvalidOperationException("Injected ledger failure.");
+
+        public void Add(Reservation reservation) => inner.Add(reservation);
+    }
+
     // Thông điệp loại TPayload trong outbox của tenant.
     public static async Task<List<TPayload>> OutboxAsync<TPayload>(this ApiFactory factory, Guid tenantId)
     {
@@ -106,6 +155,10 @@ internal static class TestKit
             .Where(message => message.Type == typeof(TPayload).Name).OrderBy(message => message.OccurredAt).ToListAsync());
         return messages.Select(message => JsonSerializer.Deserialize<TPayload>(message.Payload, EventEnvelope.JsonOptions)!).ToList();
     }
+
+    // Số dòng outbox của tenant, mọi loại thông điệp: không đổi nghĩa là use case không phát thêm gì.
+    public static Task<int> OutboxRowCountAsync(this ApiFactory factory, Guid tenantId) =>
+        factory.QueryAsync(tenantId, db => db.Set<OutboxMessage>().CountAsync());
 
     // Kiểm mã HTTP và trường `code` của ProblemDetails (docs/design/api/README.md).
     public static async Task AssertProblemAsync(this HttpResponseMessage response, HttpStatusCode status, string code)

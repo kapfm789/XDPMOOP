@@ -1,5 +1,4 @@
 using FluentValidation;
-using FluentValidation.Results;
 using Oism.Contracts;
 using Oism.Core.Application.Inventory;
 using Oism.Core.Application.References;
@@ -30,35 +29,10 @@ public sealed class ReserveStockHandler(
 
         await using var transaction = await unitOfWork.BeginAsync(ct);
 
-        // Chi nhánh và SKU tra trong tenant hiện tại (docs/architecture/multi-tenancy.md quy tắc 4).
-        var branch = await references.FindBranchAsync(command.BranchId, ct)
-            ?? throw new ReferenceNotReadyException("Chi nhánh", command.BranchId);
-        branch.EnsureActive();
-
-        var skus = (await references.ListSkusAsync(command.Items.Select(item => item.SkuId).ToHashSet(), ct))
-            .ToDictionary(sku => sku.SkuId);
-
         var now = clock.UtcNow;
-        var order = Order.Create(
-            command.BranchId, command.Channel, command.ExternalOrderId, idempotencyKey: null, command.Note, command.CreatedBy, now);
-        for (var index = 0; index < command.Items.Count; index++)
-        {
-            var line = command.Items[index];
-            if (!skus.TryGetValue(line.SkuId, out var sku))
-                throw new ReferenceNotReadyException("SKU", line.SkuId);
-            sku.EnsureActive();
-
-            // UC-ORD-02 AC-3: không nhập đơn giá thì lấy giá lẻ hiện tại.
-            var unitPrice = line.UnitPrice ?? sku.RetailPrice;
-            var discount = line.Discount ?? 0;
-            if (!OrderItem.IsValidDiscount(line.Quantity, unitPrice, discount))
-            {
-                throw new ValidationException(
-                    [new ValidationFailure($"Items[{index}].Discount", "Giảm giá không được vượt thành tiền của dòng")]);
-            }
-
-            order.AddItem(sku.SkuId, sku.SkuCode, sku.Name, line.Quantity, unitPrice, discount);
-        }
+        var order = await DraftOrder.CreateAsync(
+            references, command.BranchId, command.Channel, command.ExternalOrderId, idempotencyKey: null, command.Note,
+            command.Items, command.CreatedBy, now, ct);
 
         // Chèn đơn ở Draft trước khi khóa số dư: chứng từ đứng trước số dư trong thứ tự khóa, và chỉ mục unique
         // (tenant_id, channel, external_order_id) chặn đơn của sàn tới lần hai trước khi nó kịp giữ thêm hàng.

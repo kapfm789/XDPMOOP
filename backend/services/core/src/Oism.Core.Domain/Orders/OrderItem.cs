@@ -56,4 +56,13 @@ public sealed class OrderItem : ITenantOwned
             Discount = discount,
         };
     }
+
+    // Không có đường cập nhật lại: nhập lô mới sau đó không đổi giá vốn của đơn cũ (UC-ORD-03 AC-6).
+    internal void FixCostPrice(decimal costPrice)
+    {
+        if (CostPrice is not null)
+            throw new InvalidOperationException("Cost price is already fixed.");
+
+        CostPrice = costPrice;
+    }
 }

@@ -59,4 +59,12 @@ public interface IStockQueries
 
     // Null khi phiếu không có trong tenant.
     Task<PurchaseReceiptDto?> FindPurchaseReceiptAsync(Guid id, CancellationToken ct);
+
+    // Phiếu chuyển kho kèm các dòng: phiếu chưa xuất đứng trước, rồi tới phiếu xuất gần nhất.
+    Task<PagedResult<TransferDto>> ListTransfersAsync(ListTransfers.ListTransfersQuery query, CancellationToken ct);
+
+    // SKU đang bán khớp một phần tên, mã SKU hoặc mã vạch, kèm tồn khả dụng tại chi nhánh;
+    // SKU khớp đúng mã hoặc mã vạch đứng trước, rồi theo mã SKU.
+    Task<IReadOnlyList<Orders.SearchPosSkus.PosSkuDto>> SearchPosSkusAsync(
+        Orders.SearchPosSkus.SearchPosSkusQuery query, int limit, CancellationToken ct);
 }

@@ -27,9 +27,15 @@ public sealed class CoreDbContext(DbContextOptions<CoreDbContext> options, ITena
 
     public DbSet<PurchaseReceiptItem> PurchaseReceiptItems => Set<PurchaseReceiptItem>();
 
+    public DbSet<StockTransfer> StockTransfers => Set<StockTransfer>();
+
+    public DbSet<StockTransferItem> StockTransferItems => Set<StockTransferItem>();
+
     public DbSet<Order> Orders => Set<Order>();
 
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
 
     public DbSet<Reservation> Reservations => Set<Reservation>();
+
+    public DbSet<Payment> Payments => Set<Payment>();
 }
