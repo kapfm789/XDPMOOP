@@ -44,6 +44,8 @@ sequenceDiagram
   end
 ```
 
+Trước khi mở transaction, handler tra đơn theo `Idempotency-Key`; đã có thì trả ngay đơn đó với mã 200. Nhánh "khóa đã dùng" trong sơ đồ là trường hợp còn lại: hai request cùng khóa tới đồng thời, request thua bị chặn ở chỉ mục unique.
+
 ## Mỗi bước đổi gì
 
 | Bước | Khóa | Số dư | Sổ | Outbox |

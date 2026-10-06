@@ -121,3 +121,81 @@ export type UpdatePurchaseReceiptRequest = {
 };
 
 export type CreatePurchaseReceiptRequest = UpdatePurchaseReceiptRequest & { branchId: string };
+
+// Một phần tử `details` của lỗi 409 `insufficient_stock`: docs/design/api/README.md mục "Lỗi".
+export type StockShortage = {
+  skuId: string;
+  requested: number;
+  available: number;
+};
+
+// Một dòng của GET /pos/skus.
+export type PosSku = {
+  skuId: string;
+  skuCode: string;
+  name: string;
+  barcodes: string[];
+  retailPrice: number;
+  available: number;
+};
+
+export type OrderChannel = 'POS' | 'Admin' | 'Shopee' | 'TikTok' | 'Lazada';
+
+export type OrderStatus = 'Draft' | 'Reserved' | 'Confirmed' | 'Completed' | 'Cancelled';
+
+export type PaymentMethod = 'Cash' | 'QR';
+
+// `costPrice` chỉ có trong phản hồi cho Owner, sau khi đơn được xác nhận.
+export type OrderItem = {
+  id: string;
+  skuId: string;
+  skuCode: string;
+  skuName: string;
+  quantity: number;
+  unitPrice: number;
+  discount: number;
+  costPrice?: number;
+};
+
+export type Payment = {
+  method: PaymentMethod;
+  amount: number;
+  confirmedBy: string;
+  confirmedAt: string;
+};
+
+// `payment` chỉ có với đơn POS.
+export type Order = {
+  id: string;
+  orderNumber: string;
+  branchId: string;
+  channel: OrderChannel;
+  externalOrderId?: string | null;
+  status: OrderStatus;
+  totalAmount: number;
+  reservedUntil?: string | null;
+  confirmedAt?: string | null;
+  completedAt?: string | null;
+  cancelledAt?: string | null;
+  cancelReason?: 'Manual' | 'Expired' | null;
+  note?: string | null;
+  createdBy?: string | null;
+  createdAt: string;
+  items: OrderItem[];
+  payment?: Payment;
+};
+
+// Bỏ trống `unitPrice` thì dùng giá lẻ hiện tại; bỏ trống `discount` là 0.
+export type OrderLineRequest = {
+  skuId: string;
+  quantity: number;
+  unitPrice?: number;
+  discount?: number;
+};
+
+// `payment.amount` là số tiền khách đưa, không nhỏ hơn tổng đơn.
+export type PosCheckoutRequest = {
+  branchId: string;
+  items: OrderLineRequest[];
+  payment: { method: PaymentMethod; amount: number };
+};

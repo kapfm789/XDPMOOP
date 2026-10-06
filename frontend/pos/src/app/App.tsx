@@ -4,6 +4,7 @@ import { ConfigProvider } from 'antd';
 import viVN from 'antd/locale/vi_VN';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { LoginPage } from '../pages/login/LoginPage';
+import { ReceiptPage } from '../pages/receipt/ReceiptPage';
 import { SalePage } from '../pages/sale/SalePage';
 import { PosLayout } from './PosLayout';
 
@@ -20,7 +21,10 @@ const router = createBrowserRouter([
         <PosLayout />
       </RequireRole>
     ),
-    children: [{ index: true, element: <SalePage /> }],
+    children: [
+      { index: true, element: <SalePage /> },
+      { path: 'receipt/:orderId', element: <ReceiptPage /> },
+    ],
   },
 ]);
 

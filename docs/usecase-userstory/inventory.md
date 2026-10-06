@@ -40,7 +40,7 @@ Tiêu chí chấp nhận:
 
 - Actor: Owner, Staff
 - Yêu cầu: FR-INV-03
-- API: `POST /api/core/transfers`, `/transfers/{id}/ship`, `/transfers/{id}/receive`
+- API: `POST /api/core/transfers`, `/transfers/{id}/ship`, `/transfers/{id}/receive`, `DELETE /api/core/transfers/{id}`
 - Thiết kế: [luồng chuyển kho](../design/flows/stock-transfer.md)
 
 Là nhân viên kho, tôi muốn chuyển hàng từ chi nhánh này sang chi nhánh khác qua hai bước, để hàng đang đi đường không bị bán ở nơi nào.
@@ -54,6 +54,7 @@ Tiêu chí chấp nhận:
 5. Cho mọi thời điểm, thì tồn nơi gửi cộng hàng đang vận chuyển cộng tồn nơi nhận không đổi.
 6. Cho phiếu đã Received, khi nhận lại, thì không có tác động lần hai.
 7. Cho nơi gửi trùng nơi nhận, khi tạo phiếu, thì trả 400.
+8. Cho phiếu còn Draft, khi xóa, thì phiếu biến mất và tồn không bị tác động; cho phiếu đã InTransit hoặc Received, khi xóa, thì trả 409.
 
 ## UC-INV-04 Kiểm kê
 

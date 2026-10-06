@@ -35,13 +35,16 @@ Nút và dòng hàng cao tối thiểu 44 px để chạm bằng ngón tay.
 
 Máy quét mã vạch hoạt động như bàn phím: gõ mã rồi gửi Enter. Vì thế "quét, rồi Enter" là hai lần Enter: lần đầu thêm hàng, lần sau thanh toán.
 
+`+`, `-` và Delete chỉ tác động lên giỏ khi ô tìm đang trống, vì mã SKU có thể chứa chính các ký tự đó. Dòng đang chọn là dòng vừa thêm hoặc vừa chạm.
+
 ## Quy tắc
 
 - Mỗi lần bấm thanh toán sinh một `Idempotency-Key`. Nút bị khóa trong lúc chờ; lỗi mạng thì thử lại với cùng khóa.
 - Tồn khả dụng hiển thị chỉ để báo sớm. Khi backend trả 409 `insufficient_stock`, giỏ cập nhật số còn lại của SKU đó và thu ngân quyết định tiếp.
-- Với QR, màn hình hiện mã chuyển khoản của cửa hàng; thu ngân tự kiểm đã nhận tiền rồi mới bấm thanh toán ([ADR-0007](../../decisions/0007-pos-payment-no-offline.md)).
-- Sau khi backend trả đơn đã lưu, ứng dụng mở `/receipt/:orderId` và gọi hộp thoại in. In lỗi thì bấm in lại; không gọi thanh toán lần nữa.
-- `branchId` lấy từ token của Cashier. Owner dùng POS phải chọn chi nhánh trước khi bán.
+- Với QR, màn hình hiện mã chuyển khoản của cửa hàng; thu ngân tự kiểm đã nhận tiền rồi mới bấm thanh toán ([ADR-0007](../../decisions/0007-pos-payment-no-offline.md)). Nội dung mã là chuỗi cấu hình ở biến `VITE_POS_QR` lúc build kèm số tiền; hệ thống không kết nối ngân hàng.
+- Sau khi backend trả đơn đã lưu, ứng dụng mở `/receipt/:orderId` và gọi hộp thoại in. In lỗi thì bấm in lại; không gọi thanh toán lần nữa. Đóng hộp thoại in xong, nút "Đơn mới" đang giữ focus nên Enter đưa thu ngân về màn hình bán hàng.
+- `branchId` lấy từ token của Cashier. Owner dùng POS phải chọn chi nhánh trước khi bán; lựa chọn được nhớ trên trình duyệt đó, và đổi chi nhánh thì bắt đầu giỏ mới.
+- Trên thiết bị cầm tay (hẹp hơn 768 px) ô tìm không tự giành lại focus sau mỗi lần chạm, để bàn phím ảo không bật lên liên tục; từ tablet trở lên ô tìm luôn giữ focus để quét liên tiếp.
 - Thông báo `OrderCreated` của chi nhánh hiện popup kèm âm thanh và không lấy mất focus của ô tìm.
 
 ## PWA

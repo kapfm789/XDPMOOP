@@ -25,6 +25,8 @@ export {
   listPurchaseReceipts,
   listStock,
   listSuppliers,
+  posCheckout,
+  searchPosSkus,
   setStockThreshold,
   updatePurchaseReceipt,
 } from './api/core';

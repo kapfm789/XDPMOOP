@@ -113,12 +113,12 @@ Khóa ngoại `order_id` tới `orders.id` và `order_item_id` tới `order_item
 
 | Bảng | Cột chính | Ràng buộc |
 | --- | --- | --- |
-| `payments` | `id`, `tenant_id`, `order_id`, `method` (`Cash`, `QR`), `amount`, `confirmed_by`, `confirmed_at` | Unique `(tenant_id, order_id)` |
+| `payments` | `id`, `tenant_id`, `order_id`, `method` (`Cash`, `QR`), `amount`, `confirmed_by`, `confirmed_at` | Unique `(tenant_id, order_id)`; khóa ngoại `order_id` tới `orders.id` |
 | `suppliers` | `id`, `tenant_id`, `name`, `phone`, `is_active` | |
 | `purchase_receipts` | `id`, `tenant_id`, `branch_id`, `supplier_id`, `receipt_number`, `status` (`Draft`, `Confirmed`), `note`, `confirmed_at`, `confirmed_by`, `created_at` | Unique `(tenant_id, receipt_number)`; khóa ngoại `supplier_id` tới `suppliers.id` |
 | `purchase_receipt_items` | `id`, `tenant_id`, `receipt_id`, `sku_id`, `quantity`, `unit_cost` | CHECK `quantity > 0`, `unit_cost >= 0`; khóa ngoại `receipt_id` tới `purchase_receipts.id`, dòng bị xóa theo phiếu |
-| `stock_transfers` | `id`, `tenant_id`, `from_branch_id`, `to_branch_id`, `transfer_number`, `status` (`Draft`, `InTransit`, `Received`), `shipped_at`, `received_at`, `created_by` | `from_branch_id <> to_branch_id` |
-| `stock_transfer_items` | `id`, `tenant_id`, `transfer_id`, `sku_id`, `quantity`, `unit_cost` | `unit_cost` ghi lúc xuất |
+| `stock_transfers` | `id`, `tenant_id`, `from_branch_id`, `to_branch_id`, `transfer_number`, `status` (`Draft`, `InTransit`, `Received`), `shipped_at`, `received_at`, `created_by` | CHECK `from_branch_id <> to_branch_id`; unique `(tenant_id, transfer_number)` |
+| `stock_transfer_items` | `id`, `tenant_id`, `transfer_id`, `sku_id`, `quantity`, `unit_cost` | `unit_cost` ghi lúc xuất, null khi phiếu còn Draft; CHECK `quantity > 0`; khóa ngoại `transfer_id` tới `stock_transfers.id`, dòng bị xóa theo phiếu |
 | `stocktakes` | `id`, `tenant_id`, `branch_id`, `status` (`Open`, `Posted`), `created_by`, `posted_at` | |
 | `stocktake_items` | `id`, `tenant_id`, `stocktake_id`, `sku_id`, `counted_qty`, `system_qty`, `difference` | `system_qty` và `difference` ghi lúc chốt; unique `(stocktake_id, sku_id)` |
 | `sku_refs` | `tenant_id`, `sku_id`, `sku_code`, `name`, `barcodes` (mảng text), `retail_price`, `wholesale_price`, `is_active`, `version` | Khóa chính `(tenant_id, sku_id)`; unique `(tenant_id, sku_code)` |
@@ -127,6 +127,8 @@ Khóa ngoại `order_id` tới `orders.id` và `order_item_id` tới `order_item
 | `inbox_messages` | `event_id`, `type`, `processed_at` | Khóa chính `event_id` |
 
 `receipt_number` do `core` đặt lúc tạo phiếu, cùng cách với `order_number`: `PN` kèm 12 ký tự hex đầu của `id`, viết hoa, ví dụ `PN3F2A9C1B7D4E`. Sửa phiếu Draft là thay cả bộ dòng của phiếu. Hai khóa ngoại `supplier_id` và `receipt_id` có chỉ mục riêng.
+
+`transfer_number` do `core` đặt lúc tạo phiếu, cùng cách với `order_number`: `CK` kèm 12 ký tự hex đầu của `id`, viết hoa. `payments.amount` là số tiền khách đưa, không nhỏ hơn `orders.total_amount`; mỗi đơn POS có đúng một dòng `payments`, đơn của kênh khác không có.
 
 `sku_refs` và `branch_refs` là bản sao dựng từ event. Chỉ consumer được ghi vào hai bảng này, và chỉ ghi đè khi `version` của event lớn hơn `version` đang lưu.
 
