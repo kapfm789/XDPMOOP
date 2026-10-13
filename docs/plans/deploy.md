@@ -29,7 +29,7 @@ deploy/
 
 ## Quy tắc riêng
 
-- Compose dev (W1-03) không build image: gateway và 5 service chạy image SDK, mount `backend/` và chạy `dotnet watch --no-hot-reload`, nên sửa code hay thêm migration là service tự build và khởi động lại. `Dockerfile` của từng service để dành cho gói demo (W5-04).
+- Compose dev (W1-03) không build image: gateway và 5 service chạy image SDK, mount `backend/`, mỗi lần container khởi động là `dotnet build` rồi chạy. Sửa code hay thêm migration thì khởi động lại service; `docker compose watch` làm việc đó mỗi lần lưu file, theo cấu hình `develop.watch` của từng service. Không chạy `dotnet watch` trong container: thư mục mount từ Windows không phát inotify nên nó phải quét file liên tục, 6 container cùng quét ngốn khoảng 2 nhân CPU cả lúc rảnh. `Dockerfile` của từng service để dành cho gói demo (W5-04).
 - Mọi container có health check và restart policy (NFR-USA-01).
 - Seed chạy lặp lại được mà không tạo dữ liệu trùng.
 - Không đưa secret thật vào repo; cấu hình mẫu nằm trong `.env.example`.

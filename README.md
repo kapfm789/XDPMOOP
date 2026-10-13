@@ -146,8 +146,9 @@ Lần đầu mất vài phút để tải image, tải package và build trong c
 
 - Muốn đăng nhập được, sinh cặp khóa JWT cho máy mình theo hướng dẫn trong `deploy/.env.example` rồi dán vào `deploy/.env`; thiếu khóa thì đăng nhập trả 500 và mọi endpoint cần đăng nhập trả 401.
 - Máy đã có PostgreSQL chiếm cổng 5432: tạo `deploy/.env` chứa `POSTGRES_PORT=5433`. Các biến khác xem `deploy/.env.example`.
-- Sửa code không cần build lại image: mã nguồn `backend/` được mount vào container và chạy bằng `dotnet watch`, lưu file xong khoảng 10 đến 15 giây là service tự build và khởi động lại. Migration mới được áp ngay lúc service khởi động lại.
-- Xem log build của một service: `docker compose -f deploy/docker-compose.yml logs -f core`. Build lỗi thì service dừng ở bản lỗi và tự chạy lại khi file được sửa.
+- Sửa code không cần build lại image: mã nguồn `backend/` được mount vào container, mỗi lần container khởi động là build rồi chạy. Đang code service nào thì mở thêm một terminal chạy `docker compose -f deploy/docker-compose.yml watch core` (ghi được nhiều service, bỏ trống là cả 6): lưu file là service đó tự build và khởi động lại. Không chạy `watch` thì khởi động lại bằng tay: `docker compose -f deploy/docker-compose.yml restart core`. Migration mới được áp ngay lúc service khởi động lại.
+- `watch` theo dõi `src` của service và `backend/shared`; đổi `Directory.Build.props` hay `Directory.Packages.props` thì khởi động lại bằng tay.
+- Xem log build của một service: `docker compose -f deploy/docker-compose.yml logs -f core`. Build lỗi thì service nằm chờ ở trạng thái unhealthy và build lại ở lần khởi động lại sau.
 - Chạy toàn bộ test mà không cần cài .NET: `docker compose -f deploy/docker-compose.yml run --rm tests`.
 - Dừng: `docker compose -f deploy/docker-compose.yml down`; thêm `-v` để xóa luôn dữ liệu PostgreSQL.
 

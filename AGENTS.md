@@ -97,7 +97,7 @@ npm --prefix frontend run dev:admin
 npm --prefix frontend run dev:pos
 ```
 
-- Compose dev chạy service bằng `dotnet watch` trên mã nguồn mount: sửa code hay thêm migration không cần build lại image.
+- Compose dev build và chạy service từ mã nguồn mount mỗi lần container khởi động: sửa code hay thêm migration không cần build lại image, chỉ cần `docker compose -f deploy/docker-compose.yml restart <service>`, hoặc để `docker compose -f deploy/docker-compose.yml watch <service>` tự khởi động lại mỗi lần lưu file.
 - Hai lệnh `dotnet` cần .NET 8 runtime; máy không có .NET 8 thì dùng lệnh `run --rm tests`, chỉ cần Docker.
 - Test tích hợp cần Docker đang chạy vì dùng Testcontainers.
 - Đăng nhập trên Compose dev cần cặp khóa JWT trong `deploy/.env`; cách sinh ghi ở `deploy/.env.example`.

@@ -1,6 +1,9 @@
-# Compose cho máy dev (W1-03). Máy chỉ cần Docker; mã nguồn backend được mount vào container SDK và chạy
-# bằng `dotnet watch`: sửa code hay thêm migration thì service tự build và khởi động lại, không build image.
+# Compose cho máy dev (W1-03). Máy chỉ cần Docker; mã nguồn backend được mount vào container SDK, mỗi lần
+# container khởi động là build rồi chạy, không build image.
 # Chạy từ gốc repo: docker compose -f deploy/docker-compose.yml up -d
+# Đang code service nào thì mở thêm một terminal để lưu file là service đó tự build và khởi động lại:
+#   docker compose -f deploy/docker-compose.yml watch core
+# Không chạy `watch` thì khởi động lại bằng tay: docker compose -f deploy/docker-compose.yml restart core
 # Tên, cổng, tiền tố route: docs/architecture/context-and-containers.md mục "Địa chỉ và cổng".
 name: oism
 
@@ -19,7 +22,14 @@ x-dotnet-env: &dotnet-env
 x-dotnet: &dotnet
   image: mcr.microsoft.com/dotnet/sdk:8.0
   restart: unless-stopped
-  working_dir: /src
+  # Mỗi service đặt working_dir là thư mục project; tên thư mục cũng là tên file chạy trong /artifacts.
+  # exec để sau khi build chỉ còn đúng một tiến trình là service. Build lỗi thì nằm chờ lần khởi động lại sau,
+  # không thoát để restart policy build lại liên tục; lúc đó health check báo unhealthy và lỗi nằm ở `logs`.
+  # Không dùng `dotnet watch`: thư mục mount từ Windows không phát inotify nên nó quét file nửa giây một lần,
+  # 6 container cùng quét ngốn khoảng 2 nhân CPU cả lúc rảnh. `compose watch` theo dõi file ở phía máy host.
+  command: ["sh", "-c", "dotnet build || exec sleep infinity; exec /artifacts/bin/$${PWD##*/}/debug/$${PWD##*/}"]
+  # Để tiến trình số 1 chuyển SIGTERM xuống, service dừng ngay khi restart thay vì chờ hết 10 giây.
+  init: true
   environment: *dotnet-env
   volumes:
     - ../backend:/src
@@ -42,6 +52,13 @@ x-service: &service
   depends_on:
     postgres:
       condition: service_healthy
+
+# Đường dẫn cho `compose watch`: bin/obj do IDE build trên máy host và project test không làm service khởi động lại.
+x-watch-ignore: &watch-ignore ["**/bin/", "**/obj/", "tests/"]
+x-watch-shared: &watch-shared
+  action: restart
+  path: ../backend/shared
+  ignore: *watch-ignore
 
 services:
   postgres:
@@ -78,10 +95,13 @@ services:
       timeout: 5s
       retries: 10
 
-  # --no-hot-reload: mỗi lần lưu file là build và khởi động lại, nên migration mới được áp ngay lúc khởi động.
   gateway:
     <<: *dotnet
-    command: dotnet watch --no-hot-reload --project gateway/Oism.Gateway
+    working_dir: /src/gateway/Oism.Gateway
+    develop:
+      watch:
+        - { action: restart, path: ../backend/gateway, ignore: *watch-ignore }
+        - *watch-shared
     ports:
       - "8080:8080"
 
@@ -91,31 +111,51 @@ services:
       <<: *service-env
       # Khóa bí mật ký JWT chỉ cấp cho identity; các service khác chỉ nhận khóa công khai.
       Jwt__PrivateKey: ${JWT_PRIVATE_KEY:-}
-    command: dotnet watch --no-hot-reload --project services/identity/src/Oism.Identity.Api
+    working_dir: /src/services/identity/src/Oism.Identity.Api
+    develop:
+      watch:
+        - { action: restart, path: ../backend/services/identity/src, ignore: *watch-ignore }
+        - *watch-shared
     ports:
       - "5101:8080"
 
   catalog:
     <<: *service
-    command: dotnet watch --no-hot-reload --project services/catalog/src/Oism.Catalog.Api
+    working_dir: /src/services/catalog/src/Oism.Catalog.Api
+    develop:
+      watch:
+        - { action: restart, path: ../backend/services/catalog/src, ignore: *watch-ignore }
+        - *watch-shared
     ports:
       - "5102:8080"
 
   core:
     <<: *service
-    command: dotnet watch --no-hot-reload --project services/core/src/Oism.Core.Api
+    working_dir: /src/services/core/src/Oism.Core.Api
+    develop:
+      watch:
+        - { action: restart, path: ../backend/services/core/src, ignore: *watch-ignore }
+        - *watch-shared
     ports:
       - "5103:8080"
 
   channel:
     <<: *service
-    command: dotnet watch --no-hot-reload --project services/channel/src/Oism.Channel.Api
+    working_dir: /src/services/channel/src/Oism.Channel.Api
+    develop:
+      watch:
+        - { action: restart, path: ../backend/services/channel/src, ignore: *watch-ignore }
+        - *watch-shared
     ports:
       - "5104:8080"
 
   insights:
     <<: *service
-    command: dotnet watch --no-hot-reload --project services/insights/src/Oism.Insights.Api
+    working_dir: /src/services/insights/src/Oism.Insights.Api
+    develop:
+      watch:
+        - { action: restart, path: ../backend/services/insights/src, ignore: *watch-ignore }
+        - *watch-shared
     ports:
       - "5105:8080"
 
