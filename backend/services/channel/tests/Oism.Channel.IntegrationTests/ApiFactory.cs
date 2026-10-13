@@ -1,22 +1,61 @@
+using System.Net.Http.Headers;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
+using Oism.Channel.Application.Simulator.SimulateBurst;
 using Testcontainers.PostgreSql;
+using Testcontainers.RabbitMq;
 
 namespace Oism.Channel.IntegrationTests;
 
-// Chạy Api thật trên PostgreSQL thật. Lớp test dùng qua IClassFixture<ApiFactory>.
+// Chạy Api thật trên PostgreSQL và RabbitMQ thật. Lớp test dùng qua IClassFixture<ApiFactory>.
 public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:17-alpine").Build();
+    private readonly RSA _rsa = RSA.Create(2048);
 
-    public Task InitializeAsync() => _postgres.StartAsync();
+    public RabbitMqContainer Broker { get; } = new RabbitMqBuilder("rabbitmq:4-management-alpine").Build();
+
+    public Task InitializeAsync() => Task.WhenAll(_postgres.StartAsync(), Broker.StartAsync());
 
     async Task IAsyncLifetime.DisposeAsync()
     {
         await base.DisposeAsync();
+        await Broker.DisposeAsync();
         await _postgres.DisposeAsync();
+        _rsa.Dispose();
     }
 
-    protected override void ConfigureWebHost(IWebHostBuilder builder) =>
-        builder.UseSetting("ConnectionStrings:Oism", _postgres.GetConnectionString());
+    protected override void ConfigureWebHost(IWebHostBuilder builder) => builder
+        .UseSetting("ConnectionStrings:Oism", _postgres.GetConnectionString())
+        .UseSetting("ConnectionStrings:RabbitMq", Broker.GetConnectionString())
+        .UseSetting("Jwt:PublicKey", Convert.ToBase64String(_rsa.ExportSubjectPublicKeyInfo()))
+        // Api chạy trong bộ nhớ, không nghe cổng nào: lời gọi của simulator vào chính endpoint webhook đi qua TestServer.
+        .ConfigureTestServices(services => services
+            .AddHttpClient(nameof(IWebhookSender))
+            .ConfigurePrimaryHttpMessageHandler(() => Server.CreateHandler()));
+
+    // Client mang JWT như identity cấp: claim sub, tenant_id, role (docs/architecture/security.md).
+    public HttpClient CreateClient(string role, Guid tenantId)
+    {
+        var token = new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        {
+            Claims = new Dictionary<string, object>
+            {
+                ["sub"] = Guid.NewGuid().ToString(),
+                ["tenant_id"] = tenantId.ToString(),
+                ["role"] = role,
+            },
+            Expires = DateTime.UtcNow.AddMinutes(5),
+            SigningCredentials = new SigningCredentials(new RsaSecurityKey(_rsa), SecurityAlgorithms.RsaSha256),
+        });
+
+        var client = CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        return client;
+    }
 }

@@ -33,7 +33,9 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     protected override void ConfigureWebHost(IWebHostBuilder builder) => builder
         .UseSetting("ConnectionStrings:Oism", _postgres.GetConnectionString())
         .UseSetting("ConnectionStrings:RabbitMq", RabbitMqUri ?? Broker.GetConnectionString())
-        .UseSetting("Jwt:PublicKey", Convert.ToBase64String(_rsa.ExportSubjectPublicKeyInfo()));
+        .UseSetting("Jwt:PublicKey", Convert.ToBase64String(_rsa.ExportSubjectPublicKeyInfo()))
+        // Test tự gọi job hết hạn; lịch chạy mỗi phút của Hangfire chỉ bật ở test của chính nó.
+        .UseSetting("Jobs:Enabled", "false");
 
     // Client mang JWT như identity cấp: claim sub, tenant_id, role (docs/architecture/security.md).
     // branchId: claim branch_id của người dùng gắn với một chi nhánh, ví dụ Cashier.

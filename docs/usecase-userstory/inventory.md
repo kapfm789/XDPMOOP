@@ -60,7 +60,7 @@ Tiêu chí chấp nhận:
 
 - Actor: Owner, Staff
 - Yêu cầu: FR-INV-04
-- API: `POST /api/core/stocktakes`, `PUT /stocktakes/{id}/counts`, `POST /stocktakes/{id}/post`
+- API: `GET, POST /api/core/stocktakes`, `PUT /stocktakes/{id}/counts`, `POST /stocktakes/{id}/post`
 - Thiết kế: [luồng kiểm kê](../design/flows/stocktake.md)
 
 Là nhân viên kho, tôi muốn nhập số đếm thực tế và để hệ thống tự điều chỉnh, để tồn trên sổ khớp với hàng trong kho.

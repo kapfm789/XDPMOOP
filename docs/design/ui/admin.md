@@ -26,7 +26,7 @@ Trang quản trị cho Owner và Staff, nằm ở `frontend/admin`. Mỗi dòng 
 | `/reports/gross-profit` | Doanh thu, giá vốn, lợi nhuận gộp | Owner | `GET /api/insights/reports/gross-profit` | UC-REP-01 | W4-07 |
 | `/reports/inventory` | Giá trị tồn, bán chạy, bán chậm | Owner, Staff | Ba API báo cáo tồn | UC-REP-02 | W4-07 |
 | `/forecast` | Đề xuất nhập hàng, chạy dự báo | Owner | `/api/insights/forecast/*` | UC-AI-01, UC-AI-02 | W4-07 |
-| `/channel` | Shop của sàn, webhook đã nhận, bắn tải | Owner | `/api/channel/*` | UC-SIM-01 | Mức P2, làm sau W3-08 nếu kịp; không kịp thì dùng Swagger của `channel` |
+| `/channel` | Shop của sàn, webhook đã nhận, bắn tải | Owner | `/api/channel/channel-shops`, `/api/channel/simulator/burst`, `/api/channel/webhook-events` | UC-SIM-01 | W3-08 |
 
 ## Hành vi chung
 

@@ -111,6 +111,17 @@ internal static class TestKit
         return (await response.Content.ReadFromJsonAsync<OrderDto>())!;
     }
 
+    // Đưa hạn giữ hàng của đơn về quá khứ, như thể đơn đã nằm chờ quá thời hạn giữ.
+    public static Task ExpireHoldsAsync(this ApiFactory factory, Guid tenantId, Guid orderId) =>
+        factory.QueryAsync(tenantId, async db =>
+        {
+            var past = DateTimeOffset.UtcNow.AddMinutes(-1);
+            await db.Orders.Where(order => order.Id == orderId)
+                .ExecuteUpdateAsync(update => update.SetProperty(order => order.ReservedUntil, past));
+            return await db.Reservations.Where(hold => hold.OrderId == orderId)
+                .ExecuteUpdateAsync(update => update.SetProperty(hold => hold.ExpiresAt, past));
+        });
+
     public static async Task<(int OnHand, int Reserved, int Available)> StockAsync(
         this ApiFactory factory, Guid tenantId, Guid branchId, Guid skuId)
     {

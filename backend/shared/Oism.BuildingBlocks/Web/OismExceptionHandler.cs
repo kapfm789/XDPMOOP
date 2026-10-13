@@ -30,7 +30,7 @@ internal sealed class OismExceptionHandler(IProblemDetailsService problemDetails
                 problem.Status = business switch
                 {
                     NotFoundException => StatusCodes.Status404NotFound,
-                    UnauthenticatedException => StatusCodes.Status401Unauthorized,
+                    UnauthenticatedException or InvalidSignatureException => StatusCodes.Status401Unauthorized,
                     _ => StatusCodes.Status409Conflict,
                 };
                 problem.Title = business.Message;

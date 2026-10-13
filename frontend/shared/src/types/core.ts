@@ -164,7 +164,20 @@ export type Payment = {
   confirmedAt: string;
 };
 
-// `payment` chỉ có với đơn POS.
+export type ReservationStatus = 'Active' | 'Consumed' | 'Released';
+
+// Phần giữ hàng của một dòng đơn.
+export type Reservation = {
+  id: string;
+  orderItemId: string;
+  skuId: string;
+  quantity: number;
+  status: ReservationStatus;
+  expiresAt: string;
+  closedAt?: string | null;
+};
+
+// `payment` chỉ có với đơn POS; `reservations` chỉ có trong phản hồi của GET /orders/{id}.
 export type Order = {
   id: string;
   orderNumber: string;
@@ -183,6 +196,18 @@ export type Order = {
   createdAt: string;
   items: OrderItem[];
   payment?: Payment;
+  reservations?: Reservation[];
+};
+
+// `from` và `to` là thời điểm ISO 8601 lọc theo lúc tạo đơn, tính cả hai đầu.
+export type OrderFilter = {
+  status?: OrderStatus;
+  channel?: OrderChannel;
+  branchId?: string;
+  from?: string;
+  to?: string;
+  page: number;
+  pageSize: number;
 };
 
 // Bỏ trống `unitPrice` thì dùng giá lẻ hiện tại; bỏ trống `discount` là 0.
@@ -198,4 +223,11 @@ export type PosCheckoutRequest = {
   branchId: string;
   items: OrderLineRequest[];
   payment: { method: PaymentMethod; amount: number };
+};
+
+// Đơn thủ công của kênh Admin: tạo xong là đơn ở Reserved, hàng đã được giữ.
+export type CreateOrderRequest = {
+  branchId: string;
+  note?: string;
+  items: OrderLineRequest[];
 };

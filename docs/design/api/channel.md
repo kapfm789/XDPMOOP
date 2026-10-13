@@ -9,9 +9,20 @@ Tiền tố `/api/channel`. Use case ở [channel-realtime.md](../../usecase-use
 | POST | `/api/channel/channel-shops` | Owner | `channel`, `shopId`, `branchId` | 201: shop kèm `secret` | 409 `duplicate` |
 | PATCH | `/api/channel/channel-shops/{id}/active` | Owner | `isActive` | 200: shop | |
 | GET | `/api/channel/webhook-events` | Owner | `channel?`, `status?`, `page`, `pageSize` | Danh sách webhook đã nhận | |
-| POST | `/api/channel/simulator/burst` | Owner | `channel`, `shopId`, `skuCode`, `quantityPerOrder`, `orders`, `concurrency` | 202: `burstId`, số webhook đã gửi | |
+| POST | `/api/channel/simulator/burst` | Owner | `channel`, `shopId`, `skuCode`, `quantityPerOrder`, `orders`, `concurrency`, `unitPrice?` | 202: `burstId`, `sent` | 404 khi shop không có trong tenant |
 
 `{channel}` nhận `shopee`, `tiktok`, `lazada`. `secret` chỉ được trả một lần lúc tạo shop.
+
+- Tên kênh ở đường dẫn, trong body và ở bộ lọc không phân biệt hoa thường; phản hồi luôn viết `Shopee`, `TikTok`, `Lazada`. Kênh ngoài ba giá trị này: webhook trả 404, các endpoint khác trả 400 `validation_failed`.
+- Webhook: body không phải JSON, hoặc thiếu mã sự kiện hay mã shop, trả 400 `validation_failed` và không lưu gì, vì không biết webhook của ai và không chống trùng được. Shop chưa cấu hình, shop của kênh khác hoặc shop đã tắt trả 404. Chữ ký sai, viết hoa hoặc thiếu header trả 401 và không lưu gì.
+- Webhook hợp lệ trả 202 với `eventId` là mã sự kiện của sàn và `status` của bản ghi: `Submitted` khi đã ghi `SubmitOrder` vào outbox, `Failed` khi phần đơn trong payload không đổi được về Canonical Order, và `Reserved` khi đơn đó đã được giữ hàng qua một webhook khác mã sự kiện. Gửi lại cùng mã sự kiện trả 202 với `status` hiện có của bản ghi đã lưu, có thể đã là `Reserved` hoặc `Rejected`.
+- Một dòng của Canonical Order phải có mã SKU, `quantity` dương, đơn giá không âm, giảm giá không âm và không vượt `quantity × unitPrice`; đơn phải có mã đơn, thời điểm đặt và ít nhất một dòng. Giảm giá bỏ trống là 0. Sai một điều thì bản ghi là `Failed` kèm `reason`, để đơn sai không tới `core`.
+- Shop trả về gồm `id`, `channel`, `shopId`, `branchId`, `isActive`; riêng phản hồi lúc tạo có thêm `secret`, là 32 byte ngẫu nhiên viết hex. Danh sách xếp theo `channel` rồi `shopId`. `shopId` bị cắt khoảng trắng hai đầu, không rỗng, tối đa 100 ký tự; `channel` ngoài ba kênh, `shopId` rỗng hoặc thiếu `branchId` trả 400 `validation_failed`. Mã shop đã có ở bất kỳ tenant nào trong cùng kênh trả 409 `duplicate`.
+- `channel` không giữ bản sao chi nhánh nên không kiểm `branchId` lúc tạo shop: chi nhánh không có hoặc đã tắt thì `core` từ chối đơn của shop bằng `OrderRejected` với lý do `InactiveBranch`.
+- `PATCH .../active`: `id` không có trong tenant trả 404 `not_found`. Shop bị tắt coi như không có với webhook.
+- `GET /webhook-events` trả theo khuôn phân trang chung, mới nhận nhất trước. Mỗi dòng gồm `id`, `channel`, `eventId`, `externalOrderId?`, `status`, `reason?`, `orderId?`, `receivedAt`, `updatedAt`; payload không nằm trong danh sách. `reason` là mã lý do của `OrderRejected` khi `Rejected`, và là câu mô tả lỗi của payload khi `Failed`. `status` ngoài năm trạng thái, `page` nhỏ hơn 1 hoặc `pageSize` ngoài khoảng 1 đến 100 trả 400 `validation_failed`.
+- Bắn tải: `orders` từ 1 đến 1000 là số webhook sẽ gửi, `concurrency` từ 1 đến 100 là số webhook gửi cùng lúc, `quantityPerOrder` dương; sai thì 400 `validation_failed`. `unitPrice` bỏ trống là 0, vì `channel` không biết giá của SKU. Mỗi webhook mang một mã sự kiện và một mã đơn riêng, được ký bằng `secret` của shop và gửi vào chính endpoint webhook. Phản hồi trả về sau khi mọi webhook đã được gửi, với `sent` là số webhook đã gửi; kết quả giữ hàng của từng đơn xem ở `GET /webhook-events`.
+- Service gọi chính endpoint webhook của nó theo địa chỉ ở cấu hình `Simulator:WebhookBaseUrl`, mặc định `http://localhost:8080/` là cổng service nghe trong container.
 
 ## Chữ ký
 

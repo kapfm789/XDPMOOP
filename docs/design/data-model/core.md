@@ -120,7 +120,7 @@ Khóa ngoại `order_id` tới `orders.id` và `order_item_id` tới `order_item
 | `stock_transfers` | `id`, `tenant_id`, `from_branch_id`, `to_branch_id`, `transfer_number`, `status` (`Draft`, `InTransit`, `Received`), `shipped_at`, `received_at`, `created_by` | CHECK `from_branch_id <> to_branch_id`; unique `(tenant_id, transfer_number)` |
 | `stock_transfer_items` | `id`, `tenant_id`, `transfer_id`, `sku_id`, `quantity`, `unit_cost` | `unit_cost` ghi lúc xuất, null khi phiếu còn Draft; CHECK `quantity > 0`; khóa ngoại `transfer_id` tới `stock_transfers.id`, dòng bị xóa theo phiếu |
 | `stocktakes` | `id`, `tenant_id`, `branch_id`, `status` (`Open`, `Posted`), `created_by`, `posted_at` | |
-| `stocktake_items` | `id`, `tenant_id`, `stocktake_id`, `sku_id`, `counted_qty`, `system_qty`, `difference` | `system_qty` và `difference` ghi lúc chốt; unique `(stocktake_id, sku_id)` |
+| `stocktake_items` | `id`, `tenant_id`, `stocktake_id`, `sku_id`, `counted_qty`, `system_qty`, `difference` | `system_qty` và `difference` ghi lúc chốt, null khi phiên còn Open; unique `(stocktake_id, sku_id)`; CHECK `counted_qty >= 0`; khóa ngoại `stocktake_id` tới `stocktakes.id`, dòng bị xóa theo phiên |
 | `sku_refs` | `tenant_id`, `sku_id`, `sku_code`, `name`, `barcodes` (mảng text), `retail_price`, `wholesale_price`, `is_active`, `version` | Khóa chính `(tenant_id, sku_id)`; unique `(tenant_id, sku_code)` |
 | `branch_refs` | `tenant_id`, `branch_id`, `code`, `name`, `type`, `is_active`, `version` | Khóa chính `(tenant_id, branch_id)` |
 | `outbox_messages` | `id`, `tenant_id`, `type`, `payload` (jsonb), `occurred_at`, `processed_at`, `attempts` | Chỉ mục trên `occurred_at` cho các dòng có `processed_at` null |
@@ -132,4 +132,6 @@ Khóa ngoại `order_id` tới `orders.id` và `order_item_id` tới `order_item
 
 `sku_refs` và `branch_refs` là bản sao dựng từ event. Chỉ consumer được ghi vào hai bảng này, và chỉ ghi đè khi `version` của event lớn hơn `version` đang lưu.
 
-Bảng của Hangfire nằm trong schema riêng `hangfire_core` và không có `tenant_id`.
+Nhập lại số đếm của phiên kiểm kê là thay cả bộ dòng của phiên, như sửa phiếu nhập Draft.
+
+Bảng của Hangfire nằm trong schema riêng `hangfire_core` và không có `tenant_id`. Hangfire tự tạo schema và các bảng này lúc service khởi động; chúng không nằm trong migration của `core`.

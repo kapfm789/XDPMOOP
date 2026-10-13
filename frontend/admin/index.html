@@ -4,6 +4,22 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OISM Quản trị</title>
+    <style>
+      /* Phiếu giao hàng in qua trình duyệt: chỉ in vùng print-only, ẩn menu, thanh tiêu đề và phần còn lại của màn hình. */
+      .print-only {
+        display: none;
+      }
+      @media print {
+        .no-print,
+        .ant-layout-sider,
+        .ant-layout-header {
+          display: none !important;
+        }
+        .print-only {
+          display: block;
+        }
+      }
+    </style>
   </head>
   <body style="margin: 0">
     <div id="root"></div>

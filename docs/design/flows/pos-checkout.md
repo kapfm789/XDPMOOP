@@ -15,36 +15,48 @@ sequenceDiagram
   Cashier->>Pos: bấm thanh toán
   Pos->>Api: POST pos/checkout kèm Idempotency-Key
   Api->>UC: PosCheckoutCommand
-  UC->>DB: BEGIN
-  UC->>DB: INSERT đơn ở Draft, kênh POS, kèm idempotency_key
-  alt khóa đã dùng
-    UC->>DB: ROLLBACK
-    UC->>DB: đọc đơn đã có theo khóa
+  UC->>DB: đọc đơn theo idempotency_key
+  alt khóa đã có đơn
     UC-->>Api: đơn đã có
     Api-->>Pos: 200
-  else khóa mới
-    UC->>Stock: Reserve các dòng đơn
-    Stock->>DB: SELECT số dư ORDER BY sku_id FOR UPDATE
-    alt thiếu hàng
+  else khóa chưa có đơn
+    UC->>DB: BEGIN
+    UC->>DB: tra branch_refs và sku_refs
+    UC->>DB: INSERT đơn ở Draft kèm các dòng đơn, kênh POS, kèm idempotency_key
+    alt request cùng khóa tới đồng thời đã chèn trước
       UC->>DB: ROLLBACK
-      UC-->>Api: InsufficientStockException
-      Api-->>Pos: 409 kèm SKU và tồn khả dụng
-    else đủ hàng
-      Stock->>DB: reserved tăng, tạo Reservation
-      UC->>Stock: Consume các phần giữ vừa tạo
-      Stock->>DB: reserved giảm, PostLedger OUT lý do Sale
-      UC->>DB: ghi cost_price, ghi Payment
-      UC->>DB: đơn sang Completed
-      UC->>DB: ghi outbox OrderConfirmed và StockChanged
-      UC->>DB: COMMIT
-      UC-->>Api: đơn Completed
-      Api-->>Pos: 201
-      Pos->>Cashier: mở hộp thoại in
+      UC->>DB: đọc đơn đã có theo khóa
+      UC-->>Api: đơn đã có
+      Api-->>Pos: 200
+    else khóa mới
+      UC->>Stock: Reserve các dòng đơn
+      Stock->>DB: tạo dòng số dư còn thiếu
+      Stock->>DB: SELECT số dư ORDER BY sku_id FOR UPDATE
+      alt thiếu hàng
+        Stock-->>UC: InsufficientStockException nêu mọi SKU thiếu
+        UC->>DB: ROLLBACK
+        Api-->>Pos: 409 kèm SKU và tồn khả dụng
+      else đủ hàng
+        Stock->>Stock: reserved tăng, tạo Reservation Active, xếp StockChanged vào outbox
+        UC->>DB: lưu đơn ở Reserved và các phần giữ
+        UC->>Stock: Consume các phần giữ vừa tạo
+        Stock->>DB: đọc các phần giữ Active của đơn, khóa lại đúng các dòng số dư đang giữ
+        Stock->>Stock: reserved giảm, Reservation sang Consumed
+        Stock->>Stock: PostLedger OUT lý do Sale: on_hand giảm, mỗi dòng đơn một dòng sổ, xếp StockChanged vào outbox
+        Stock-->>UC: giá vốn đã dùng cho từng dòng
+        UC->>UC: ghi cost_price, ghi Payment, đơn sang Confirmed rồi Completed, xếp OrderConfirmed vào outbox
+        UC->>DB: lưu đơn, thanh toán, số dư, phần giữ, sổ và outbox, rồi COMMIT
+        UC-->>Api: đơn Completed
+        Api-->>Pos: 201
+        Pos->>Cashier: mở hộp thoại in
+      end
     end
   end
 ```
 
-Trước khi mở transaction, handler tra đơn theo `Idempotency-Key`; đã có thì trả ngay đơn đó với mã 200. Nhánh "khóa đã dùng" trong sơ đồ là trường hợp còn lại: hai request cùng khóa tới đồng thời, request thua bị chặn ở chỉ mục unique.
+Handler tra đơn theo `Idempotency-Key` trước khi mở transaction; đã có thì trả ngay đơn đó với mã 200. Nhánh "request cùng khóa tới đồng thời" là trường hợp còn lại: cả hai request đều chưa thấy đơn, request thua bị chặn ở chỉ mục unique lúc chèn.
+
+Bước giữ và bước xuất dùng đúng hai thao tác `Reserve` và `Consume` của đơn online, nên đơn và các phần giữ được lưu xuống database (chưa commit) giữa hai bước để `Consume` đọc lại được. Phần giữ của đơn POS hết hạn ngay tại thời điểm tạo, vì nó chỉ sống bên trong transaction này. Mỗi SKU có hai `StockChanged` trong outbox, một sau bước giữ và một sau bước xuất; bên nhận ghi đè theo `version` nên chỉ bản sau còn lại.
 
 ## Mỗi bước đổi gì
 
@@ -65,8 +77,9 @@ Tồn khả dụng POS hiển thị lúc chọn hàng có thể đã cũ khi b�
 ## Trường hợp biên
 
 - Bấm hai lần hoặc mạng gửi lại: cùng `Idempotency-Key`, lần sau nhận lại đúng đơn đã tạo. Hai request đồng thời cùng khóa thì request thua bị chặn ở unique, rollback rồi đọc lại đơn.
-- Cashier gửi `branchId` khác chi nhánh trong token: trả 403 trước khi mở transaction.
-- `payment.amount` nhỏ hơn tổng đơn: trả 400.
+- Cashier gửi `branchId` khác chi nhánh trong token: controller trả 403 trước khi gọi handler.
+- `payment.amount` nhỏ hơn tổng đơn: trả 400 sau khi đã tính tổng đơn và trước khi chèn đơn, nên không gì được lưu.
+- Lần gửi bị từ chối hoặc lỗi không để lại đơn nào, nên cùng khóa đó dùng lại được cho lần thử sau.
 - In lỗi: đơn đã lưu; POS in lại từ dữ liệu đã có, không gọi API này lần nữa.
 - Không có trạng thái chờ thanh toán: thu ngân xác nhận đã nhận tiền trước khi bấm ([ADR-0007](../../decisions/0007-pos-payment-no-offline.md)).
 

@@ -15,7 +15,7 @@ type Props<Values> = {
 };
 
 // Tên trường của server sang đường dẫn trường của form: "skus[0].SkuCode" thành ['skus', 0, 'skuCode'].
-const toFieldPath = (key: string) =>
+export const toFieldPath = (key: string) =>
   key
     .split(/[.[\]]+/)
     .filter(Boolean)

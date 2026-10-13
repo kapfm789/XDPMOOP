@@ -102,4 +102,4 @@ stateDiagram-v2
   Failed --> [*]
 ```
 
-Trong luồng bình thường, bản ghi được lưu và `SubmitOrder` được ghi vào outbox trong cùng một transaction, nên bản ghi tới thẳng Submitted. Received chỉ quan sát được khi payload lỗi và chuyển sang Failed.
+Bản ghi được lưu và `SubmitOrder` được ghi vào outbox trong cùng một transaction, nên bản ghi tới thẳng Submitted; payload lỗi thì bản ghi được lưu thẳng ở Failed. Received vì thế chỉ tồn tại bên trong transaction nhận webhook và không quan sát được từ ngoài.

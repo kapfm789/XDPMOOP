@@ -60,6 +60,7 @@ Staff không thấy `avgCost` trong phản hồi của `/stock` và `unitCost` t
 | POST | `/api/core/transfers/{id}/receive` | Owner, Staff | | 200: phiếu Received | 409 `invalid_state_transition` |
 | GET | `/api/core/transfers` | Owner, Staff | `status?`, `page`, `pageSize` | Danh sách phiếu | |
 | DELETE | `/api/core/transfers/{id}` | Owner, Staff | | 204 | 409 `invalid_state_transition` khi không còn Draft |
+| GET | `/api/core/stocktakes` | Owner, Staff | `branchId?`, `status?`, `page`, `pageSize` | Danh sách phiên | |
 | POST | `/api/core/stocktakes` | Owner, Staff | `branchId` | 201: phiên Open | |
 | PUT | `/api/core/stocktakes/{id}/counts` | Owner, Staff | `items[]` (`skuId`, `countedQty`) | 200: phiên | 409 khi đã Posted |
 | POST | `/api/core/stocktakes/{id}/post` | Owner, Staff | | 200: phiên Posted kèm chênh lệch từng SKU | 409 `stocktake_below_reserved` |
@@ -70,6 +71,13 @@ Staff không thấy `avgCost` trong phản hồi của `/stock` và `unitCost` t
 - Nhận phiếu còn Draft trả 409 `invalid_state_transition`. Nhận lại phiếu đã Received trả 200 với cùng phiếu, không tác động lần hai. `id` phiếu không có trong tenant trả 404 `not_found`.
 - Danh sách phiếu trả theo khuôn phân trang chung, mỗi phiếu kèm các dòng của nó: phiếu chưa xuất đứng trước, rồi tới phiếu xuất gần nhất. `status` nhận `Draft`, `InTransit` hoặc `Received`; giá trị khác, `page` nhỏ hơn 1 hoặc `pageSize` ngoài khoảng 1 đến 100 trả 400 `validation_failed`.
 - Chỉ phiếu còn Draft xóa được ([ADR-0009](../../decisions/0009-transfer-and-stocktake.md)): phiếu và các dòng của nó biến mất, tồn không bị tác động. Phiếu InTransit hoặc Received trả 409 `invalid_state_transition`.
+- Phiên kiểm kê trả về gồm `id`, `branchId`, `status` (`Open`, `Posted`), `createdBy?`, `postedAt?` và `items[]` xếp theo `skuCode`; mỗi dòng gồm `id`, `skuId`, `skuCode`, `skuName`, `countedQty`, `systemQty?`, `difference?`. `systemQty` là `onHand` đọc dưới khóa lúc chốt và `difference` bằng `countedQty - systemQty`; hai trường này là `null` khi phiên còn Open.
+- Mở phiên: `branchId` chưa có bản sao ở `core` trả 409 `reference_not_ready`; chi nhánh đã tắt trả 409 `inactive_reference`. Phiên mới chưa có dòng nào.
+- Nhập số đếm thay cả bộ số đếm của phiên; tồn chỉ bị tác động khi chốt. `items[]` rỗng, `countedQty` âm, một `skuId` xuất hiện ở hai dòng đều trả 400 `validation_failed`. `skuId` chưa có bản sao ở `core` trả 409 `reference_not_ready`. Phiên đã Posted trả 409 `invalid_state_transition`.
+- Chốt ghi một dòng sổ lý do `StocktakeAdjust` cho mỗi SKU có chênh lệch và đặt `onHand` bằng số đếm; SKU đếm bằng sổ và SKU không được đếm không bị đụng tới. Chốt lại phiên đã Posted trả 200 với cùng phiên, không tác động lần hai. Phiên chưa có số đếm nào chốt được và không đổi gì.
+- 409 `stocktake_below_reserved`: không SKU nào của phiên bị điều chỉnh. `details` có một phần tử cho mỗi SKU đếm thấp hơn lượng đang giữ, gồm `skuId`, `countedQty`, `reserved` và `orders[]` là các đơn đang giữ SKU đó tại chi nhánh, đơn cũ nhất trước; mỗi đơn gồm `orderId`, `orderNumber`, `channel`, `quantity`.
+- Nhập số đếm và chốt: `id` phiên không có trong tenant trả 404 `not_found`.
+- Danh sách phiên trả theo khuôn phân trang chung, mỗi phiên kèm các dòng của nó: phiên còn Open đứng trước, rồi tới phiên chốt gần nhất. `status` nhận `Open` hoặc `Posted`; giá trị khác, `page` nhỏ hơn 1 hoặc `pageSize` ngoài khoảng 1 đến 100 trả 400 `validation_failed`.
 
 ## Đơn hàng
 

@@ -31,6 +31,10 @@ public sealed class CoreDbContext(DbContextOptions<CoreDbContext> options, ITena
 
     public DbSet<StockTransferItem> StockTransferItems => Set<StockTransferItem>();
 
+    public DbSet<Stocktake> Stocktakes => Set<Stocktake>();
+
+    public DbSet<StocktakeItem> StocktakeItems => Set<StocktakeItem>();
+
     public DbSet<Order> Orders => Set<Order>();
 
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
