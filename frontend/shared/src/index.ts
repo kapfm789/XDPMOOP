@@ -16,18 +16,23 @@ export {
   updateProduct,
   updateSku,
 } from './api/catalog';
+export { createChannelShop, listChannelShops, listWebhookEvents, setChannelShopActive, simulateBurst } from './api/channel';
 export { api, ApiError } from './api/client';
 export {
   confirmPurchaseReceipt,
+  createOrder,
   createPurchaseReceipt,
   createSupplier,
+  getOrder,
   listLedger,
+  listOrders,
   listPurchaseReceipts,
   listStock,
   listSuppliers,
   posCheckout,
   searchPosSkus,
   setStockThreshold,
+  transitionOrder,
   updatePurchaseReceipt,
 } from './api/core';
 export { errorMessage } from './api/errors';
@@ -47,6 +52,7 @@ export { RequireRole } from './auth/RequireRole';
 export { canAccess, visibleFor } from './auth/roles';
 export { formatDateTime, formatMoney } from './format';
 export type * from './types/catalog';
+export type * from './types/channel';
 export type * from './types/common';
 export type * from './types/core';
 export type * from './types/identity';

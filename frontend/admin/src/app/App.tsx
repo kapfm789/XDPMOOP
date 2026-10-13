@@ -8,11 +8,15 @@ import { BrandsPage } from '../pages/catalog/BrandsPage';
 import { CategoriesPage } from '../pages/catalog/CategoriesPage';
 import { ProductDetailPage } from '../pages/catalog/ProductDetailPage';
 import { ProductsPage } from '../pages/catalog/ProductsPage';
+import { ChannelPage } from '../pages/channel/ChannelPage';
 import { HomePage } from '../pages/home/HomePage';
 import { LedgerPage } from '../pages/inventory/LedgerPage';
 import { ReceiptsPage } from '../pages/inventory/ReceiptsPage';
 import { StockPage } from '../pages/inventory/StockPage';
 import { LoginPage } from '../pages/login/LoginPage';
+import { NewOrderPage } from '../pages/orders/NewOrderPage';
+import { OrderDetailPage } from '../pages/orders/OrderDetailPage';
+import { OrdersPage } from '../pages/orders/OrdersPage';
 import { RegisterPage } from '../pages/register/RegisterPage';
 import { UsersPage } from '../pages/users/UsersPage';
 import { AdminLayout } from './AdminLayout';
@@ -55,6 +59,17 @@ const router = createBrowserRouter([
       { path: 'inventory/stock', element: <StockPage /> },
       { path: 'inventory/receipts', element: <ReceiptsPage /> },
       { path: 'inventory/ledger', element: <LedgerPage /> },
+      { path: 'orders', element: <OrdersPage /> },
+      { path: 'orders/new', element: <NewOrderPage /> },
+      { path: 'orders/:id', element: <OrderDetailPage /> },
+      {
+        path: 'channel',
+        element: (
+          <RequireRole roles={OWNER_ONLY}>
+            <ChannelPage />
+          </RequireRole>
+        ),
+      },
     ],
   },
 ]);

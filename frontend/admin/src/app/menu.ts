@@ -17,4 +17,6 @@ export const MENU: readonly MenuEntry[] = [
   { path: '/inventory/stock', label: 'Tồn kho', roles: ADMIN_ROLES },
   { path: '/inventory/receipts', label: 'Phiếu nhập', roles: ADMIN_ROLES },
   { path: '/inventory/ledger', label: 'Sổ giao dịch', roles: ADMIN_ROLES },
+  { path: '/orders', label: 'Đơn hàng', roles: ADMIN_ROLES },
+  { path: '/channel', label: 'Kênh sàn', roles: OWNER_ONLY },
 ];

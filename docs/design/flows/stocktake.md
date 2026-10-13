@@ -18,23 +18,25 @@ sequenceDiagram
     UC->>DB: COMMIT, không đổi gì
     Api-->>Staff: 200, phiên hiện có
   else phiên đang Open
+    UC->>DB: tạo dòng số dư còn thiếu của các SKU đã đếm
     UC->>DB: SELECT số dư các SKU đã đếm ORDER BY sku_id FOR UPDATE
     alt có SKU mà số đếm nhỏ hơn reserved
       UC->>DB: tìm các đơn đang giữ những SKU đó
       UC->>DB: ROLLBACK
       Api-->>Staff: 409 kèm danh sách đơn
     else mọi SKU hợp lệ
-      loop từng SKU có chênh lệch
-        UC->>DB: PostLedger IN hoặc OUT, lý do StocktakeAdjust
+      UC->>UC: ghi system_qty và difference lên dòng phiên, phiên sang Posted
+      loop từng SKU có chênh lệch, qua PostLedger
+        UC->>UC: on_hand về số đếm, thêm dòng sổ IN hoặc OUT lý do StocktakeAdjust
       end
-      UC->>DB: ghi system_qty và difference lên dòng phiên
-      UC->>DB: phiên sang Posted
-      UC->>DB: ghi outbox StockChanged
-      UC->>DB: COMMIT
+      UC->>UC: xếp StockChanged của từng SKU đã điều chỉnh vào outbox
+      UC->>DB: lưu phiên, số dư, sổ và outbox, rồi COMMIT
       Api-->>Staff: 200
     end
   end
 ```
+
+Hình dạng `details` của lỗi 409 và của phiên trả về nằm ở [api/core.md](../api/core.md) mục "Chuyển kho và kiểm kê".
 
 ## Mỗi bước đổi gì
 

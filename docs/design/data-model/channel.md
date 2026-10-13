@@ -31,7 +31,7 @@ Tra `channel_shops` theo `(channel, shop_id)` là một trong các chỗ đượ
 | `tenant_id` | uuid | |
 | `channel` | text | |
 | `event_id` | text | Mã sự kiện do sàn cấp; unique `(tenant_id, channel, event_id)` |
-| `external_order_id` | text | Mã đơn của sàn |
+| `external_order_id` | text, cho phép null | Mã đơn của sàn; null khi `Failed` vì payload không đổi được về Canonical Order |
 | `payload` | jsonb | Nguyên văn body đã nhận |
 | `status` | text | `Received`, `Submitted`, `Reserved`, `Rejected`, `Failed` |
 | `reason` | text, cho phép null | Lý do khi `Rejected` hoặc `Failed` |
@@ -39,6 +39,8 @@ Tra `channel_shops` theo `(channel, shop_id)` là một trong các chỗ đượ
 | `received_at`, `updated_at` | timestamptz | |
 
 Chỉ mục: `(tenant_id, received_at)`; `(tenant_id, channel, external_order_id)`.
+
+`webhook_events` không có khóa ngoại tới `channel_shops`: bản ghi gắn với shop qua `tenant_id` và `channel`. `channel` của cả hai bảng lưu dạng text, đúng tên kênh trong `SubmitOrder`.
 
 ## Bảng hạ tầng
 

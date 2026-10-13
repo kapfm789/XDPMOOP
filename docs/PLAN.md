@@ -334,7 +334,7 @@ Frontend chỉ gọi qua gateway, đường dẫn dạng `/api/<service>/...`. B
 | core | `GET /stock`, `PUT /stock/threshold`, `GET /ledger` | Owner, Staff |
 | core | `POST /purchase-receipts`, `POST /purchase-receipts/{id}/confirm` | Owner, Staff |
 | core | `POST /transfers`, `/transfers/{id}/ship`, `/transfers/{id}/receive` | Owner, Staff |
-| core | `POST /stocktakes`, `PUT /stocktakes/{id}/counts`, `POST /stocktakes/{id}/post` | Owner, Staff |
+| core | `GET, POST /stocktakes`, `PUT /stocktakes/{id}/counts`, `POST /stocktakes/{id}/post` | Owner, Staff |
 | core | `GET /orders`, `POST /orders` (đơn thủ công), `POST /orders/{id}/confirm`, `/complete`, `/cancel` | Owner, Staff |
 | channel | `POST /webhooks/{channel}` (chữ ký giả lập, không JWT) | Simulator |
 | channel | `POST /simulator/burst`, `GET /webhook-events` | Owner |
@@ -445,10 +445,10 @@ Cổng phase 5: bán POS chạy trọn luồng và in được; bấm thanh toá
 
 | Mã | Việc | Owner | Yêu cầu | Xong khi |
 | --- | --- | --- | --- | --- |
-| W3-06 | core/Inventory: kiểm kê, bút toán điều chỉnh, chặn khi số đếm nhỏ hơn reserved | A | FR-INV-04 | Điều chỉnh tạo dòng ledger; ca thiếu bị chặn kèm danh sách đơn |
+| W3-06 | core/Inventory: kiểm kê, bút toán điều chỉnh, chặn khi số đếm nhỏ hơn reserved; API xem danh sách phiên | A | FR-INV-04 | Điều chỉnh tạo dòng ledger; ca thiếu bị chặn kèm danh sách đơn |
 | W3-03 | channel: nhận webhook ba sàn, chống trùng, chuẩn hóa, gửi `SubmitOrder`; công cụ bắn tải | B | FR-SIM-01, FR-ORD-01 | Gửi lại cùng webhook không tạo đơn thứ hai; bắn được 50 đơn đồng thời |
 | W3-04 | core: job Hangfire hủy đơn Reserved hết hạn | B | FR-SIM-03 | Xác nhận đúng lúc job chạy: chỉ một kết quả thắng |
-| W3-08 | admin: danh sách đơn đa kênh, tạo đơn thủ công, duyệt, hủy, in phiếu giao | C | FR-ORD-01, FR-ORD-03 | Duyệt được đơn từ simulator trên giao diện |
+| W3-08 | admin: danh sách đơn đa kênh, tạo đơn thủ công, duyệt, hủy, in phiếu giao; màn hình kênh sàn | C | FR-ORD-01, FR-ORD-03 | Duyệt được đơn từ simulator trên giao diện |
 | W3-09 | Rà sequence diagram POS checkout, xác nhận, hủy và hết hạn, chuyển kho theo code thật | B, A | Mục e.3 của đề | Sơ đồ ở `docs/design/flows/` khớp code đã merge |
 
 Cổng phase 6: đơn từ simulator vào Reserved rồi được duyệt trên admin; job hết hạn và thao tác xác nhận không cùng thắng.

@@ -15,18 +15,19 @@ sequenceDiagram
 
   Sim->>Gw: POST api/channel/webhooks/shopee
   Gw->>Ch: chuyển tiếp, không kiểm JWT
-  Ch->>CDB: tìm ChannelShop theo kênh và mã shop
+  Ch->>Ch: adapter đọc mã sự kiện và mã shop từ body
+  Ch->>CDB: tìm ChannelShop theo kênh và mã shop, đặt tenant context theo shop
   alt không có shop hoặc chữ ký sai
     Ch-->>Sim: 404 hoặc 401
   else hợp lệ
     Ch->>CDB: BEGIN
-    Ch->>CDB: INSERT webhook_events
+    Ch->>Ch: adapter đổi về Canonical Order
+    Ch->>CDB: INSERT webhook_events ở Submitted và outbox SubmitOrder
     alt trùng mã sự kiện
       Ch->>CDB: ROLLBACK
-      Ch-->>Sim: 202 với trạng thái cũ
+      Ch->>CDB: đọc bản ghi đã có
+      Ch-->>Sim: 202 với trạng thái của bản ghi đã có
     else sự kiện mới
-      Ch->>Ch: adapter đổi về Canonical Order
-      Ch->>CDB: ghi outbox SubmitOrder, trạng thái Submitted
       Ch->>CDB: COMMIT
       Ch-->>Sim: 202
     end
@@ -48,6 +49,8 @@ sequenceDiagram
   end
 ```
 
+Bản ghi webhook và thông điệp outbox được chèn trong cùng một lần lưu: chỉ mục unique từ chối bản ghi trùng thì thông điệp cũng không được ghi, nên không có command thứ hai. Hai bản của cùng một webhook tới đồng thời cũng đi qua đúng chỗ này; bản thua rollback rồi đọc lại bản ghi của bản thắng.
+
 ## Ba hàng rào chống trùng
 
 | Lớp | Hàng rào | Chặn được |
@@ -58,11 +61,15 @@ sequenceDiagram
 
 ## Trường hợp biên
 
-- Payload không đổi được về Canonical Order (thiếu trường, sai kiểu): lưu bản ghi với trạng thái Failed kèm lý do, trả 202, không phát command. Webhook không được trả lỗi 5xx vì payload xấu, để sàn không gửi lại mãi.
+- Payload không đổi được về Canonical Order (thiếu trường, sai kiểu, số lượng không dương, giảm giá vượt thành tiền): lưu bản ghi với trạng thái Failed kèm lý do, trả 202, không phát command. Webhook không được trả lỗi 5xx vì payload xấu, để sàn không gửi lại mãi. Quy tắc của từng dòng khớp quy tắc `core` áp cho dòng đơn, để đơn sai dừng ở `channel` thay vì làm consumer `SubmitOrder` lỗi.
+- Body không phải JSON, hoặc thiếu mã sự kiện hay mã shop: trả 400 và không lưu gì. Hai trường này phải đọc được trước khi biết webhook của tenant nào và trước khi chống trùng được.
 - Shop bị tắt: coi như không có shop, trả 404.
+- Hai webhook khác mã sự kiện nhưng cùng một đơn: cả hai bản ghi ở Submitted và cả hai command được phát; `core` chỉ nhận đơn một lần. Khi kết quả về, mọi bản ghi còn Submitted của đơn đó cùng sang Reserved hoặc Rejected.
+- Webhook thứ hai tới sau khi đơn đã được giữ hàng: `core` sẽ bỏ qua command của nó mà không phát gì, nên ngay trong transaction nhận webhook, bản ghi mới đi tiếp từ Submitted sang Reserved với `order_id` của bản ghi đã Reserved cho cùng mã đơn. Command vẫn được ghi vào outbox, vì hàng rào ở `core` mới là nơi quyết định đơn trùng. Webhook thứ hai cho một đơn từng bị từ chối thì ở Submitted như thường: `core` không lưu đơn bị từ chối nên xét lại nó và phát kết quả mới.
+- `OrderReserved` của đơn thủ công không có mã đơn của sàn nên không đổi bản ghi nào. Thông điệp tới lại sau khi bản ghi đã rời Submitted cũng không đổi gì.
 - `skuCode` không có ở `core`: `core` phát `OrderRejected` với lý do `UnknownSku`.
 - Tenant context: webhook không có JWT. `channel` đặt tenant context theo `ChannelShop` tìm được; command mang `tenantId` đó.
-- Bắn tải: `POST /api/channel/simulator/burst` tự sinh và tự gửi các webhook song song vào chính endpoint webhook, mỗi webhook một mã sự kiện và một mã đơn khác nhau.
+- Bắn tải: `POST /api/channel/simulator/burst` tự sinh và tự gửi các webhook song song vào chính endpoint webhook, mỗi webhook một mã sự kiện và một mã đơn khác nhau. Payload do chính adapter của kênh dựng theo hình dạng của sàn và được ký bằng `secret` của shop, nên đi qua đủ các bước kiểm chữ ký, chống trùng và chuẩn hóa như webhook của sàn. Đây là lời gọi HTTP của service tới chính nó, không phải tới service khác.
 
 ## Vì sao tách khỏi core
 

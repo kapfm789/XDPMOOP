@@ -1,9 +1,11 @@
 import type { Paged } from '../types/common';
 import type {
+  CreateOrderRequest,
   CreatePurchaseReceiptRequest,
   LedgerFilter,
   LedgerLine,
   Order,
+  OrderFilter,
   PosCheckoutRequest,
   PosSku,
   PurchaseReceipt,
@@ -60,3 +62,14 @@ export const searchPosSkus = (branchId: string, query: string) =>
 // Mỗi lần bấm thanh toán mang một `Idempotency-Key`; gửi lại cùng khóa nhận lại đúng đơn đã tạo.
 export const posCheckout = (request: PosCheckoutRequest, idempotencyKey: string) =>
   api<Order>('/api/core/pos/checkout', { method: 'POST', body: request, headers: { 'Idempotency-Key': idempotencyKey } });
+
+export const listOrders = (filter: OrderFilter) => api<Paged<Order>>(`/api/core/orders?${toQuery(filter)}`);
+
+// Đơn kèm dòng đơn, phần giữ hàng và thanh toán.
+export const getOrder = (id: string) => api<Order>(`/api/core/orders/${id}`);
+
+export const createOrder = (request: CreateOrderRequest) => api<Order>('/api/core/orders', { method: 'POST', body: request });
+
+// Duyệt, hoàn tất, hủy. Bước chuyển sai trạng thái trả 409 `invalid_state_transition`; hủy lại đơn đã hủy trả lại cùng đơn.
+export const transitionOrder = (id: string, action: 'confirm' | 'complete' | 'cancel') =>
+  api<Order>(`/api/core/orders/${id}/${action}`, { method: 'POST' });

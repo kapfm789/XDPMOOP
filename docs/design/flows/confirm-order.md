@@ -14,28 +14,32 @@ sequenceDiagram
   Staff->>Api: POST orders/:id/confirm
   Api->>UC: ConfirmOrderCommand
   UC->>DB: BEGIN
-  UC->>DB: SELECT đơn FOR UPDATE
+  UC->>DB: SELECT đơn FOR UPDATE, rồi nạp các dòng đơn
   alt đơn không ở Reserved
     UC->>DB: ROLLBACK
     UC-->>Api: InvalidStateTransitionException
     Api-->>Staff: 409
   else đơn ở Reserved
+    UC->>UC: đơn sang Confirmed, ghi confirmed_at
     UC->>Stock: Consume các phần giữ Active của đơn
+    Stock->>DB: đọc các phần giữ Active của đơn
     Stock->>DB: SELECT số dư ORDER BY sku_id FOR UPDATE
-    loop từng dòng đơn
-      Stock->>DB: reserved giảm
-      Stock->>DB: PostLedger OUT, lý do Sale, unit_cost là avg_cost
-      Stock->>DB: Reservation sang Consumed
+    loop từng phần giữ
+      Stock->>Stock: reserved giảm, Reservation sang Consumed
     end
+    loop từng phần giữ, qua PostLedger
+      Stock->>Stock: on_hand giảm, thêm dòng sổ OUT lý do Sale, unit_cost là avg_cost
+    end
+    Stock->>Stock: xếp StockChanged của từng SKU vào outbox
     Stock-->>UC: giá vốn đã dùng cho từng dòng
-    UC->>DB: ghi cost_price lên từng dòng đơn
-    UC->>DB: đơn sang Confirmed, ghi confirmed_at
-    UC->>DB: ghi outbox OrderConfirmed và StockChanged
-    UC->>DB: COMMIT
+    UC->>UC: ghi cost_price lên từng dòng đơn, xếp OrderConfirmed vào outbox
+    UC->>DB: lưu đơn, số dư, phần giữ, sổ và outbox, rồi COMMIT
     UC-->>Api: đơn Confirmed
     Api-->>Staff: 200
   end
 ```
+
+Trạng thái được kiểm ngay sau khi khóa dòng đơn, trước khi chạm tới số dư: đơn không ở Reserved thì dừng ở đó. `Consume` bỏ giữ cho mọi phần giữ trước rồi mới gọi `PostLedger`, vì `PostLedger` chỉ cho xuất trong tồn khả dụng. Mọi thay đổi nằm trong bộ nhớ của use case cho tới lần lưu duy nhất ngay trước COMMIT.
 
 ## Mỗi bước đổi gì
 
@@ -55,6 +59,8 @@ Tồn khả dụng không đổi qua bước này: hàng đã bị loại khỏi
 - `avg_cost` đọc sau khi khóa số dư, nên một phiếu nhập xác nhận ngay trước đó đã được tính vào.
 - `cost_price` ghi đúng một lần. Không có use case nào cập nhật lại trường này.
 - Lỗi ở bất kỳ bước nào: rollback toàn bộ; đơn vẫn ở Reserved và phần giữ vẫn Active.
+- `id` không có trong tenant: trả 404 và không khóa gì.
+- Một SKU nằm ở hai dòng đơn: hai phần giữ, hai dòng sổ OUT, một `StockChanged` mang số dư sau dòng sổ cuối.
 
 ## Kiểm thử
 
