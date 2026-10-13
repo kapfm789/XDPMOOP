@@ -86,3 +86,24 @@ internal sealed class StockTransferItemConfiguration : IEntityTypeConfiguration<
         builder.ToTable(table => table.HasCheckConstraint("ck_stock_transfer_items_quantity_positive", "quantity > 0"));
     }
 }
+
+internal sealed class StocktakeConfiguration : IEntityTypeConfiguration<Stocktake>
+{
+    public void Configure(EntityTypeBuilder<Stocktake> builder)
+    {
+        builder.Property(stocktake => stocktake.Status).HasConversion<string>();
+        // Dòng số đếm thuộc trọn về phiên: nhập lại số đếm là thay cả bộ dòng.
+        builder.HasMany(stocktake => stocktake.Items).WithOne().HasForeignKey(item => item.StocktakeId).OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
+internal sealed class StocktakeItemConfiguration : IEntityTypeConfiguration<StocktakeItem>
+{
+    public void Configure(EntityTypeBuilder<StocktakeItem> builder)
+    {
+        // Dòng số đếm được thêm qua phiên chứ không qua DbContext.Add; khóa do Domain đặt sẵn (docs/conventions/backend.md).
+        builder.Property(item => item.Id).ValueGeneratedNever();
+        builder.HasIndex(item => new { item.StocktakeId, item.SkuId }).IsUnique();
+        builder.ToTable(table => table.HasCheckConstraint("ck_stocktake_items_counted_qty_non_negative", "counted_qty >= 0"));
+    }
+}

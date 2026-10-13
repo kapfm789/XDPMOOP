@@ -19,3 +19,7 @@ public sealed class DuplicateException(string message)
 // để phản hồi không lộ tài khoản có tồn tại hay không.
 public sealed class UnauthenticatedException()
     : OismException("unauthenticated", "Thông tin đăng nhập không đúng hoặc phiên đã hết hạn");
+
+// Chữ ký HMAC của webhook không khớp body (docs/architecture/security.md mục "Webhook").
+public sealed class InvalidSignatureException()
+    : OismException("invalid_signature", "Chữ ký webhook không hợp lệ");

@@ -415,6 +415,83 @@ namespace Oism.Core.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Oism.Core.Domain.Inventory.Stocktake", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTimeOffset?>("PostedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("posted_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_stocktakes");
+
+                    b.ToTable("stocktakes", "core");
+                });
+
+            modelBuilder.Entity("Oism.Core.Domain.Inventory.StocktakeItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("CountedQty")
+                        .HasColumnType("integer")
+                        .HasColumnName("counted_qty");
+
+                    b.Property<int?>("Difference")
+                        .HasColumnType("integer")
+                        .HasColumnName("difference");
+
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sku_id");
+
+                    b.Property<Guid>("StocktakeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("stocktake_id");
+
+                    b.Property<int?>("SystemQty")
+                        .HasColumnType("integer")
+                        .HasColumnName("system_qty");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_stocktake_items");
+
+                    b.HasIndex("StocktakeId", "SkuId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_stocktake_items_stocktake_id_sku_id");
+
+                    b.ToTable("stocktake_items", "core", t =>
+                        {
+                            t.HasCheckConstraint("ck_stocktake_items_counted_qty_non_negative", "counted_qty >= 0");
+                        });
+                });
+
             modelBuilder.Entity("Oism.Core.Domain.Inventory.Supplier", b =>
                 {
                     b.Property<Guid>("Id")
@@ -842,6 +919,16 @@ namespace Oism.Core.Infrastructure.Migrations
                         .HasConstraintName("fk_stock_transfer_items_stock_transfers_transfer_id");
                 });
 
+            modelBuilder.Entity("Oism.Core.Domain.Inventory.StocktakeItem", b =>
+                {
+                    b.HasOne("Oism.Core.Domain.Inventory.Stocktake", null)
+                        .WithMany("Items")
+                        .HasForeignKey("StocktakeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_stocktake_items_stocktakes_stocktake_id");
+                });
+
             modelBuilder.Entity("Oism.Core.Domain.Orders.OrderItem", b =>
                 {
                     b.HasOne("Oism.Core.Domain.Orders.Order", null)
@@ -885,6 +972,11 @@ namespace Oism.Core.Infrastructure.Migrations
                 });
 
             modelBuilder.Entity("Oism.Core.Domain.Inventory.StockTransfer", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("Oism.Core.Domain.Inventory.Stocktake", b =>
                 {
                     b.Navigation("Items");
                 });

@@ -4,6 +4,7 @@ using Oism.Core.Application.Inventory;
 using Oism.Core.Application.Inventory.ListLedger;
 using Oism.Core.Application.Inventory.ListPurchaseReceipts;
 using Oism.Core.Application.Inventory.ListStock;
+using Oism.Core.Application.Inventory.ListStocktakes;
 using Oism.Core.Application.Inventory.ListTransfers;
 using Oism.Core.Application.Orders.SearchPosSkus;
 using Oism.Core.Domain.Inventory;
@@ -105,6 +106,27 @@ internal sealed class StockQueries(CoreDbContext db) : IStockQueries
         return new PagedResult<TransferDto>(
             page.Select(transfer => TransferDto.From(transfer, skus, query.IncludeCost)).ToList(),
             query.Page, query.PageSize, await transfers.CountAsync(ct));
+    }
+
+    public async Task<PagedResult<StocktakeDto>> ListStocktakesAsync(ListStocktakesQuery query, CancellationToken ct)
+    {
+        var status = query.Status is null ? (StocktakeStatus?)null : Enum.Parse<StocktakeStatus>(query.Status);
+        var stocktakes = db.Stocktakes.AsNoTracking().Where(stocktake =>
+            (query.BranchId == null || stocktake.BranchId == query.BranchId) && (status == null || stocktake.Status == status));
+
+        // Phiên còn Open (posted_at null) đứng trước vì còn việc phải làm, rồi tới phiên chốt gần nhất.
+        var page = await stocktakes
+            .OrderByDescending(stocktake => stocktake.PostedAt == null).ThenByDescending(stocktake => stocktake.PostedAt)
+            .ThenBy(stocktake => stocktake.Id)
+            .Skip((query.Page - 1) * query.PageSize).Take(query.PageSize)
+            .Include(stocktake => stocktake.Items)
+            .ToListAsync(ct);
+
+        var skuIds = page.SelectMany(stocktake => stocktake.Items).Select(item => item.SkuId).Distinct().ToList();
+        var skus = await db.SkuRefs.AsNoTracking().Where(sku => skuIds.Contains(sku.SkuId)).ToDictionaryAsync(sku => sku.SkuId, ct);
+        return new PagedResult<StocktakeDto>(
+            page.Select(stocktake => StocktakeDto.From(stocktake, skus)).ToList(),
+            query.Page, query.PageSize, await stocktakes.CountAsync(ct));
     }
 
     public async Task<IReadOnlyList<PosSkuDto>> SearchPosSkusAsync(SearchPosSkusQuery query, int limit, CancellationToken ct)
