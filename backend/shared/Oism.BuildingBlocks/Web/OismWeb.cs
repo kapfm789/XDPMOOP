@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Oism.BuildingBlocks.Auth;
 using Oism.BuildingBlocks.Tenancy;
 
@@ -14,6 +15,11 @@ public static class OismWeb
     {
         services.AddScoped<ITenantContext, TenantContext>();
         services.AddOismAuth(configuration);
+        // Hai nhóm log này ghi cả query string, trong đó có `access_token` của kết nối hub: không ghi token vào log
+        // (docs/architecture/security.md). Lỗi của chúng vẫn được ghi.
+        services.AddLogging(logging => logging
+            .AddFilter("Microsoft.AspNetCore.Hosting.Diagnostics", LogLevel.Warning)
+            .AddFilter("Yarp", LogLevel.Warning));
         services.AddHealthChecks();
         services.AddExceptionHandler<OismExceptionHandler>();
         services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>

@@ -16,6 +16,7 @@ Quyết định liên quan: [ADR-0011](../decisions/0011-auth-and-roles.md).
 | Đăng xuất | Thu hồi refresh token; access token còn hiệu lực tới khi hết hạn |
 | Dùng lại refresh token đã xoay | Thu hồi cả chuỗi token của người dùng đó |
 | Kiểm JWT | Gateway kiểm trước; service kiểm lại bằng khóa công khai lấy từ cấu hình |
+| Token của kết nối realtime | Header `Authorization` như mọi request; riêng đường dẫn bắt đầu bằng `/hubs` còn nhận token ở tham số query `access_token`, vì trình duyệt không gắn được header vào WebSocket. Log mức Information của `Microsoft.AspNetCore.Hosting.Diagnostics` và YARP bị tắt ở mọi service và gateway vì chúng ghi cả query string |
 | Giới hạn thử đăng nhập | Rate limit ở gateway cho `/api/identity/auth/login` |
 
 `identity` giữ khóa bí mật để ký, nhận qua biến môi trường `Jwt__PrivateKey`, dạng PKCS#8 mã hóa base64 trên một dòng; thiếu khóa thì đăng nhập trả 500. Khóa công khai được cấp cho gateway và các service qua biến môi trường `Jwt__PublicKey`, dạng SubjectPublicKeyInfo mã hóa base64 trên một dòng. Thiếu khóa thì không token nào hợp lệ. Cách sinh một cặp khóa cho máy dev ghi ở `deploy/.env.example`.

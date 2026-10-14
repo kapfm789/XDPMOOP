@@ -38,9 +38,9 @@ public sealed class ProjectionTests
     {
         var snapshot = new StockSnapshot(Guid.NewGuid(), Guid.NewGuid());
 
-        Assert.True(snapshot.Apply(10, 2, 8, 110_000, threshold: 5, version: 3, Now));
-        Assert.False(snapshot.Apply(1, 0, 1, 1, threshold: null, version: 2, Now));
-        Assert.False(snapshot.Apply(1, 0, 1, 1, threshold: null, version: 3, Now));
+        Assert.Equal(StockSnapshotUpdate.Applied, snapshot.Apply(10, 2, 8, 110_000, threshold: 5, version: 3, Now));
+        Assert.Equal(StockSnapshotUpdate.Ignored, snapshot.Apply(1, 0, 1, 1, threshold: null, version: 2, Now));
+        Assert.Equal(StockSnapshotUpdate.Ignored, snapshot.Apply(1, 0, 1, 1, threshold: null, version: 3, Now));
 
         Assert.Equal((10, 2, 8, 110_000m, (int?)5, 3L), (
             snapshot.OnHand, snapshot.Reserved, snapshot.Available, snapshot.AvgCost, snapshot.Threshold, snapshot.Version));
@@ -61,6 +61,21 @@ public sealed class ProjectionTests
         snapshot.Apply(available, 0, available, 0, threshold, version: 1, Now);
 
         Assert.Equal(expected, snapshot.IsLow);
+    }
+
+    // LowStock chỉ phát ở lần đi từ trên ngưỡng (hoặc chưa có ngưỡng) xuống bằng hoặc dưới ngưỡng.
+    [Fact]
+    [Trait("UseCase", "UC-REP-03 AC-1")]
+    public void StockSnapshot_Apply_BecameLowOnlyWhenCrossingIntoThreshold()
+    {
+        var snapshot = new StockSnapshot(Guid.NewGuid(), Guid.NewGuid());
+
+        Assert.Equal(StockSnapshotUpdate.Applied, snapshot.Apply(6, 0, 6, 0, threshold: 5, version: 1, Now));
+        Assert.Equal(StockSnapshotUpdate.BecameLow, snapshot.Apply(5, 0, 5, 0, threshold: 5, version: 2, Now));
+        Assert.Equal(StockSnapshotUpdate.Applied, snapshot.Apply(4, 0, 4, 0, threshold: 5, version: 3, Now));
+        Assert.Equal(StockSnapshotUpdate.Applied, snapshot.Apply(4, 0, 4, 0, threshold: null, version: 4, Now));
+        // Đặt ngưỡng mới khi tồn đã thấp cũng là vừa chạm ngưỡng.
+        Assert.Equal(StockSnapshotUpdate.BecameLow, snapshot.Apply(4, 0, 4, 0, threshold: 4, version: 5, Now));
     }
 
     [Fact]

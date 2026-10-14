@@ -134,6 +134,18 @@ internal sealed class EventConsumerHost(
         await registration.HandleAsync(scope.ServiceProvider, envelope, ct);
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
+
+        foreach (var action in scope.ServiceProvider.GetServices<IAfterCommitAction>())
+        {
+            try
+            {
+                await action.RunAsync(ct);
+            }
+            catch (Exception exception) when (exception is not OperationCanceledException)
+            {
+                logger.LogWarning(exception, "After-commit action of {MessageType} failed", registration.MessageType);
+            }
+        }
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)

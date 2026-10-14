@@ -40,6 +40,22 @@ public static class OismAuth
                 NameClaimType = "sub",
                 RoleClaimType = "role",
             };
+
+            // Trình duyệt không gắn được header Authorization vào WebSocket: SignalR gửi token qua `access_token` trên
+            // query. Chỉ nhận cách này cho đường dẫn hub (docs/architecture/security.md).
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    if (context.HttpContext.Request.Path.StartsWithSegments("/hubs")
+                        && context.Request.Query["access_token"].ToString() is { Length: > 0 } token)
+                    {
+                        context.Token = token;
+                    }
+
+                    return Task.CompletedTask;
+                },
+            };
         });
 
         services.AddAuthorizationBuilder()

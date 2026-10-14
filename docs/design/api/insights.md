@@ -31,10 +31,10 @@ Kết nối WebSocket tới `/hubs/notifications` kèm access token. Server tự
 
 | Người dùng | Group |
 | --- | --- |
-| Owner, Staff | `tenant:{tenantId}` |
-| Người dùng có `branch_id` trong token | `tenant:{tenantId}:branch:{branchId}` |
+| Owner, Staff | `tenant:{tenantId}`, kể cả khi token có `branch_id` |
+| Người dùng khác có `branch_id` trong token (Cashier) | `tenant:{tenantId}:branch:{branchId}` |
 
-Client không tự chọn group. Tên và trường của thông báo `OrderCreated`, `LowStock` ở [events.md](../events.md).
+Mỗi kết nối vào đúng một group, nên `OrderCreated` gửi cho cả hai group không tới ai hai lần. Cashier không có `branch_id` thì không vào group nào. Client không tự chọn group và không gọi method nào của hub. Thông báo chỉ được gửi sau khi transaction của consumer đã commit. Tên và trường của thông báo `OrderCreated`, `LowStock` ở [events.md](../events.md).
 
 ## Đường vào không phải HTTP
 

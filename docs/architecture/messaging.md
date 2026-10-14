@@ -43,6 +43,7 @@ Cơ chế nằm ở `Oism.BuildingBlocks/Messaging`; service chỉ khai báo mì
 | Phát một thông điệp | Infrastructure, sau interface `IEventPublisher` của Application | Thêm `OutboxMessage.Create(payload, thời điểm)` vào DbContext trong transaction của use case; `TenantId` do DbContext base gán |
 | Có bảng `inbox_messages` và nhận thông điệp | Infrastructure | DbContext cài `IHasInbox`; `AddInfrastructure` gọi `AddOismMessaging<TContext>()` |
 | Xử lý một loại thông điệp | Api, thư mục `Consumers` | Lớp kế thừa `EventConsumer<TPayload>`, đăng ký bằng `AddEventConsumer<TConsumer, TPayload>()` ở `Program.cs` |
+| Gửi ra ngoài sau khi xử lý (ví dụ thông báo SignalR của `insights`) | Api | Lớp cài `IAfterCommitAction`, đăng ký scoped; phần chung gọi nó sau khi commit. Lỗi ở bước này chỉ ghi log, không thử lại thông điệp |
 
 - Địa chỉ RabbitMQ lấy từ `ConnectionStrings:RabbitMq`, dạng `amqp://user:password@host:5672`. Bỏ trống thì service không gửi và không nhận; thông điệp vẫn nằm trong outbox.
 - Exchange `oism.events` là loại topic, bền; routing key là tên thông điệp. Tên service trong tên queue lấy từ schema mặc định của DbContext.

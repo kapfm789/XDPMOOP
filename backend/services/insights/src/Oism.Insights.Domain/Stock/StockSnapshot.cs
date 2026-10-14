@@ -31,12 +31,15 @@ public sealed class StockSnapshot(Guid branchId, Guid skuId) : ITenantOwned
     public bool IsLow => Threshold is { } threshold && Available <= threshold;
 
     // Thông điệp trạng thái có thể tới trùng hoặc sai thứ tự: chỉ ghi đè khi version lớn hơn bản đang giữ.
-    // False khi thông điệp bị bỏ qua.
-    public bool Apply(int onHand, int reserved, int available, decimal avgCost, int? threshold, long version, DateTimeOffset updatedAt)
+    // BecameLow khi lần ghi đè này đưa SKU từ trên ngưỡng (hoặc chưa có ngưỡng) xuống bằng hoặc dưới ngưỡng:
+    // lúc đó mới đẩy thông báo LowStock (docs/design/events.md mục "Thông báo SignalR").
+    public StockSnapshotUpdate Apply(
+        int onHand, int reserved, int available, decimal avgCost, int? threshold, long version, DateTimeOffset updatedAt)
     {
         if (version <= Version)
-            return false;
+            return StockSnapshotUpdate.Ignored;
 
+        var wasLow = IsLow;
         OnHand = onHand;
         Reserved = reserved;
         Available = available;
@@ -44,6 +47,13 @@ public sealed class StockSnapshot(Guid branchId, Guid skuId) : ITenantOwned
         Threshold = threshold;
         Version = version;
         UpdatedAt = updatedAt;
-        return true;
+        return !wasLow && IsLow ? StockSnapshotUpdate.BecameLow : StockSnapshotUpdate.Applied;
     }
+}
+
+public enum StockSnapshotUpdate
+{
+    Ignored,
+    Applied,
+    BecameLow,
 }
