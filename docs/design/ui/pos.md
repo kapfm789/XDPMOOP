@@ -45,10 +45,11 @@ Máy quét mã vạch hoạt động như bàn phím: gõ mã rồi gửi Enter.
 - Sau khi backend trả đơn đã lưu, ứng dụng mở `/receipt/:orderId` và gọi hộp thoại in. In lỗi thì bấm in lại; không gọi thanh toán lần nữa. Đóng hộp thoại in xong, nút "Đơn mới" đang giữ focus nên Enter đưa thu ngân về màn hình bán hàng.
 - `branchId` lấy từ token của Cashier. Owner dùng POS phải chọn chi nhánh trước khi bán; lựa chọn được nhớ trên trình duyệt đó, và đổi chi nhánh thì bắt đầu giỏ mới.
 - Trên thiết bị cầm tay (hẹp hơn 768 px) ô tìm không tự giành lại focus sau mỗi lần chạm, để bàn phím ảo không bật lên liên tục; từ tablet trở lên ô tìm luôn giữ focus để quét liên tiếp.
-- Thông báo `OrderCreated` của chi nhánh hiện popup kèm âm thanh và không lấy mất focus của ô tìm.
+- Thông báo `OrderCreated` của chi nhánh hiện popup kèm âm thanh ở góc trên bên phải, dưới thanh tiêu đề, và không lấy mất focus của ô tìm. Cashier chỉ nhận đơn của chi nhánh mình từ server; Owner nhận của mọi chi nhánh nên POS chỉ hiện đơn của chi nhánh đang chọn.
 
 ## PWA
 
-- `manifest.webmanifest` cho phép cài lên màn hình chính.
-- Service worker chỉ cache app shell (HTML, JS, CSS, icon). Không cache phản hồi API và không xếp hàng đợi đơn khi mất mạng.
-- Mất mạng thì hiện băng thông báo và khóa nút thanh toán.
+- `manifest.webmanifest` cho phép cài lên màn hình chính; icon 192 và 512 px nằm trong `frontend/pos/public`.
+- Service worker (`public/sw.js`) chỉ cache app shell (HTML, JS, CSS, icon). Không cache phản hồi API và không xếp hàng đợi đơn khi mất mạng. HTML lấy từ mạng trước để nhận bản build mới, mất mạng mới dùng bản cache; JS và CSS mang hash nên lấy từ cache trước.
+- Service worker chỉ đăng ký ở bản build; thử bằng `npm --prefix frontend run preview:pos`.
+- Mất mạng thì hiện băng thông báo và khóa nút thanh toán, kể cả phím Enter; giỏ hàng giữ nguyên.

@@ -1,6 +1,7 @@
 import { useAuth, visibleFor } from '@oism/shared';
 import { Button, Flex, Layout, Menu, Typography } from 'antd';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { NotificationCenter } from '../features/notifications/NotificationCenter';
 import { MENU } from './menu';
 
 const ROLE_LABELS = { Owner: 'Chủ cửa hàng', Staff: 'Nhân viên', Cashier: 'Thu ngân' };
@@ -12,6 +13,7 @@ export function AdminLayout() {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
+      <NotificationCenter />
       <Layout.Sider breakpoint="lg" collapsedWidth={0}>
         <Typography.Title level={4} style={{ color: '#fff', margin: 16 }}>
           OISM

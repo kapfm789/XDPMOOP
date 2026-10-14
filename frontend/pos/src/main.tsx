@@ -7,3 +7,8 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 );
+
+// Service worker chỉ đăng ký ở bản build: khi chạy dev, Vite phục vụ mã nguồn chưa đóng gói và cache sẽ cản việc sửa code.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => void navigator.serviceWorker.register('/sw.js'));
+}

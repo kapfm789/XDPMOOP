@@ -15,5 +15,8 @@
     "antd": "^6.6.5",
     "react": "^19.3.0",
     "react-router-dom": "^7.18.4"
+  },
+  "dependencies": {
+    "@microsoft/signalr": "^8.0.29"
   }
 }

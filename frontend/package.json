@@ -10,6 +10,7 @@
   "scripts": {
     "dev:admin": "npm run dev -w @oism/admin",
     "dev:pos": "npm run dev -w @oism/pos",
+    "preview:pos": "npm run preview -w @oism/pos",
     "build": "npm run build -w @oism/admin -w @oism/pos",
     "typecheck": "npm run typecheck --workspaces",
     "test": "npm run test -w @oism/shared -w @oism/pos"

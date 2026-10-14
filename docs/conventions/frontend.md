@@ -11,7 +11,7 @@
 - Một thư viện component cho cả hai ứng dụng: Ant Design. Không trộn thêm thư viện component khác.
 - Chuỗi hiển thị viết tiếng Việt trực tiếp trong component; dự án không dùng khung đa ngôn ngữ.
 
-Các lựa chọn trên đã chốt ở task W1-09 với các bản: React 19, Vite 8, TypeScript 7, TanStack Query 5, React Router 7 (gói `react-router-dom`), Ant Design 6, Vitest 5. Đổi thì sửa file này trước.
+Các lựa chọn trên đã chốt ở task W1-09 với các bản: React 19, Vite 8, TypeScript 7, TanStack Query 5, React Router 7 (gói `react-router-dom`), Ant Design 6, Vitest 5. Task W4-08 thêm `@microsoft/signalr` 8 cho kết nối hub thông báo, chỉ dùng trong `shared/src/realtime`. Đổi thì sửa file này trước.
 
 ## Workspace và lệnh
 
@@ -24,6 +24,7 @@ Các lựa chọn trên đã chốt ở task W1-09 với các bản: React 19, V
 | `run typecheck` | Kiểm kiểu cả ba gói |
 | `test` | Chạy test Vitest của `shared` và `pos` |
 | `run build` | Kiểm kiểu rồi build `admin` và `pos` |
+| `run preview:pos` | Chạy bản build của `pos` ở cổng 5174, để thử PWA: service worker chỉ đăng ký ở bản build |
 
 Địa chỉ gateway lấy từ biến `VITE_API_URL`, mặc định `http://localhost:8080`.
 

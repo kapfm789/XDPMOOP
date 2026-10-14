@@ -12,6 +12,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "frontend", "run", "dev:pos"],
       "port": 5174
+    },
+    {
+      "name": "pos-preview",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "frontend", "run", "preview:pos"],
+      "port": 5174
     }
   ]
 }

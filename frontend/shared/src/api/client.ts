@@ -2,7 +2,7 @@ import { endSession, getAccessToken, getRefreshToken, startSession } from '../au
 import type { LoginResponse } from '../types/identity';
 
 // Mọi lời gọi đi qua gateway: docs/architecture/context-and-containers.md mục "Địa chỉ và cổng".
-const GATEWAY_URL: string = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
+export const GATEWAY_URL: string = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
 const RETRY_LIMIT = 3;
 const RETRY_DELAY_MS = 1000;
 

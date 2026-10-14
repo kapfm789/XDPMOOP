@@ -1,4 +1,4 @@
-import { ApiError, errorMessage, type PaymentMethod, type PosSku, type StockShortage } from '@oism/shared';
+import { ApiError, errorMessage, type PaymentMethod, type PosSku, type StockShortage, useOnline } from '@oism/shared';
 import { Alert, Badge, Col, Flex, Grid, type InputRef, message, Modal, Row, Select, Tabs } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -18,6 +18,7 @@ export function SaleScreen() {
   const [modal, modalHolder] = Modal.useModal();
 
   const branch = usePosBranch();
+  const online = useOnline();
   const [text, setText] = useState('');
   const [cart, setCart] = useState<CartLine[]>([]);
   const [selected, setSelected] = useState<string>();
@@ -73,7 +74,8 @@ export function SaleScreen() {
 
   async function pay() {
     const lines = latestCart.current;
-    if (!branch.branchId || lines.length === 0) return;
+    // Mất mạng thì khóa thanh toán, kể cả khi bấm Enter (docs/design/ui/pos.md mục "PWA").
+    if (!branch.branchId || lines.length === 0 || !online) return;
     try {
       const order = await checkout({
         branchId: branch.branchId,
@@ -168,7 +170,7 @@ export function SaleScreen() {
         focusSearch();
       }}
       total={cartTotal(cart)}
-      disabled={!branch.branchId || cart.length === 0}
+      disabled={!branch.branchId || cart.length === 0 || !online}
       pending={pending}
       showShortcuts={!!wide}
       onPay={() => void pay()}
