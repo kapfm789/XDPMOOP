@@ -41,7 +41,7 @@ Client không tự chọn group. Tên và trường của thông báo `OrderCrea
 | RabbitMQ | `OrderConfirmed` | Thêm một dòng `sales_facts` cho mỗi dòng đơn; khóa chính chặn cộng đôi |
 | RabbitMQ | `StockChanged` | Ghi đè `stock_snapshots` theo `version`; phát `LowStock` khi vừa chạm ngưỡng |
 | RabbitMQ | `OrderReserved` | Phát `OrderCreated` qua SignalR |
-| RabbitMQ | `OrderRejected`, `OrderCancelled` | Ghi nhận để thống kê; không tác động số liệu doanh thu |
+| RabbitMQ | `OrderRejected`, `OrderCancelled` | Chỉ ghi `inbox_messages`; không tác động số liệu doanh thu |
 | RabbitMQ | `SkuUpserted` | Ghi đè `sku_names` theo `version` |
 | Hangfire, mỗi đêm | Tổng hợp ngày | Dựng lại `daily_aggregates` cho ngày hôm qua, từng tenant |
 | Hangfire, mỗi đêm | Dự báo | Chạy dự báo cho từng tenant |
