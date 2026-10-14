@@ -16,6 +16,8 @@ public sealed class InsightsDbContext(DbContextOptions<InsightsDbContext> option
 
     public DbSet<SalesFact> SalesFacts => Set<SalesFact>();
 
+    public DbSet<DailyAggregate> DailyAggregates => Set<DailyAggregate>();
+
     public DbSet<StockSnapshot> StockSnapshots => Set<StockSnapshot>();
 
     public DbSet<SkuName> SkuNames => Set<SkuName>();

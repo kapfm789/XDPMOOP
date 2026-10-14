@@ -21,6 +21,16 @@ internal sealed class SalesFactConfiguration : IEntityTypeConfiguration<SalesFac
     }
 }
 
+internal sealed class DailyAggregateConfiguration : IEntityTypeConfiguration<DailyAggregate>
+{
+    public void Configure(EntityTypeBuilder<DailyAggregate> builder)
+    {
+        builder.HasKey(aggregate => new { aggregate.TenantId, aggregate.Date, aggregate.BranchId, aggregate.Channel, aggregate.SkuId });
+        builder.Property(aggregate => aggregate.Revenue).HasPrecision(18, 4);
+        builder.Property(aggregate => aggregate.Cogs).HasPrecision(18, 4);
+    }
+}
+
 internal sealed class StockSnapshotConfiguration : IEntityTypeConfiguration<StockSnapshot>
 {
     public void Configure(EntityTypeBuilder<StockSnapshot> builder)

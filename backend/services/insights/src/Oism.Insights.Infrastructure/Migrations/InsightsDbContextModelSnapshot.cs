@@ -74,6 +74,48 @@ namespace Oism.Insights.Infrastructure.Migrations
                     b.ToTable("sku_names", "insights");
                 });
 
+            modelBuilder.Entity("Oism.Insights.Domain.Sales.DailyAggregate", b =>
+                {
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date")
+                        .HasColumnName("date");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<string>("Channel")
+                        .HasColumnType("text")
+                        .HasColumnName("channel");
+
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sku_id");
+
+                    b.Property<decimal>("Cogs")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)")
+                        .HasColumnName("cogs");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<decimal>("Revenue")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)")
+                        .HasColumnName("revenue");
+
+                    b.HasKey("TenantId", "Date", "BranchId", "Channel", "SkuId")
+                        .HasName("pk_daily_aggregates");
+
+                    b.ToTable("daily_aggregates", "insights");
+                });
+
             modelBuilder.Entity("Oism.Insights.Domain.Sales.SalesFact", b =>
                 {
                     b.Property<Guid>("OrderItemId")

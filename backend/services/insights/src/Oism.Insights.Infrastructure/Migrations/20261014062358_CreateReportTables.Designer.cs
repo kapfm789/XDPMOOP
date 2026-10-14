@@ -12,8 +12,8 @@ using Oism.Insights.Infrastructure;
 namespace Oism.Insights.Infrastructure.Migrations
 {
     [DbContext(typeof(InsightsDbContext))]
-    [Migration("20261014061431_CreateProjections")]
-    partial class CreateProjections
+    [Migration("20261014062358_CreateReportTables")]
+    partial class CreateReportTables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -75,6 +75,48 @@ namespace Oism.Insights.Infrastructure.Migrations
                         .HasName("pk_sku_names");
 
                     b.ToTable("sku_names", "insights");
+                });
+
+            modelBuilder.Entity("Oism.Insights.Domain.Sales.DailyAggregate", b =>
+                {
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date")
+                        .HasColumnName("date");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<string>("Channel")
+                        .HasColumnType("text")
+                        .HasColumnName("channel");
+
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sku_id");
+
+                    b.Property<decimal>("Cogs")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)")
+                        .HasColumnName("cogs");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<decimal>("Revenue")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)")
+                        .HasColumnName("revenue");
+
+                    b.HasKey("TenantId", "Date", "BranchId", "Channel", "SkuId")
+                        .HasName("pk_daily_aggregates");
+
+                    b.ToTable("daily_aggregates", "insights");
                 });
 
             modelBuilder.Entity("Oism.Insights.Domain.Sales.SalesFact", b =>

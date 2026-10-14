@@ -50,6 +50,6 @@ Cảnh báo tồn thấp là các dòng có `threshold` khác null và `availabl
 | `forecast_results` | `run_id`, `tenant_id`, `branch_id`, `sku_id`, `has_enough_data`, `daily_level`, `forecast_qty`, `suggested_reorder_qty` | Khóa chính `(run_id, branch_id, sku_id)` |
 | `inbox_messages` | `event_id`, `type`, `processed_at` | Khóa chính `event_id` |
 
-`daily_aggregates` do job đêm dựng lại từ `sales_facts` cho từng ngày; chạy lại cho cùng ngày thì ghi đè, không cộng dồn. Báo cáo doanh thu đọc `daily_aggregates` cho các ngày đã tổng hợp và `sales_facts` cho ngày hiện tại.
+`daily_aggregates` do job đêm (00:05 giờ Việt Nam) dựng lại từ `sales_facts` cho ngày hôm qua; chạy lại cho cùng ngày thì xóa rồi ghi lại, không cộng dồn. Báo cáo doanh thu đọc `daily_aggregates` cho các ngày đã có dòng tổng hợp và `sales_facts` cho mọi ngày còn lại (hôm nay, ngày job chưa chạy). Một `OrderConfirmed` tới trễ cho một ngày đã tổng hợp thì consumer xóa các dòng tổng hợp của ngày đó trong cùng transaction, để báo cáo đọc lại `sales_facts` cho ngày đó tới lần dựng lại sau.
 
 `insights` không phát event nên không có `outbox_messages`. Bảng của Hangfire nằm trong schema riêng `hangfire_insights`.

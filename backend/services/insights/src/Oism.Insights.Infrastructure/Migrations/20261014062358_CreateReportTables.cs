@@ -6,13 +6,32 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Oism.Insights.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateProjections : Migration
+    public partial class CreateReportTables : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.EnsureSchema(
                 name: "insights");
+
+            migrationBuilder.CreateTable(
+                name: "daily_aggregates",
+                schema: "insights",
+                columns: table => new
+                {
+                    tenant_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    date = table.Column<DateOnly>(type: "date", nullable: false),
+                    branch_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    channel = table.Column<string>(type: "text", nullable: false),
+                    sku_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    quantity = table.Column<int>(type: "integer", nullable: false),
+                    revenue = table.Column<decimal>(type: "numeric(18,4)", precision: 18, scale: 4, nullable: false),
+                    cogs = table.Column<decimal>(type: "numeric(18,4)", precision: 18, scale: 4, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_daily_aggregates", x => new { x.tenant_id, x.date, x.branch_id, x.channel, x.sku_id });
+                });
 
             migrationBuilder.CreateTable(
                 name: "inbox_messages",
@@ -108,6 +127,10 @@ namespace Oism.Insights.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "daily_aggregates",
+                schema: "insights");
+
             migrationBuilder.DropTable(
                 name: "inbox_messages",
                 schema: "insights");

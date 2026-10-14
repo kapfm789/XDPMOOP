@@ -4,6 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Oism.BuildingBlocks.Messaging;
 using Oism.BuildingBlocks.Tenancy;
 using Oism.Contracts;
+using Oism.Insights.Application.Projections.ApplyStockChange;
+using Oism.Insights.Application.Projections.RecordSale;
+using Oism.Insights.Application.Projections.UpsertSkuName;
 using Oism.Insights.Infrastructure;
 using RabbitMQ.Client;
 
@@ -21,6 +24,33 @@ internal static class TestKit
 
     public static Task<T> QueryAsync<T>(this ApiFactory factory, Guid tenantId, Func<InsightsDbContext, Task<T>> query) =>
         factory.InTenantAsync(tenantId, services => query(services.GetRequiredService<InsightsDbContext>()));
+
+    // Như consumer OrderConfirmed đưa vào: cùng handler, không qua RabbitMQ. Consumer base lưu sau handler; ở đây cũng vậy.
+    public static Task RecordSaleAsync(this ApiFactory factory, Guid tenantId, OrderConfirmed message) =>
+        factory.InTenantAsync(tenantId, async services =>
+        {
+            await services.GetRequiredService<RecordSaleHandler>().Handle(message, default);
+            return await services.GetRequiredService<InsightsDbContext>().SaveChangesAsync();
+        });
+
+    public static Task ApplyStockChangeAsync(this ApiFactory factory, Guid tenantId, StockChanged message) =>
+        factory.InTenantAsync(tenantId, async services =>
+        {
+            await services.GetRequiredService<ApplyStockChangeHandler>().Handle(message, default);
+            return await services.GetRequiredService<InsightsDbContext>().SaveChangesAsync();
+        });
+
+    public static Task UpsertSkuNameAsync(this ApiFactory factory, Guid tenantId, Guid skuId, string skuCode, string name) =>
+        factory.InTenantAsync(tenantId, async services =>
+        {
+            await services.GetRequiredService<UpsertSkuNameHandler>().Handle(
+                new SkuUpserted(skuId, Guid.NewGuid(), skuCode, name, [], 0, 0, IsActive: true, Version: 1), default);
+            return await services.GetRequiredService<InsightsDbContext>().SaveChangesAsync();
+        });
+
+    // Mốc thời gian theo giờ Việt Nam, đổi về UTC như dữ liệu của event.
+    public static DateTimeOffset Vn(int year, int month, int day, int hour = 10, int minute = 0) =>
+        new DateTimeOffset(year, month, day, hour, minute, 0, TimeSpan.FromHours(7)).ToUniversalTime();
 
     public static OrderConfirmed Confirmed(
         Guid branchId, DateTimeOffset confirmedAt, string channel = "Shopee", params OrderConfirmedLine[] lines) =>

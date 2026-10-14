@@ -11,7 +11,9 @@ Tiền tố `/api/insights`, cùng hub SignalR `/hubs/notifications`. Use case �
 | GET | `/api/insights/reports/top-sellers` | Owner, Staff | `days?` (mặc định 30), `branchId?`, `limit?` (mặc định 20) | SKU xếp giảm dần theo `quantity` |
 | GET | `/api/insights/reports/slow-movers` | Owner, Staff | `days?` (mặc định 30), `branchId?`, `limit?` (mặc định 20) | SKU còn tồn, xếp tăng dần theo `quantity` |
 
-`groupBy` nhận `day`, `branch`, `channel` hoặc `sku`; bỏ trống thì chỉ trả `totals`. `from` và `to` là ngày theo giờ Việt Nam, tính cả hai đầu. Với Staff, `/reports/inventory-value` không trả `avgCost` và `value`.
+`groupBy` nhận `day`, `branch`, `channel` hoặc `sku`; bỏ trống thì chỉ trả `totals` và `rows` rỗng. `from` và `to` bắt buộc, dạng `yyyy-MM-dd`, là ngày theo giờ Việt Nam, tính cả hai đầu; thiếu, sai dạng, `from` sau `to` hay `groupBy` lạ trả 400 `validation_failed`. Với Staff, `/reports/inventory-value` không trả `avgCost` và `value`.
+
+Mỗi dòng của `/reports/gross-profit` có `key` là giá trị của chiều đang nhóm: ngày `yyyy-MM-dd`, `branchId`, tên kênh hoặc `skuId`; khi nhóm theo SKU thì có thêm `skuCode` và `name` lấy từ `sku_names` (để trống nếu chưa nhận `SkuUpserted`). Nhóm theo ngày xếp theo ngày tăng dần; các nhóm khác xếp theo `revenue` giảm dần. `totals` gồm `quantity`, `revenue`, `cogs`, `grossProfit`.
 
 ## Cảnh báo và dự báo
 
@@ -38,7 +40,7 @@ Client không tự chọn group. Tên và trường của thông báo `OrderCrea
 
 | Nguồn | Tên | Xử lý |
 | --- | --- | --- |
-| RabbitMQ | `OrderConfirmed` | Thêm một dòng `sales_facts` cho mỗi dòng đơn; khóa chính chặn cộng đôi |
+| RabbitMQ | `OrderConfirmed` | Thêm một dòng `sales_facts` cho mỗi dòng đơn chưa có; khóa chính chặn cộng đôi; xóa `daily_aggregates` của ngày đó nếu đã tổng hợp |
 | RabbitMQ | `StockChanged` | Ghi đè `stock_snapshots` theo `version`; phát `LowStock` khi vừa chạm ngưỡng |
 | RabbitMQ | `OrderReserved` | Phát `OrderCreated` qua SignalR |
 | RabbitMQ | `OrderRejected`, `OrderCancelled` | Chỉ ghi `inbox_messages`; không tác động số liệu doanh thu |
