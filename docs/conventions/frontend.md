@@ -20,7 +20,8 @@ Các lựa chọn trên đã chốt ở task W1-09 với các bản: React 19, V
 | Lệnh, chạy với `npm --prefix frontend` | Việc |
 | --- | --- |
 | `ci` | Cài package theo `package-lock.json` |
-| `run dev:admin`, `run dev:pos` | Chạy `admin` ở cổng 5173, `pos` ở cổng 5174 |
+| `run dev` | Chạy cùng lúc `admin` ở cổng 5173 và `pos` ở cổng 5174 trong một terminal; Ctrl+C tắt cả hai |
+| `run dev:admin`, `run dev:pos` | Chạy riêng `admin` ở cổng 5173 hoặc `pos` ở cổng 5174 |
 | `run typecheck` | Kiểm kiểu cả ba gói |
 | `test` | Chạy test Vitest của `shared` và `pos` |
 | `run build` | Kiểm kiểu rồi build `admin` và `pos` |

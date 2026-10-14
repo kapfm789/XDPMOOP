@@ -151,16 +151,17 @@ Lần đầu mất vài phút để tải image, tải package và build trong c
 - Xem log build của một service: `docker compose -f deploy/docker-compose.yml logs -f core`. Build lỗi thì service nằm chờ ở trạng thái unhealthy và build lại ở lần khởi động lại sau.
 - Chạy toàn bộ test mà không cần cài .NET: `docker compose -f deploy/docker-compose.yml run --rm tests`.
 - Dừng: `docker compose -f deploy/docker-compose.yml down`; thêm `-v` để xóa luôn dữ liệu PostgreSQL.
+- Sau lần `up -d` đầu tiên, bật và tắt cả backend bằng nút ▶ và ■ của nhóm `oism` trong Docker Desktop cũng được; container đang chạy lúc tắt Docker Desktop tự bật lại ở lần mở sau. `down` xóa container, nên sau `down` phải chạy lại `up -d`.
 
 Frontend chạy trên máy host, cần Node 20.19 trở lên:
 
 ```bash
-npm --prefix frontend ci
-npm --prefix frontend run dev:admin
-npm --prefix frontend run dev:pos
+cd frontend
+npm ci
+npm run dev
 ```
 
-`admin` mở ở `http://localhost:5173`, `pos` ở `http://localhost:5174`; cả hai gọi gateway ở `http://localhost:8080` (đổi bằng biến `VITE_API_URL`). Kiểm kiểu, test và build: `npm --prefix frontend run typecheck`, `npm --prefix frontend test`, `npm --prefix frontend run build`.
+`npm run dev` chạy cùng lúc `admin` ở `http://localhost:5173` và `pos` ở `http://localhost:5174`, Ctrl+C tắt cả hai; chạy riêng một ứng dụng bằng `npm run dev:admin` hoặc `npm run dev:pos`. Cả hai gọi gateway ở `http://localhost:8080` (đổi bằng biến `VITE_API_URL`). Kéo code mới có đổi `package-lock.json` thì chạy lại `npm ci`, không thì Vite báo không tìm thấy package. Kiểm kiểu, test và build: `npm --prefix frontend run typecheck`, `npm --prefix frontend test`, `npm --prefix frontend run build`.
 
 ## Trạng thái
 

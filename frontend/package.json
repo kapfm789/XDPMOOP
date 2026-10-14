@@ -8,6 +8,7 @@
     "pos"
   ],
   "scripts": {
+    "dev": "node -e \"for (const app of ['admin', 'pos']) require('node:child_process').spawn('npm run dev:' + app, { stdio: 'inherit', shell: true })\"",
     "dev:admin": "npm run dev -w @oism/admin",
     "dev:pos": "npm run dev -w @oism/pos",
     "preview:pos": "npm run preview -w @oism/pos",
