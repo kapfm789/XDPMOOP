@@ -157,11 +157,10 @@ Frontend chạy trên máy host, cần Node 20.19 trở lên:
 
 ```bash
 cd frontend
-npm ci
 npm run dev
 ```
 
-`npm run dev` chạy cùng lúc `admin` ở `http://localhost:5173` và `pos` ở `http://localhost:5174`, Ctrl+C tắt cả hai; chạy riêng một ứng dụng bằng `npm run dev:admin` hoặc `npm run dev:pos`. Cả hai gọi gateway ở `http://localhost:8080` (đổi bằng biến `VITE_API_URL`). Kéo code mới có đổi `package-lock.json` thì chạy lại `npm ci`, không thì Vite báo không tìm thấy package. Kiểm kiểu, test và build: `npm --prefix frontend run typecheck`, `npm --prefix frontend test`, `npm --prefix frontend run build`.
+`npm run dev` chạy cùng lúc `admin` ở `http://localhost:5173` và `pos` ở `http://localhost:5174`, Ctrl+C tắt cả hai; chạy riêng một ứng dụng bằng `npm run dev:admin` hoặc `npm run dev:pos`. Cả hai gọi gateway ở `http://localhost:8080` (đổi bằng biến `VITE_API_URL`). Ba lệnh này tự chạy `npm install` trước khi bật, nên lần đầu và mỗi lần kéo code có package mới không cần cài tay; package đã đủ thì bước này mất khoảng 1 đến 2 giây. Kiểm kiểu, test và build: `npm --prefix frontend run typecheck`, `npm --prefix frontend test`, `npm --prefix frontend run build`.
 
 ## Trạng thái
 

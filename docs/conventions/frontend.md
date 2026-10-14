@@ -27,6 +27,8 @@ Các lựa chọn trên đã chốt ở task W1-09 với các bản: React 19, V
 | `run build` | Kiểm kiểu rồi build `admin` và `pos` |
 | `run preview:pos` | Chạy bản build của `pos` ở cổng 5174, để thử PWA: service worker chỉ đăng ký ở bản build |
 
+Ba lệnh `dev` có script `predev` chạy `npm install` trước, để package mới trong `package-lock.json` tự được cài sau khi kéo code. `dev` gọi thẳng `vite` của từng ứng dụng chứ không qua `dev:admin`, `dev:pos`, để `npm install` chỉ chạy một lần.
+
 Địa chỉ gateway lấy từ biến `VITE_API_URL`, mặc định `http://localhost:8080`.
 
 ## Phiên đăng nhập
