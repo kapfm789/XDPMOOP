@@ -174,6 +174,7 @@ npm run dev
 
 ## Tài liệu
 
+- [Software Requirements Specification (SRS)](docs/SRS.md): Tài liệu yêu cầu phần mềm đầy đủ, bao gồm yêu cầu chức năng, phi chức năng, mô hình dữ liệu, giao diện API, UI/UX và yêu cầu phần cứng/phần mềm.
 - [Kế hoạch triển khai](docs/PLAN.md): 10 phase, ai làm gì, xong là thế nào.
 - [docs/plans/](docs/plans/): plan riêng cho từng folder (`backend/*`, `frontend/*`, `deploy`, `tools/k6`).
 - [Bản đồ tài liệu](docs/README.md): yêu cầu, use case, kiến trúc, quyết định, thiết kế, kiểm thử, quy ước.
