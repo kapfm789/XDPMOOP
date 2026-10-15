@@ -7,13 +7,15 @@ import { useEffect, useState } from 'react';
 export type SkuOption = { value: string; label: string };
 
 type Props = {
+  // Cho phép xóa lựa chọn, dùng cho ô lọc; ô của chứng từ thì luôn phải chọn.
+  allowClear?: boolean;
   // Form.Item của Ant Design truyền hai thuộc tính này.
   value?: SkuOption;
-  onChange?: (sku: SkuOption) => void;
+  onChange?: (sku?: SkuOption) => void;
 };
 
 // Tìm SKU theo tên sản phẩm hoặc mã SKU để đưa vào chứng từ kho.
-export function SkuSelect({ value, onChange }: Props) {
+export function SkuSelect({ allowClear, value, onChange }: Props) {
   const [typed, setTyped] = useState('');
   const [term, setTerm] = useState('');
   // Chờ người dùng ngừng gõ rồi mới tìm.
@@ -47,7 +49,8 @@ export function SkuSelect({ value, onChange }: Props) {
       loading={found.isFetching}
       notFoundContent={term ? (found.isFetching ? 'Đang tìm...' : 'Không tìm thấy SKU') : 'Gõ để tìm'}
       value={value}
-      onChange={(sku) => onChange?.({ value: sku.value, label: sku.label })}
+      allowClear={allowClear}
+      onChange={(sku?: SkuOption) => onChange?.(sku && { value: sku.value, label: sku.label })}
       style={{ width: '100%' }}
     />
   );

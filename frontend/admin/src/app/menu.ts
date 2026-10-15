@@ -20,5 +20,8 @@ export const MENU: readonly MenuEntry[] = [
   { path: '/inventory/transfers', label: 'Chuyển kho', roles: ADMIN_ROLES },
   { path: '/inventory/stocktakes', label: 'Kiểm kê', roles: ADMIN_ROLES },
   { path: '/orders', label: 'Đơn hàng', roles: ADMIN_ROLES },
+  { path: '/reports/gross-profit', label: 'Doanh thu, lợi nhuận', roles: OWNER_ONLY },
+  { path: '/reports/inventory', label: 'Báo cáo tồn', roles: ADMIN_ROLES },
+  { path: '/forecast', label: 'Đề xuất nhập hàng', roles: OWNER_ONLY },
   { path: '/channel', label: 'Kênh sàn', roles: OWNER_ONLY },
 ];

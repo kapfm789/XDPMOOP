@@ -15,6 +15,9 @@ import { ReceiptsPage } from '../pages/inventory/ReceiptsPage';
 import { StockPage } from '../pages/inventory/StockPage';
 import { StocktakesPage } from '../pages/inventory/StocktakesPage';
 import { TransfersPage } from '../pages/inventory/TransfersPage';
+import { ForecastPage } from '../pages/forecast/ForecastPage';
+import { GrossProfitPage } from '../pages/reports/GrossProfitPage';
+import { InventoryReportsPage } from '../pages/reports/InventoryReportsPage';
 import { LoginPage } from '../pages/login/LoginPage';
 import { NewOrderPage } from '../pages/orders/NewOrderPage';
 import { OrderDetailPage } from '../pages/orders/OrderDetailPage';
@@ -66,6 +69,23 @@ const router = createBrowserRouter([
       { path: 'orders', element: <OrdersPage /> },
       { path: 'orders/new', element: <NewOrderPage /> },
       { path: 'orders/:id', element: <OrderDetailPage /> },
+      {
+        path: 'reports/gross-profit',
+        element: (
+          <RequireRole roles={OWNER_ONLY}>
+            <GrossProfitPage />
+          </RequireRole>
+        ),
+      },
+      { path: 'reports/inventory', element: <InventoryReportsPage /> },
+      {
+        path: 'forecast',
+        element: (
+          <RequireRole roles={OWNER_ONLY}>
+            <ForecastPage />
+          </RequireRole>
+        ),
+      },
       {
         path: 'channel',
         element: (

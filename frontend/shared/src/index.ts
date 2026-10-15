@@ -45,6 +45,15 @@ export {
 } from './api/core';
 export { errorMessage } from './api/errors';
 export {
+  getGrossProfit,
+  getInventoryValue,
+  getReorderSuggestions,
+  listLowStockAlerts,
+  listSlowMovers,
+  listTopSellers,
+  runForecast,
+} from './api/insights';
+export {
   createBranch,
   createUser,
   listBranches,
@@ -58,7 +67,7 @@ export { AuthProvider, useAuth } from './auth/AuthProvider';
 export { LoginForm } from './auth/LoginForm';
 export { RequireRole } from './auth/RequireRole';
 export { canAccess, visibleFor } from './auth/roles';
-export { formatDateTime, formatMoney } from './format';
+export { formatDate, formatDateTime, formatMoney, formatNumber, formatPercent, vietnamDate } from './format';
 export { playChime } from './realtime/chime';
 export { type NotificationHandlers, useNotifications } from './realtime/useNotifications';
 export { useOnline } from './realtime/useOnline';

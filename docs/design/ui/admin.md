@@ -36,7 +36,7 @@ Trang quản trị cho Owner và Staff, nằm ở `frontend/admin`. Mỗi dòng 
 - Lỗi 409 `reference_not_ready` được `frontend/shared/api` tự thử lại tới 3 lần, cách nhau 1 giây, rồi mới báo lỗi.
 - Giá vốn và lợi nhuận không hiện với Staff: các trường đó không có trong phản hồi của backend.
 - Màn hình sổ giao dịch không có nút sửa hay xóa.
-- Thông báo `OrderCreated` và `LowStock` hiện popup kèm âm thanh ở mọi màn hình, góc dưới bên phải, giữ 10 giây; bấm vào mở chi tiết đơn hoặc màn hình tồn. Danh sách đơn và danh sách tồn đang mở tự tải lại khi có thông báo tương ứng.
+- Thông báo `OrderCreated` và `LowStock` hiện popup kèm âm thanh ở mọi màn hình, góc dưới bên phải, giữ 10 giây; bấm vào mở chi tiết đơn hoặc màn hình tồn. Danh sách đơn, danh sách tồn và cảnh báo tồn ở trang tổng quan đang mở tự tải lại khi có thông báo tương ứng; cảnh báo tồn còn tự tải lại mỗi phút vì SKU lên lại trên ngưỡng không sinh thông báo.
 
 ## In phiếu giao
 

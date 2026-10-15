@@ -30,7 +30,9 @@ export function NotificationCenter() {
     },
     onLowStock: (alert) => {
       playChime();
+      // Màn hình tồn và danh sách cảnh báo ở trang tổng quan tải lại.
       void queryClient.invalidateQueries({ queryKey: ['stock'] });
+      void queryClient.invalidateQueries({ queryKey: ['low-stock'] });
       const key = `low-stock-${alert.branchId}-${alert.skuId}`;
       api.warning({
         key,

@@ -1,7 +1,9 @@
 import { useAuth } from '@oism/shared';
-import { Typography } from 'antd';
+import { Col, Row, Typography } from 'antd';
+import { LowStockAlertsCard } from '../../features/dashboard/LowStockAlertsCard';
+import { PendingOrdersCard } from '../../features/dashboard/PendingOrdersCard';
 
-// Cảnh báo tồn và đơn chờ duyệt được dựng ở task W4-07.
+// Tổng quan: cảnh báo tồn và đơn chờ duyệt (docs/design/ui/admin.md).
 export function HomePage() {
   const { user } = useAuth();
 
@@ -9,6 +11,14 @@ export function HomePage() {
     <>
       <Typography.Title level={3}>Tổng quan</Typography.Title>
       <Typography.Paragraph>Xin chào, {user?.fullName}.</Typography.Paragraph>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} xl={12}>
+          <LowStockAlertsCard />
+        </Col>
+        <Col xs={24} xl={12}>
+          <PendingOrdersCard />
+        </Col>
+      </Row>
     </>
   );
 }
