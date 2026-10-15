@@ -20,9 +20,12 @@ export function AdminLayout() {
         </Typography.Title>
         <Menu
           theme="dark"
-          // Trang con (ví dụ /catalog/products/:id) vẫn sáng mục menu của trang cha.
+          // Trang con (ví dụ /catalog/products/:id) vẫn sáng mục menu của trang cha. So theo cả đoạn đường dẫn, để
+          // /inventory/stocktakes không sáng nhầm mục /inventory/stock.
           selectedKeys={[
-            MENU.find((entry) => entry.path !== '/' && location.pathname.startsWith(entry.path))?.path ?? location.pathname,
+            MENU.find(
+              (entry) => entry.path !== '/' && (location.pathname === entry.path || location.pathname.startsWith(`${entry.path}/`)),
+            )?.path ?? location.pathname,
           ]}
           items={visibleFor(MENU, user?.role).map((entry) => ({ key: entry.path, label: entry.label }))}
           onClick={({ key }) => navigate(key)}

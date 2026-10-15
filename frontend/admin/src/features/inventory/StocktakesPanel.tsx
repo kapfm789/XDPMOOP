@@ -18,6 +18,7 @@ import { Link } from 'react-router-dom';
 import { FormModal } from '../common/FormModal';
 import { AddBranchSkus, type CountLine } from './AddBranchSkus';
 import { SkuSelect } from './SkuSelect';
+import { CHANNEL_LABELS } from '../orders/labels';
 import { useBranchOptions } from './useBranchOptions';
 
 type Filter = { branchId?: string; status?: StocktakeStatus; page: number };
@@ -253,7 +254,7 @@ function belowReservedLines(error: unknown, stocktake?: Stocktake) {
           {shortfall.orders.map((order, index) => (
             <span key={order.orderId}>
               {index > 0 && ', '}
-              <Link to={`/orders/${order.orderId}`}>{order.orderNumber}</Link> ({order.channel}, {order.quantity})
+              <Link to={`/orders/${order.orderId}`}>{order.orderNumber}</Link> ({CHANNEL_LABELS[order.channel]}, {order.quantity})
             </span>
           ))}
         </li>
