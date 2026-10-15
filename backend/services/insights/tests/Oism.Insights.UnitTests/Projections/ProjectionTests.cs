@@ -78,6 +78,17 @@ public sealed class ProjectionTests
         Assert.Equal(StockSnapshotUpdate.BecameLow, snapshot.Apply(4, 0, 4, 0, threshold: 4, version: 5, Now));
     }
 
+    // ADR-0008: giá trị tồn là on_hand × avg_cost.
+    [Fact]
+    [Trait("UseCase", "UC-REP-02 AC-1")]
+    public void StockSnapshot_Value_OnHandTimesAvgCost()
+    {
+        var snapshot = new StockSnapshot(Guid.NewGuid(), Guid.NewGuid());
+        snapshot.Apply(onHand: 15, reserved: 4, available: 11, avgCost: 110_000, threshold: null, version: 1, Now);
+
+        Assert.Equal(1_650_000m, snapshot.Value);
+    }
+
     [Fact]
     public void SkuName_NewerVersionOverwrites_OlderOrEqualVersionIsIgnored()
     {

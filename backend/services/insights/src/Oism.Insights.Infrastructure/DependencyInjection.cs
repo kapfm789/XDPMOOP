@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Oism.BuildingBlocks.Messaging;
 using Oism.BuildingBlocks.Persistence;
 using Oism.Insights.Application;
+using Oism.Insights.Application.Alerts;
 using Oism.Insights.Application.Projections;
 using Oism.Insights.Application.Reports;
 using Oism.Insights.Infrastructure.Jobs;
@@ -24,6 +25,7 @@ public static class DependencyInjection
             .AddScoped<IProjectionRepository, ProjectionRepository>()
             .AddScoped<IDailyAggregateRepository, DailyAggregateRepository>()
             .AddScoped<IReportQueries, ReportQueries>()
+            .AddScoped<IAlertQueries, AlertQueries>()
             .AddSingleton<DailyAggregationJob>();
 
         // `Jobs:Enabled = false` tắt Hangfire: test tích hợp tự gọi job.

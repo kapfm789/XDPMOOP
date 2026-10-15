@@ -11,4 +11,8 @@ public static class ReportCalendar
 
     // 00:00 giờ Việt Nam của ngày đó.
     public static DateTimeOffset StartOf(DateOnly date) => new(date.ToDateTime(TimeOnly.MinValue), Offset);
+
+    // "N ngày gần nhất" của bán chạy, bán chậm (ADR-0008): hôm nay theo giờ Việt Nam và N − 1 ngày trước đó.
+    // Trả 00:00 giờ Việt Nam của ngày đầu cửa sổ; cửa sổ kéo tới thời điểm hiện tại.
+    public static DateTimeOffset StartOfLastDays(DateTimeOffset now, int days) => StartOf(DateOf(now).AddDays(1 - days));
 }

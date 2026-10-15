@@ -30,6 +30,9 @@ public sealed class StockSnapshot(Guid branchId, Guid skuId) : ITenantOwned
     // ADR-0008: cảnh báo khi available <= threshold; SKU chưa đặt ngưỡng không bao giờ bị cảnh báo.
     public bool IsLow => Threshold is { } threshold && Available <= threshold;
 
+    // ADR-0008: giá trị tồn là on_hand × avg_cost. Truy vấn báo cáo viết lại đúng công thức này để database tính.
+    public decimal Value => OnHand * AvgCost;
+
     // Thông điệp trạng thái có thể tới trùng hoặc sai thứ tự: chỉ ghi đè khi version lớn hơn bản đang giữ.
     // BecameLow khi lần ghi đè này đưa SKU từ trên ngưỡng (hoặc chưa có ngưỡng) xuống bằng hoặc dưới ngưỡng:
     // lúc đó mới đẩy thông báo LowStock (docs/design/events.md mục "Thông báo SignalR").

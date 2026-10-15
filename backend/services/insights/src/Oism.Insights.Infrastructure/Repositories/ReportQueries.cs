@@ -1,6 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Oism.Insights.Application.Reports;
 using Oism.Insights.Application.Reports.GetGrossProfit;
+using Oism.Insights.Application.Reports.GetInventoryValue;
+using Oism.Insights.Application.Reports.GetSlowMovers;
+using Oism.Insights.Application.Reports.GetTopSellers;
+using Oism.Insights.Domain.References;
 using Oism.Insights.Domain.Sales;
 
 namespace Oism.Insights.Infrastructure.Repositories;
@@ -80,6 +84,98 @@ internal sealed class ReportQueries(InsightsDbContext db) : IReportQueries
             ? rows.OrderBy(row => row.Key).ToList()
             : rows.OrderByDescending(row => row.Revenue).ThenBy(row => row.Key).ToList();
     }
+
+    public async Task<InventoryValueReport> ListInventoryValueAsync(GetInventoryValueQuery query, CancellationToken ct)
+    {
+        // ADR-0008: giá trị tồn là on_hand × avg_cost; viết lại công thức của StockSnapshot.Value để database tính và xếp.
+        var rows =
+            from snapshot in db.StockSnapshots.AsNoTracking()
+            where snapshot.OnHand > 0 && (query.BranchId == null || snapshot.BranchId == query.BranchId)
+            join sku in db.SkuNames.AsNoTracking() on snapshot.SkuId equals sku.SkuId into skus
+            from sku in skus.DefaultIfEmpty()
+            select new
+            {
+                snapshot.BranchId,
+                snapshot.SkuId,
+                sku.SkuCode,
+                sku.Name,
+                snapshot.OnHand,
+                snapshot.AvgCost,
+                Value = snapshot.OnHand * snapshot.AvgCost,
+            };
+
+        // Không được xem giá vốn thì cũng không xếp theo giá trị, để thứ tự không lộ giá vốn.
+        var includeCost = query.IncludeCost;
+        var ordered = includeCost
+            ? rows.OrderByDescending(row => row.Value).ThenBy(row => row.SkuCode).ThenBy(row => row.BranchId)
+            : rows.OrderByDescending(row => row.OnHand).ThenBy(row => row.SkuCode).ThenBy(row => row.BranchId);
+        var items = await ordered
+            .Skip((query.Page - 1) * query.PageSize).Take(query.PageSize)
+            .Select(row => new InventoryValueRow(
+                row.BranchId, row.SkuId, row.SkuCode, row.Name, row.OnHand,
+                includeCost ? row.AvgCost : null, includeCost ? row.Value : null))
+            .ToListAsync(ct);
+
+        return new InventoryValueReport(
+            items, query.Page, query.PageSize, await rows.CountAsync(ct),
+            includeCost ? await rows.SumAsync(row => row.Value, ct) : null);
+    }
+
+    public async Task<IReadOnlyList<TopSellerRow>> ListTopSellersAsync(SalesWindowFilter filter, CancellationToken ct)
+    {
+        var since = filter.Since.ToUniversalTime();
+        var top = await db.SalesFacts.AsNoTracking()
+            .Where(fact => fact.ConfirmedAt >= since && (filter.BranchId == null || fact.BranchId == filter.BranchId))
+            .GroupBy(fact => fact.SkuId)
+            .Select(group => new { SkuId = group.Key, Quantity = group.Sum(fact => fact.Quantity) })
+            .OrderByDescending(row => row.Quantity).ThenBy(row => row.SkuId)
+            .Take(filter.Limit)
+            .ToListAsync(ct);
+
+        var skus = await FindSkuNamesAsync(top.Select(row => row.SkuId).ToList(), ct);
+        return top.Select(row =>
+        {
+            var sku = skus.GetValueOrDefault(row.SkuId);
+            return new TopSellerRow(row.SkuId, sku?.SkuCode, sku?.Name, row.Quantity);
+        }).ToList();
+    }
+
+    public async Task<IReadOnlyList<SlowMoverRow>> ListSlowMoversAsync(SalesWindowFilter filter, CancellationToken ct)
+    {
+        // SKU còn tồn thực tế, cộng mọi chi nhánh khi không lọc chi nhánh.
+        var stock = await db.StockSnapshots.AsNoTracking()
+            .Where(snapshot => filter.BranchId == null || snapshot.BranchId == filter.BranchId)
+            .GroupBy(snapshot => snapshot.SkuId)
+            .Select(group => new { SkuId = group.Key, OnHand = group.Sum(snapshot => snapshot.OnHand) })
+            .Where(row => row.OnHand > 0)
+            .ToListAsync(ct);
+
+        var skuIds = stock.Select(row => row.SkuId).ToList();
+        var since = filter.Since.ToUniversalTime();
+        var sold = await db.SalesFacts.AsNoTracking()
+            .Where(fact => fact.ConfirmedAt >= since && skuIds.Contains(fact.SkuId)
+                && (filter.BranchId == null || fact.BranchId == filter.BranchId))
+            .GroupBy(fact => fact.SkuId)
+            .Select(group => new { SkuId = group.Key, Quantity = group.Sum(fact => fact.Quantity) })
+            .ToDictionaryAsync(row => row.SkuId, row => row.Quantity, ct);
+
+        // SKU không bán được gì có số lượng 0 nên đứng đầu; cùng số lượng thì SKU tồn nhiều hơn đứng trước.
+        var slowest = stock
+            .Select(row => (row.SkuId, Quantity: sold.GetValueOrDefault(row.SkuId), row.OnHand))
+            .OrderBy(row => row.Quantity).ThenByDescending(row => row.OnHand).ThenBy(row => row.SkuId)
+            .Take(filter.Limit)
+            .ToList();
+
+        var skus = await FindSkuNamesAsync(slowest.Select(row => row.SkuId).ToList(), ct);
+        return slowest.Select(row =>
+        {
+            var sku = skus.GetValueOrDefault(row.SkuId);
+            return new SlowMoverRow(row.SkuId, sku?.SkuCode, sku?.Name, row.Quantity, row.OnHand);
+        }).ToList();
+    }
+
+    private Task<Dictionary<Guid, SkuName>> FindSkuNamesAsync(List<Guid> skuIds, CancellationToken ct) =>
+        db.SkuNames.AsNoTracking().Where(sku => skuIds.Contains(sku.SkuId)).ToDictionaryAsync(sku => sku.SkuId, ct);
 
     private static IQueryable<SaleLine> Where(IQueryable<SaleLine> lines, GrossProfitFilter filter) =>
         lines.Where(line => (filter.BranchId == null || line.BranchId == filter.BranchId)

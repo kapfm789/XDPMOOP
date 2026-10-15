@@ -15,4 +15,13 @@ public sealed class ReportCalendarTests
     [Fact]
     public void StartOf_Date_MidnightVietnamTime() =>
         Assert.Equal(DateTimeOffset.Parse("2026-10-20T17:00:00Z"), ReportCalendar.StartOf(new DateOnly(2026, 10, 21)));
+
+    // "30 ngày gần nhất" gồm hôm nay theo giờ Việt Nam và 29 ngày trước đó.
+    [Theory]
+    [Trait("UseCase", "UC-REP-02 AC-2")]
+    [InlineData("2026-10-21T03:00:00Z", 30, "2026-09-21T17:00:00Z")]
+    [InlineData("2026-10-20T17:30:00Z", 30, "2026-09-21T17:00:00Z")]
+    [InlineData("2026-10-21T03:00:00Z", 1, "2026-10-20T17:00:00Z")]
+    public void StartOfLastDays_NowAndDays_MidnightOfFirstVietnamDay(string now, int days, string expected) =>
+        Assert.Equal(DateTimeOffset.Parse(expected), ReportCalendar.StartOfLastDays(DateTimeOffset.Parse(now), days));
 }

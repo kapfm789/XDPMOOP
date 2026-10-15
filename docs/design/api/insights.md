@@ -7,11 +7,15 @@ Tiền tố `/api/insights`, cùng hub SignalR `/hubs/notifications`. Use case �
 | Phương thức | Đường dẫn | Vai trò | Vào | Ra |
 | --- | --- | --- | --- | --- |
 | GET | `/api/insights/reports/gross-profit` | Owner | `from`, `to`, `branchId?`, `channel?`, `skuId?`, `groupBy?` | `totals` và `rows[]`, mỗi dòng có `revenue`, `cogs`, `grossProfit`, `quantity` |
-| GET | `/api/insights/reports/inventory-value` | Owner, Staff | `branchId?`, `page`, `pageSize` | Dòng theo chi nhánh và SKU: `onHand`, `avgCost`, `value`; kèm `totalValue` |
-| GET | `/api/insights/reports/top-sellers` | Owner, Staff | `days?` (mặc định 30), `branchId?`, `limit?` (mặc định 20) | SKU xếp giảm dần theo `quantity` |
-| GET | `/api/insights/reports/slow-movers` | Owner, Staff | `days?` (mặc định 30), `branchId?`, `limit?` (mặc định 20) | SKU còn tồn, xếp tăng dần theo `quantity` |
+| GET | `/api/insights/reports/inventory-value` | Owner, Staff | `branchId?`, `page`, `pageSize` | Khuôn phân trang; mỗi dòng theo chi nhánh và SKU: `branchId`, `skuId`, `skuCode`, `name`, `onHand`, `avgCost`, `value`; kèm `totalValue` |
+| GET | `/api/insights/reports/top-sellers` | Owner, Staff | `days?` (mặc định 30), `branchId?`, `limit?` (mặc định 20) | Mảng SKU: `skuId`, `skuCode`, `name`, `quantity`, xếp giảm dần theo `quantity` |
+| GET | `/api/insights/reports/slow-movers` | Owner, Staff | `days?` (mặc định 30), `branchId?`, `limit?` (mặc định 20) | Mảng SKU còn tồn: `skuId`, `skuCode`, `name`, `quantity`, `onHand`, xếp tăng dần theo `quantity` |
 
-`groupBy` nhận `day`, `branch`, `channel` hoặc `sku`; bỏ trống thì chỉ trả `totals` và `rows` rỗng. `from` và `to` bắt buộc, dạng `yyyy-MM-dd`, là ngày theo giờ Việt Nam, tính cả hai đầu; thiếu, sai dạng, `from` sau `to` hay `groupBy` lạ trả 400 `validation_failed`. Với Staff, `/reports/inventory-value` không trả `avgCost` và `value`.
+`groupBy` nhận `day`, `branch`, `channel` hoặc `sku`; bỏ trống thì chỉ trả `totals` và `rows` rỗng. `from` và `to` bắt buộc, dạng `yyyy-MM-dd`, là ngày theo giờ Việt Nam, tính cả hai đầu; thiếu, sai dạng, `from` sau `to` hay `groupBy` lạ trả 400 `validation_failed`.
+
+`/reports/inventory-value` đọc `stock_snapshots`, chỉ gồm dòng còn tồn (`onHand > 0`); `value` là `onHand × avgCost` và `totalValue` là tổng `value` của mọi dòng khớp bộ lọc, không chỉ trang đang xem. Owner nhận dòng xếp theo `value` giảm dần. Với Staff, `avgCost`, `value` và `totalValue` để trống, và dòng xếp theo `onHand` giảm dần để thứ tự không lộ giá vốn.
+
+`days` từ 1 tới 365 là số ngày gần nhất, tính cả hôm nay theo giờ Việt Nam; `limit` từ 1 tới 100; ngoài khoảng trả 400 `validation_failed`, cùng như `page` nhỏ hơn 1 hay `pageSize` ngoài khoảng 1 tới 100. `quantity` là tổng số lượng của `sales_facts` trong cửa sổ, theo SKU, cộng mọi chi nhánh khi không lọc chi nhánh. Bán chậm chỉ gồm SKU có tổng `onHand` lớn hơn 0 trong phạm vi lọc; SKU không bán được gì có `quantity` bằng 0 và đứng đầu; cùng `quantity` thì SKU tồn nhiều hơn đứng trước. `skuCode` và `name` lấy từ `sku_names`, để trống nếu chưa nhận `SkuUpserted`.
 
 Mỗi dòng của `/reports/gross-profit` có `key` là giá trị của chiều đang nhóm: ngày `yyyy-MM-dd`, `branchId`, tên kênh hoặc `skuId`; khi nhóm theo SKU thì có thêm `skuCode` và `name` lấy từ `sku_names` (để trống nếu chưa nhận `SkuUpserted`). Nhóm theo ngày xếp theo ngày tăng dần; các nhóm khác xếp theo `revenue` giảm dần. `totals` gồm `quantity`, `revenue`, `cogs`, `grossProfit`.
 
@@ -19,7 +23,7 @@ Mỗi dòng của `/reports/gross-profit` có `key` là giá trị của chiều
 
 | Phương thức | Đường dẫn | Vai trò | Vào | Ra |
 | --- | --- | --- | --- | --- |
-| GET | `/api/insights/alerts/low-stock` | Owner, Staff | `branchId?` | SKU có `available <= threshold`: `branchId`, `skuId`, `skuCode`, `name`, `available`, `threshold` |
+| GET | `/api/insights/alerts/low-stock` | Owner, Staff | `branchId?` | Mảng SKU có `available <= threshold`: `branchId`, `skuId`, `skuCode`, `name`, `available`, `threshold`, xếp `available` tăng dần |
 | GET | `/api/insights/forecast/reorder-suggestions` | Owner | `branchId?`, `page`, `pageSize` | `run` (thời điểm, trạng thái, hai chỉ số WAPE) và `items[]` |
 | POST | `/api/insights/forecast/run` | Owner | | 202: `runId` |
 
