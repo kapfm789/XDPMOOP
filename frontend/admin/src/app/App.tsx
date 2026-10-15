@@ -13,6 +13,8 @@ import { HomePage } from '../pages/home/HomePage';
 import { LedgerPage } from '../pages/inventory/LedgerPage';
 import { ReceiptsPage } from '../pages/inventory/ReceiptsPage';
 import { StockPage } from '../pages/inventory/StockPage';
+import { StocktakesPage } from '../pages/inventory/StocktakesPage';
+import { TransfersPage } from '../pages/inventory/TransfersPage';
 import { LoginPage } from '../pages/login/LoginPage';
 import { NewOrderPage } from '../pages/orders/NewOrderPage';
 import { OrderDetailPage } from '../pages/orders/OrderDetailPage';
@@ -59,6 +61,8 @@ const router = createBrowserRouter([
       { path: 'inventory/stock', element: <StockPage /> },
       { path: 'inventory/receipts', element: <ReceiptsPage /> },
       { path: 'inventory/ledger', element: <LedgerPage /> },
+      { path: 'inventory/transfers', element: <TransfersPage /> },
+      { path: 'inventory/stocktakes', element: <StocktakesPage /> },
       { path: 'orders', element: <OrdersPage /> },
       { path: 'orders/new', element: <NewOrderPage /> },
       { path: 'orders/:id', element: <OrderDetailPage /> },

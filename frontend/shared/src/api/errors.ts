@@ -11,6 +11,8 @@ const MESSAGES: Record<string, string> = {
   invalid_state_transition: 'Trạng thái của bản ghi đã đổi; dữ liệu đã được tải lại',
   reference_not_ready: 'Chi nhánh hoặc SKU vừa tạo chưa được đồng bộ tới kho; thử lại sau ít giây',
   inactive_reference: 'Chi nhánh đã tắt hoặc SKU đã ngừng bán',
+  insufficient_stock: 'Không đủ tồn khả dụng',
+  stocktake_below_reserved: 'Số đếm thấp hơn lượng đang giữ cho đơn',
 };
 
 export function errorMessage(error: unknown): string {

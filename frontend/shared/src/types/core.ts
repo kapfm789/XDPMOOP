@@ -231,3 +231,82 @@ export type CreateOrderRequest = {
   note?: string;
   items: OrderLineRequest[];
 };
+
+export type TransferStatus = 'Draft' | 'InTransit' | 'Received';
+
+// `unitCost` là giá vốn nơi gửi lúc xuất: chỉ có sau khi xuất và chỉ có trong phản hồi cho Owner.
+export type TransferItem = {
+  id: string;
+  skuId: string;
+  skuCode: string;
+  skuName: string;
+  quantity: number;
+  unitCost?: number;
+};
+
+export type StockTransfer = {
+  id: string;
+  transferNumber: string;
+  fromBranchId: string;
+  toBranchId: string;
+  status: TransferStatus;
+  shippedAt?: string | null;
+  receivedAt?: string | null;
+  createdBy?: string | null;
+  items: TransferItem[];
+};
+
+export type TransferFilter = {
+  status?: TransferStatus;
+  page: number;
+  pageSize: number;
+};
+
+export type CreateTransferRequest = {
+  fromBranchId: string;
+  toBranchId: string;
+  items: { skuId: string; quantity: number }[];
+};
+
+export type StocktakeStatus = 'Open' | 'Posted';
+
+// `systemQty` là `onHand` lúc chốt và `difference` bằng `countedQty - systemQty`; cả hai là null khi phiên còn Open.
+export type StocktakeItem = {
+  id: string;
+  skuId: string;
+  skuCode: string;
+  skuName: string;
+  countedQty: number;
+  systemQty?: number | null;
+  difference?: number | null;
+};
+
+export type Stocktake = {
+  id: string;
+  branchId: string;
+  status: StocktakeStatus;
+  createdBy?: string | null;
+  postedAt?: string | null;
+  items: StocktakeItem[];
+};
+
+export type StocktakeFilter = {
+  branchId?: string;
+  status?: StocktakeStatus;
+  page: number;
+  pageSize: number;
+};
+
+// Thay cả bộ số đếm của phiên.
+export type StocktakeCount = {
+  skuId: string;
+  countedQty: number;
+};
+
+// Một phần tử `details` của lỗi 409 `stocktake_below_reserved`: SKU đếm thấp hơn lượng đang giữ, kèm các đơn đang giữ nó.
+export type StocktakeShortfall = {
+  skuId: string;
+  countedQty: number;
+  reserved: number;
+  orders: { orderId: string; orderNumber: string; channel: OrderChannel; quantity: number }[];
+};

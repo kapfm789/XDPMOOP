@@ -2,6 +2,7 @@ import type { Paged } from '../types/common';
 import type {
   CreateOrderRequest,
   CreatePurchaseReceiptRequest,
+  CreateTransferRequest,
   LedgerFilter,
   LedgerLine,
   Order,
@@ -13,8 +14,13 @@ import type {
   SetThresholdRequest,
   StockFilter,
   StockRow,
+  Stocktake,
+  StocktakeCount,
+  StocktakeFilter,
+  StockTransfer,
   Supplier,
   SupplierRequest,
+  TransferFilter,
   UpdatePurchaseReceiptRequest,
 } from '../types/core';
 import { api } from './client';
@@ -73,3 +79,26 @@ export const createOrder = (request: CreateOrderRequest) => api<Order>('/api/cor
 // Duyệt, hoàn tất, hủy. Bước chuyển sai trạng thái trả 409 `invalid_state_transition`; hủy lại đơn đã hủy trả lại cùng đơn.
 export const transitionOrder = (id: string, action: 'confirm' | 'complete' | 'cancel') =>
   api<Order>(`/api/core/orders/${id}/${action}`, { method: 'POST' });
+
+export const listTransfers = (filter: TransferFilter) => api<Paged<StockTransfer>>(`/api/core/transfers?${toQuery(filter)}`);
+
+export const createTransfer = (request: CreateTransferRequest) =>
+  api<StockTransfer>('/api/core/transfers', { method: 'POST', body: request });
+
+// Xuất trừ tồn khả dụng nơi gửi; thiếu thì 409 `insufficient_stock` và không dòng nào được xuất.
+// Nhận cộng tồn nơi nhận; nhận lại phiếu đã Received trả lại cùng phiếu.
+export const transitionTransfer = (id: string, action: 'ship' | 'receive') =>
+  api<StockTransfer>(`/api/core/transfers/${id}/${action}`, { method: 'POST' });
+
+// Chỉ phiếu còn Draft xóa được.
+export const deleteTransfer = (id: string) => api<void>(`/api/core/transfers/${id}`, { method: 'DELETE' });
+
+export const listStocktakes = (filter: StocktakeFilter) => api<Paged<Stocktake>>(`/api/core/stocktakes?${toQuery(filter)}`);
+
+export const openStocktake = (branchId: string) => api<Stocktake>('/api/core/stocktakes', { method: 'POST', body: { branchId } });
+
+export const setStocktakeCounts = (id: string, items: StocktakeCount[]) =>
+  api<Stocktake>(`/api/core/stocktakes/${id}/counts`, { method: 'PUT', body: { items } });
+
+// Chốt điều chỉnh tồn theo số đếm; số đếm dưới lượng đang giữ thì 409 `stocktake_below_reserved`.
+export const postStocktake = (id: string) => api<Stocktake>(`/api/core/stocktakes/${id}/post`, { method: 'POST' });
