@@ -2,7 +2,6 @@ import {
   ApiError,
   errorMessage,
   formatDateTime,
-  listStock,
   listStocktakes,
   openStocktake,
   postStocktake,
@@ -17,12 +16,11 @@ import { Alert, Button, Flex, Form, InputNumber, message, Popconfirm, Select, Sp
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FormModal } from '../common/FormModal';
-import { SkuSelect, type SkuOption } from './SkuSelect';
+import { AddBranchSkus, type CountLine } from './AddBranchSkus';
+import { SkuSelect } from './SkuSelect';
 import { useBranchOptions } from './useBranchOptions';
 
 type Filter = { branchId?: string; status?: StocktakeStatus; page: number };
-
-type CountLine = { sku: SkuOption; countedQty: number };
 
 type CountValues = { items: CountLine[] };
 
@@ -239,36 +237,6 @@ export function StocktakesPanel() {
         </FormModal>
       )}
     </>
-  );
-}
-
-type AddBranchSkusProps = { branchId: string; add: (line: Partial<CountLine>) => void };
-
-// Thêm một dòng trống cho mỗi SKU đang có số dư ở chi nhánh mà danh sách chưa có, để đếm hết kho không phải chọn từng SKU.
-function AddBranchSkus({ branchId, add }: AddBranchSkusProps) {
-  const form = Form.useFormInstance<CountValues>();
-  const load = useMutation({
-    mutationFn: async () => {
-      const lines: (CountLine | undefined)[] = form.getFieldValue('items') ?? [];
-      const present = new Set(lines.flatMap((line) => (line?.sku ? [line.sku.value] : [])));
-      let added = 0;
-      for (let page = 1; ; page++) {
-        const stock = await listStock({ branchId, page, pageSize: 100 });
-        for (const row of stock.items.filter((row) => !present.has(row.skuId))) {
-          add({ sku: { value: row.skuId, label: `${row.skuCode} · ${row.name}` } });
-          added++;
-        }
-        if (page * stock.pageSize >= stock.total) return added;
-      }
-    },
-    onSuccess: (added) => void message.info(added ? `Đã thêm ${added} SKU` : 'Mọi SKU của chi nhánh đã có trong danh sách'),
-    onError: (failure) => void message.error(errorMessage(failure)),
-  });
-
-  return (
-    <Button loading={load.isPending} onClick={() => load.mutate()}>
-      Thêm mọi SKU có ở chi nhánh
-    </Button>
   );
 }
 
