@@ -150,6 +150,7 @@ Lần đầu mất vài phút để tải image, tải package và build trong c
 - `watch` theo dõi `src` của service và `backend/shared`; đổi `Directory.Build.props` hay `Directory.Packages.props` thì khởi động lại bằng tay.
 - Xem log build của một service: `docker compose -f deploy/docker-compose.yml logs -f core`. Build lỗi thì service nằm chờ ở trạng thái unhealthy và build lại ở lần khởi động lại sau.
 - Chạy toàn bộ test mà không cần cài .NET: `docker compose -f deploy/docker-compose.yml run --rm tests`.
+- Nạp dữ liệu demo (2 tenant, 2 chi nhánh mỗi tenant, khoảng 50 SKU, 60 ngày lịch sử bán) sau khi các service đã khỏe: `docker compose -f deploy/docker-compose.yml run --rm seed`. Chạy lại không tạo bản trùng. Tài khoản demo và cách seed dựng dữ liệu: [deploy/seed/README.md](deploy/seed/README.md).
 - Dừng: `docker compose -f deploy/docker-compose.yml down`; thêm `-v` để xóa luôn dữ liệu PostgreSQL.
 - Sau lần `up -d` đầu tiên, bật và tắt cả backend bằng nút ▶ và ■ của nhóm `oism` trong Docker Desktop cũng được; container đang chạy lúc tắt Docker Desktop tự bật lại ở lần mở sau. `down` xóa container, nên sau `down` phải chạy lại `up -d`.
 
@@ -166,7 +167,9 @@ npm run dev
 
 - Đã có code của phase 1: skeleton backend và Compose dev (W1-02, W1-03), outbox và inbox qua RabbitMQ (W1-13), danh mục và thương hiệu ở `catalog` (W1-06), hai ứng dụng React với đăng ký, đăng nhập và layout (W1-09), workflow CI (W1-11).
 - Đã có code của phase 2: `identity` với đăng ký tenant, đăng nhập, làm mới, đăng xuất, quản lý người dùng (W1-04) và chi nhánh (W1-05); sản phẩm, SKU, mã vạch và giá ở `catalog` (W1-07); consumer dựng bản sao SKU và chi nhánh ở `core` (W1-08); màn hình chi nhánh, người dùng, danh mục, thương hiệu trên `admin` (W1-10).
-- Đã có code của phase 3: sổ kho chỉ thêm mới, số dư, `PostLedger` và API xem tồn, xem sổ ở `core` (W2-01); mô hình đơn, máy trạng thái và tạo đơn thủ công ở `core` (W2-04); màn hình sản phẩm, SKU, mã vạch, giá trên `admin` (W2-07). Phiếu nhập, giữ hàng và xác nhận đơn ở `core`, nghiệp vụ của `channel`, `insights` chưa có; seed chưa có.
+- Đã có code của phase 3: sổ kho chỉ thêm mới, số dư, `PostLedger` và API xem tồn, xem sổ ở `core` (W2-01); mô hình đơn, máy trạng thái và tạo đơn thủ công ở `core` (W2-04); màn hình sản phẩm, SKU, mã vạch, giá trên `admin` (W2-07).
+- Đã có code của phase 4 tới 7: phiếu nhập và giá vốn bình quân, giữ hàng, duyệt và hủy đơn, POS checkout, chuyển kho, kiểm kê ở `core`; webhook ba sàn ở `channel`; báo cáo lợi nhuận gộp, tổng hợp ngày và thông báo realtime ở `insights`; màn hình kho, đơn hàng, kênh sàn trên `admin`, màn hình bán hàng và PWA của `pos`. Chi tiết theo task: [docs/README.md](docs/README.md) mục "Trạng thái".
+- Đã có code của phase 8: giá trị tồn, bán chạy, bán chậm và API cảnh báo tồn ở `insights` (W4-03); dự báo nhập hàng bằng san bằng hàm mũ, job đêm và backtest WAPE (W4-05); màn hình chuyển kho, kiểm kê (W4-06), tổng quan, báo cáo và đề xuất nhập hàng (W4-07) trên `admin`; seed data ở `deploy/seed` (W4-09).
 - 18 quyết định của nhóm, gồm cả việc chia microservice (D-17), đã được giảng viên xác nhận ngày 2026-10-04 (task W1-01): [docs/decisions/](docs/decisions/README.md).
 
 ## Tài liệu

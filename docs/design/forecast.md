@@ -49,6 +49,8 @@ L_1 = y_1, \qquad L_t = \alpha \, y_t + (1 - \alpha) \, L_{t-1}
 
 Tổng thực tế của phần kiểm tra bằng 0 thì không tính WAPE và ghi rõ là không có dữ liệu để đánh giá.
 
+Kết quả backtest trên dữ liệu seed: [testing/forecast-backtest.md](../testing/forecast-backtest.md).
+
 ## Chạy
 
 - Job Hangfire chạy mỗi đêm lúc 00:30 giờ Việt Nam, sau job tổng hợp ngày, lặp qua từng tenant, mỗi tenant một tenant context.
