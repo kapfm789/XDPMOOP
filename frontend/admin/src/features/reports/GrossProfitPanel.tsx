@@ -21,6 +21,9 @@ type Filter = { from?: string; to?: string; branchId?: string; channel?: OrderCh
 
 const DEFAULT_DAYS = 30;
 
+// Tiêu đề cột đầu theo chiều đang nhóm.
+const GROUP_TITLES: Record<GrossProfitGroupBy, string> = { day: 'Ngày', branch: 'Chi nhánh', channel: 'Kênh', sku: 'SKU' };
+
 const GROUP_OPTIONS: { value: GrossProfitGroupBy; label: string }[] = [
   { value: 'day', label: 'Theo ngày' },
   { value: 'branch', label: 'Theo chi nhánh' },
@@ -131,7 +134,7 @@ export function GrossProfitPanel() {
         pagination={{ pageSize: 31, showSizeChanger: false, hideOnSinglePage: true }}
         locale={{ emptyText: 'Không có đơn đã duyệt nào khớp bộ lọc' }}
         columns={[
-          { title: GROUP_OPTIONS.find((option) => option.value === filter.groupBy)?.label.replace('Theo ', ''), render: (_, row) => label(row) },
+          { title: GROUP_TITLES[filter.groupBy], render: (_, row) => label(row) },
           { title: 'Số lượng', dataIndex: 'quantity', align: 'right', render: (quantity: number) => formatNumber(quantity) },
           { title: 'Doanh thu thuần', dataIndex: 'revenue', align: 'right', render: (amount: number) => formatMoney(amount) },
           { title: 'Giá vốn', dataIndex: 'cogs', align: 'right', render: (amount: number) => formatMoney(amount) },
