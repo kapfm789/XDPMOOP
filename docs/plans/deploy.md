@@ -32,5 +32,6 @@ deploy/
 - Compose dev (W1-03) không build image: gateway và 5 service chạy image SDK, mount `backend/`, mỗi lần container khởi động là `dotnet build` rồi chạy. Sửa code hay thêm migration thì khởi động lại service; `docker compose watch` làm việc đó mỗi lần lưu file, theo cấu hình `develop.watch` của từng service. Không chạy `dotnet watch` trong container: thư mục mount từ Windows không phát inotify nên nó phải quét file liên tục, 6 container cùng quét ngốn khoảng 2 nhân CPU cả lúc rảnh. `Dockerfile` của từng service để dành cho gói demo (W5-04).
 - Mọi container có health check và restart policy (NFR-USA-01).
 - Seed chạy lặp lại được mà không tạo dữ liệu trùng.
+- Seed là công cụ .NET ở `deploy/seed`, chạy bằng `docker compose -f deploy/docker-compose.yml run --rm seed`. Dữ liệu nền (tenant, người dùng, chi nhánh, catalog, nhập hàng, ngưỡng, đơn trong ngày) đi qua gateway API. 60 ngày lịch sử bán không tạo được qua API vì `core` ghi mốc xác nhận bằng giờ hiện tại, nên seed phát thẳng `OrderConfirmed` lùi ngày lên RabbitMQ cho `insights`; `core` không giữ các đơn lịch sử đó và tồn kho không bị trừ theo chúng. Chi tiết và tài khoản demo: [deploy/seed/README.md](../../deploy/seed/README.md).
 - Không đưa secret thật vào repo; cấu hình mẫu nằm trong `.env.example`.
 - Kịch bản nghiệm thu: máy sạch, clone, `docker compose up`, đăng nhập được (kịch bản T20).

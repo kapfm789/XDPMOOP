@@ -176,6 +176,33 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     command: ["bash", "-c", "cp -r /repo/. /src && dotnet test Oism.sln"]
 
+  # Seed data (W4-09), chạy lặp lại được mà không tạo bản trùng. Không khởi động cùng `up`; chạy sau khi các service
+  # đã khỏe: docker compose -f deploy/docker-compose.yml run --rm seed
+  # Đây là việc chạy một lần rồi thoát nên không có health check và không tự khởi động lại. Chi tiết: deploy/seed/README.md.
+  seed:
+    image: mcr.microsoft.com/dotnet/sdk:8.0
+    profiles: [seed]
+    restart: "no"
+    working_dir: /src/deploy/seed
+    environment:
+      ArtifactsPath: /artifacts
+      NUGET_SCRATCH: /root/.nuget/packages/.scratch
+      MSBUILDDISABLENODEREUSE: 1
+      UseSharedCompilation: false
+      SEED_GATEWAY_URL: http://gateway:8080
+      SEED_RABBITMQ: amqp://${RABBITMQ_USER:-oism}:${RABBITMQ_PASSWORD:-oism}@rabbitmq:5672
+      SEED_PASSWORD: ${SEED_PASSWORD:-Demo@2026}
+    volumes:
+      - ../backend:/src/backend
+      - ./seed:/src/deploy/seed
+      - nuget-packages:/root/.nuget/packages
+    command: ["dotnet", "run"]
+    depends_on:
+      gateway:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
 volumes:
   postgres-data:
   nuget-packages:
