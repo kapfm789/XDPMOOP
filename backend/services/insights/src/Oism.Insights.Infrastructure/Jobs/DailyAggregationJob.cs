@@ -54,12 +54,14 @@ public sealed class DailyAggregationJob(IServiceScopeFactory scopes, IClock cloc
 }
 
 // Đặt lịch lúc service khởi động. 17:05 UTC là 00:05 giờ Việt Nam: ngày hôm qua vừa khép lại.
+// Dự báo chạy sau đó, lúc 00:30 giờ Việt Nam, trên lịch sử tính tới hết ngày hôm qua.
 internal sealed class JobSchedule(IRecurringJobManager jobs) : IHostedService
 {
     public Task StartAsync(CancellationToken cancellationToken)
     {
         jobs.AddOrUpdate<DailyAggregationJob>(
             DailyAggregationJob.Id, job => job.RunForYesterdayAsync(CancellationToken.None), "5 17 * * *");
+        jobs.AddOrUpdate<ForecastJob>(ForecastJob.Id, job => job.RunAsync(CancellationToken.None), "30 17 * * *");
         return Task.CompletedTask;
     }
 

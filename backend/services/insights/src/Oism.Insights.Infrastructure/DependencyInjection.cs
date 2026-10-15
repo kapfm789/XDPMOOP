@@ -6,8 +6,10 @@ using Oism.BuildingBlocks.Messaging;
 using Oism.BuildingBlocks.Persistence;
 using Oism.Insights.Application;
 using Oism.Insights.Application.Alerts;
+using Oism.Insights.Application.Forecasting;
 using Oism.Insights.Application.Projections;
 using Oism.Insights.Application.Reports;
+using Oism.Insights.Domain.Forecasting;
 using Oism.Insights.Infrastructure.Jobs;
 using Oism.Insights.Infrastructure.Repositories;
 
@@ -26,7 +28,13 @@ public static class DependencyInjection
             .AddScoped<IDailyAggregateRepository, DailyAggregateRepository>()
             .AddScoped<IReportQueries, ReportQueries>()
             .AddScoped<IAlertQueries, AlertQueries>()
-            .AddSingleton<DailyAggregationJob>();
+            .AddScoped<ForecastRepository>()
+            .AddScoped<ISalesHistorySource>(provider => provider.GetRequiredService<ForecastRepository>())
+            .AddScoped<IForecastRepository>(provider => provider.GetRequiredService<ForecastRepository>())
+            .AddScoped<IForecastQueries, ForecastQueries>()
+            .AddSingleton(configuration.GetSection("Forecast").Get<ForecastSettings>() ?? new ForecastSettings())
+            .AddSingleton<DailyAggregationJob>()
+            .AddSingleton<ForecastJob>();
 
         // `Jobs:Enabled = false` tắt Hangfire: test tích hợp tự gọi job.
         if (configuration.GetValue("Jobs:Enabled", true))

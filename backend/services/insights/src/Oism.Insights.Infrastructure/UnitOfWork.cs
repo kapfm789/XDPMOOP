@@ -10,13 +10,22 @@ internal sealed class UnitOfWork(InsightsDbContext db) : IUnitOfWork
 
     private sealed class Transaction(InsightsDbContext db, IDbContextTransaction transaction) : ITransaction
     {
+        private bool _committed;
+
         public async Task CommitAsync(CancellationToken ct)
         {
             await db.SaveChangesAsync(ct);
             await transaction.CommitAsync(ct);
+            _committed = true;
         }
 
-        public ValueTask DisposeAsync() => transaction.DisposeAsync();
+        // Rollback thì bỏ luôn các thay đổi đang theo dõi, để transaction sau trong cùng scope không ghi lại chúng.
+        public ValueTask DisposeAsync()
+        {
+            if (!_committed)
+                db.ChangeTracker.Clear();
+            return transaction.DisposeAsync();
+        }
     }
 }
 

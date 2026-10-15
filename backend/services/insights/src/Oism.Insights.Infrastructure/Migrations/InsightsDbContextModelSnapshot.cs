@@ -44,6 +44,95 @@ namespace Oism.Insights.Infrastructure.Migrations
                     b.ToTable("inbox_messages", "insights");
                 });
 
+            modelBuilder.Entity("Oism.Insights.Domain.Forecasting.ForecastResult", b =>
+                {
+                    b.Property<Guid>("RunId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("run_id");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sku_id");
+
+                    b.Property<decimal?>("DailyLevel")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)")
+                        .HasColumnName("daily_level");
+
+                    b.Property<decimal?>("ForecastQty")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)")
+                        .HasColumnName("forecast_qty");
+
+                    b.Property<bool>("HasEnoughData")
+                        .HasColumnType("boolean")
+                        .HasColumnName("has_enough_data");
+
+                    b.Property<int?>("SuggestedReorderQty")
+                        .HasColumnType("integer")
+                        .HasColumnName("suggested_reorder_qty");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("RunId", "BranchId", "SkuId")
+                        .HasName("pk_forecast_results");
+
+                    b.ToTable("forecast_results", "insights");
+                });
+
+            modelBuilder.Entity("Oism.Insights.Domain.Forecasting.ForecastRun", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal?>("BaselineWape")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)")
+                        .HasColumnName("baseline_wape");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("text")
+                        .HasColumnName("error");
+
+                    b.Property<decimal?>("ForecastWape")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)")
+                        .HasColumnName("forecast_wape");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("method");
+
+                    b.Property<DateTimeOffset>("RanAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ran_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_forecast_runs");
+
+                    b.HasIndex("TenantId", "RanAt")
+                        .HasDatabaseName("ix_forecast_runs_tenant_id_ran_at");
+
+                    b.ToTable("forecast_runs", "insights");
+                });
+
             modelBuilder.Entity("Oism.Insights.Domain.References.SkuName", b =>
                 {
                     b.Property<Guid>("TenantId")
@@ -223,6 +312,16 @@ namespace Oism.Insights.Infrastructure.Migrations
                         .HasName("pk_stock_snapshots");
 
                     b.ToTable("stock_snapshots", "insights");
+                });
+
+            modelBuilder.Entity("Oism.Insights.Domain.Forecasting.ForecastResult", b =>
+                {
+                    b.HasOne("Oism.Insights.Domain.Forecasting.ForecastRun", null)
+                        .WithMany()
+                        .HasForeignKey("RunId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_forecast_results_forecast_runs_run_id");
                 });
 #pragma warning restore 612, 618
         }

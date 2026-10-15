@@ -24,10 +24,14 @@ Mỗi dòng của `/reports/gross-profit` có `key` là giá trị của chiều
 | Phương thức | Đường dẫn | Vai trò | Vào | Ra |
 | --- | --- | --- | --- | --- |
 | GET | `/api/insights/alerts/low-stock` | Owner, Staff | `branchId?` | Mảng SKU có `available <= threshold`: `branchId`, `skuId`, `skuCode`, `name`, `available`, `threshold`, xếp `available` tăng dần |
-| GET | `/api/insights/forecast/reorder-suggestions` | Owner | `branchId?`, `page`, `pageSize` | `run` (thời điểm, trạng thái, hai chỉ số WAPE) và `items[]` |
+| GET | `/api/insights/forecast/reorder-suggestions` | Owner | `branchId?`, `page`, `pageSize` | `run` (thời điểm, trạng thái, hai chỉ số WAPE), `lastSucceededRun` và `items[]` theo khuôn phân trang |
 | POST | `/api/insights/forecast/run` | Owner | | 202: `runId` |
 
-Mỗi phần tử của `items[]`: `branchId`, `skuId`, `skuCode`, `name`, `hasEnoughData`, `forecastQty?`, `available`, `suggestedReorderQty?`. Khi `hasEnoughData` là false thì hai trường số để trống. Thuật toán ở [forecast.md](../forecast.md).
+`run` là lần chạy gần nhất, có thể là lần lỗi; `lastSucceededRun` là lần chạy thành công gần nhất, trùng `run` khi lần gần nhất thành công, và để trống khi chưa có lần nào thành công. Cả hai có `id`, `ranAt`, `method`, `status` (`Succeeded`, `Failed`), `error?`, `forecastWape?`, `baselineWape?`; hai WAPE để trống khi lần chạy lỗi hoặc không có dữ liệu để đánh giá. Chưa có lần chạy nào thì `run` để trống.
+
+`items[]` lấy từ `lastSucceededRun`, kèm `page`, `pageSize`, `total` như khuôn phân trang chung. Mỗi phần tử: `branchId`, `skuId`, `skuCode`, `name`, `hasEnoughData`, `forecastQty?`, `available`, `suggestedReorderQty?`. Khi `hasEnoughData` là false thì hai trường số để trống. `available` là tồn khả dụng hiện tại trong `stock_snapshots`, 0 khi chưa có dòng nào. Dòng đủ dữ liệu đứng trước, xếp `suggestedReorderQty` rồi `forecastQty` giảm dần. Thuật toán ở [forecast.md](../forecast.md).
+
+`POST /forecast/run` chạy dự báo cho tenant của người gọi ngay trong request và trả 202 khi lần chạy đã được ghi, kể cả khi lần chạy đó lỗi; kết quả và trạng thái xem ở `reorder-suggestions`.
 
 ## Thông báo realtime
 
@@ -50,4 +54,4 @@ Mỗi kết nối vào đúng một group, nên `OrderCreated` gửi cho cả ha
 | RabbitMQ | `OrderRejected`, `OrderCancelled` | Chỉ ghi `inbox_messages`; không tác động số liệu doanh thu |
 | RabbitMQ | `SkuUpserted` | Ghi đè `sku_names` theo `version` |
 | Hangfire, mỗi đêm | Tổng hợp ngày | Dựng lại `daily_aggregates` cho ngày hôm qua, từng tenant |
-| Hangfire, mỗi đêm | Dự báo | Chạy dự báo cho từng tenant |
+| Hangfire, mỗi đêm (00:30 giờ Việt Nam) | Dự báo | Chạy dự báo cho từng tenant có `sales_facts` hoặc `stock_snapshots` |

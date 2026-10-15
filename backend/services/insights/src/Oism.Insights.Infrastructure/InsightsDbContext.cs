@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Oism.BuildingBlocks.Messaging;
 using Oism.BuildingBlocks.Persistence;
 using Oism.BuildingBlocks.Tenancy;
+using Oism.Insights.Domain.Forecasting;
 using Oism.Insights.Domain.References;
 using Oism.Insights.Domain.Sales;
 using Oism.Insights.Domain.Stock;
@@ -21,4 +22,8 @@ public sealed class InsightsDbContext(DbContextOptions<InsightsDbContext> option
     public DbSet<StockSnapshot> StockSnapshots => Set<StockSnapshot>();
 
     public DbSet<SkuName> SkuNames => Set<SkuName>();
+
+    public DbSet<ForecastRun> ForecastRuns => Set<ForecastRun>();
+
+    public DbSet<ForecastResult> ForecastResults => Set<ForecastResult>();
 }

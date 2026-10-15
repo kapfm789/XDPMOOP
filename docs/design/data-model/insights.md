@@ -46,8 +46,8 @@ Cảnh báo tồn thấp là các dòng có `threshold` khác null và `availabl
 | --- | --- | --- |
 | `daily_aggregates` | `tenant_id`, `date`, `branch_id`, `channel`, `sku_id`, `quantity`, `revenue`, `cogs` | Khóa chính là năm cột đầu; `date` cắt theo giờ Việt Nam |
 | `sku_names` | `tenant_id`, `sku_id`, `sku_code`, `name`, `version` | Khóa chính `(tenant_id, sku_id)`; dựng từ `SkuUpserted` |
-| `forecast_runs` | `id`, `tenant_id`, `ran_at`, `method`, `status` (`Succeeded`, `Failed`), `error`, `baseline_wape`, `forecast_wape` | |
-| `forecast_results` | `run_id`, `tenant_id`, `branch_id`, `sku_id`, `has_enough_data`, `daily_level`, `forecast_qty`, `suggested_reorder_qty` | Khóa chính `(run_id, branch_id, sku_id)` |
+| `forecast_runs` | `id`, `tenant_id`, `ran_at`, `method`, `status` (`Succeeded`, `Failed`), `error`, `baseline_wape`, `forecast_wape` | Khóa chính `id`; chỉ mục `(tenant_id, ran_at)`; hai WAPE là numeric(18,4), cho phép null |
+| `forecast_results` | `run_id`, `tenant_id`, `branch_id`, `sku_id`, `has_enough_data`, `daily_level`, `forecast_qty`, `suggested_reorder_qty` | Khóa chính `(run_id, branch_id, sku_id)`; `run_id` tham chiếu `forecast_runs`; `daily_level`, `forecast_qty` là numeric(18,4) và `suggested_reorder_qty` là integer, cả ba null khi chưa đủ dữ liệu |
 | `inbox_messages` | `event_id`, `type`, `processed_at` | Khóa chính `event_id` |
 
 `daily_aggregates` do job đêm (00:05 giờ Việt Nam) dựng lại từ `sales_facts` cho ngày hôm qua; chạy lại cho cùng ngày thì xóa rồi ghi lại, không cộng dồn. Báo cáo doanh thu đọc `daily_aggregates` cho các ngày đã có dòng tổng hợp và `sales_facts` cho mọi ngày còn lại (hôm nay, ngày job chưa chạy). Một `OrderConfirmed` tới trễ cho một ngày đã tổng hợp thì consumer xóa các dòng tổng hợp của ngày đó trong cùng transaction, để báo cáo đọc lại `sales_facts` cho ngày đó tới lần dựng lại sau.

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Oism.Insights.Domain.Forecasting;
 using Oism.Insights.Domain.References;
 using Oism.Insights.Domain.Sales;
 using Oism.Insights.Domain.Stock;
@@ -44,4 +45,28 @@ internal sealed class SkuNameConfiguration : IEntityTypeConfiguration<SkuName>
 {
     public void Configure(EntityTypeBuilder<SkuName> builder) =>
         builder.HasKey(sku => new { sku.TenantId, sku.SkuId });
+}
+
+internal sealed class ForecastRunConfiguration : IEntityTypeConfiguration<ForecastRun>
+{
+    public void Configure(EntityTypeBuilder<ForecastRun> builder)
+    {
+        builder.HasKey(run => run.Id);
+        builder.Property(run => run.Id).ValueGeneratedNever();
+        builder.Property(run => run.Status).HasConversion<string>();
+        builder.Property(run => run.BaselineWape).HasPrecision(18, 4);
+        builder.Property(run => run.ForecastWape).HasPrecision(18, 4);
+        builder.HasIndex(run => new { run.TenantId, run.RanAt });
+    }
+}
+
+internal sealed class ForecastResultConfiguration : IEntityTypeConfiguration<ForecastResult>
+{
+    public void Configure(EntityTypeBuilder<ForecastResult> builder)
+    {
+        builder.HasKey(result => new { result.RunId, result.BranchId, result.SkuId });
+        builder.Property(result => result.DailyLevel).HasPrecision(18, 4);
+        builder.Property(result => result.ForecastQty).HasPrecision(18, 4);
+        builder.HasOne<ForecastRun>().WithMany().HasForeignKey(result => result.RunId);
+    }
 }
