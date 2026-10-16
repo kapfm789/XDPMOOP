@@ -1,6 +1,6 @@
 # OISM — Kế hoạch triển khai
 
-Cập nhật: 2026-10-03 · Bản để comment: [Claude Doc](https://claude.ai/code/artifact/3dad8d52-a252-47bb-a023-840d44eacce0) (cần được chia sẻ quyền xem) · Nguồn yêu cầu: [bản dịch và phân tích đề](../OISM-ban-dich-va-phan-tich-tieng-Viet.md)
+Cập nhật: 2026-10-16 · Bản để comment: [Claude Doc](https://claude.ai/code/artifact/3dad8d52-a252-47bb-a023-840d44eacce0) (cần được chia sẻ quyền xem) · Nguồn yêu cầu: [bản dịch và phân tích đề](../OISM-ban-dich-va-phan-tich-tieng-Viet.md)
 
 ## 1. Đọc nhanh
 
@@ -17,7 +17,7 @@ OISM gồm 5 service .NET 8 sau một API gateway và hai ứng dụng React, do
 | 7. Báo cáo và realtime | 4 | Projection, báo cáo lợi nhuận | SignalR hub | Thông báo realtime, PWA | Báo cáo khớp ví dụ 80.000; đơn mới hiện ngay |
 | 8. Cảnh báo, dự báo, giao diện | 4 | Cảnh báo tồn, màn hình kho | Dự báo AI | Dashboard, seed data | Mọi FR có luồng chạy từ UI tới DB |
 | 9. Kiểm thử và đóng gói | 5 | Test cách ly tenant, coverage | Đo tải k6, coverage | Compose demo, CI | Coverage 80%; compose up trên máy sạch |
-| 10. Tài liệu và bàn giao | 5 | URS, RTM, ERD, kiến trúc | UML, tài liệu kiểm thử | Swagger, hướng dẫn | RTM đủ 44 mã; demo hai lần không lỗi |
+| 10. Tài liệu và bàn giao | 5 | URS, RTM, ERD, kiến trúc | UML, tài liệu kiểm thử | Swagger, hướng dẫn, áp thiết kế Figma cho admin | RTM đủ 44 mã; demo hai lần không lỗi |
 
 - Tìm việc của mình: mục 10 (Lịch 10 phase) theo cột Owner, hoặc file plan của folder mình sở hữu trong `docs/plans/` (mục 4.3).
 - Trước khi code: đọc mục 3. Cả 18 quyết định đã được giảng viên xác nhận ngày 2026-10-04 (task W1-01).
@@ -498,6 +498,8 @@ Cổng phase 9: coverage đạt 80% cho ba module lõi; có báo cáo đo tải;
 | W5-09 | Tập demo theo kịch bản, sửa lỗi, đóng băng code từ ngày thứ 4 | Cả nhóm | Mục f của đề | Demo chạy hai lần liên tiếp không lỗi |
 | W5-10 | admin: áp thiết kế Figma: theme, khung sidebar và topbar, tổng quan có thẻ số liệu và biểu đồ doanh thu 7 ngày, giao diện từng màn hình | C | FR-REP-01, FR-REP-03 | Mọi màn hình admin theo mục "Bố cục và phong cách" của docs/design/ui/admin.md, chỉ dùng API đã có |
 
+W5-10 phải xong và qua kiểm tay trước ngày đóng băng code của W5-09; chưa xong thì giữ giao diện cũ cho buổi demo.
+
 Cổng phase 10: RTM đủ 44 mã; người ngoài nhóm cài được theo hướng dẫn; kịch bản demo chạy hai lần liên tiếp không lỗi.
 
 ## 11. Ưu tiên và thứ tự cắt giảm
@@ -554,10 +556,10 @@ Bộ hồ sơ gồm 11 tài liệu; sơ đồ viết ngay khi làm luồng tươ
 
 | Tài liệu | Owner | Phase | Nguồn nội dung |
 | --- | --- | --- | --- |
-| URS | A | Nháp phase 2, chốt phase 10 | [requirements/](requirements/functional.md), [usecase-userstory/](usecase-userstory/README.md) |
+| URS | A | Nháp phase 2, chốt phase 10 | [requirements/srs.md](requirements/srs.md), tổng hợp từ [requirements/](requirements/functional.md) và [usecase-userstory/](usecase-userstory/README.md) |
 | RTM | A | Cập nhật mỗi phase | Mục 16 |
 | Tài liệu kiến trúc: Clean Architecture, multi-tenant, microservice | A | 4 và 10 | [architecture/](architecture/README.md), [decisions/](decisions/README.md) |
-| ERD | A | 2 và 10 | [design/data-model/](design/data-model/core.md) |
+| ERD | A | 2 và 10 | [design/data-model/](design/data-model/core.md) cho từng schema; ERD liên service ở [requirements/srs.md](requirements/srs.md) mục 3.3 |
 | UML class | B | 6 và 10 | Domain của `core` |
 | Sequence: nhập hàng, giữ hàng, POS checkout, xác nhận, hủy và hết hạn, chuyển kho | A (kho), B (đơn) | 4 và 6 | [design/flows/](design/flows/) |
 | Kế hoạch triển khai và vận hành | C | 10 | Docker Compose, CI |
