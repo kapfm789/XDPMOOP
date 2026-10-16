@@ -4,13 +4,17 @@ Hệ thống quản lý bán hàng và tồn kho đa kênh (Omnichannel Inventor
 
 | Mục | Nội dung |
 | --- | --- |
-| Phiên bản | 1.0 |
-| Ngày | 2026-10-15 |
-| Trạng thái | Bản tổng hợp từ bộ tài liệu thiết kế v0 trong `docs/` |
+| Phiên bản | 1.1 |
+| Ngày | 2026-10-16 |
+| Trạng thái | Bản tổng hợp, khớp tài liệu `docs/` sau phase 8 |
 | Người soạn | Nhóm OISM (3 dev) |
 | Khuôn tham khảo | ISO/IEC/IEEE 29148 (kế thừa IEEE 830) |
 
-> SRS này gom các yêu cầu đang nằm rải rác trong `docs/` thành một tài liệu đọc liền mạch để nộp và để người ngoài nhóm đọc, kèm sơ đồ use case và mô hình dữ liệu khái niệm. Nó không thêm yêu cầu nào mới và không phải nguồn chuẩn của bảng nào: mỗi bảng chép lại đều ghi link về nguồn. Khi sửa yêu cầu, sửa tài liệu nguồn trước rồi cập nhật SRS. Riêng sơ đồ use case UML (mục 3.2), ERD liên service (mục 3.3) và bảng quy tắc nghiệp vụ BR (mục 3.5) là phần chỉ có ở đây. Khi SRS lệch với tài liệu nguồn, tài liệu nguồn thắng theo thứ tự ở [docs/README.md](../README.md) mục "Khi tài liệu mâu thuẫn", và SRS phải được sửa lại.
+> **Vị trí của tài liệu này.** SRS gom các yêu cầu đang nằm rải rác trong `docs/` thành một tài liệu đọc liền mạch, để nộp và để người ngoài nhóm đọc.
+>
+> - SRS không thêm yêu cầu nào mới. Mỗi bảng chép lại từ tài liệu khác đều có link về nguồn.
+> - Phần chỉ có ở đây: sơ đồ use case UML (mục 3.2), ERD liên service (mục 3.3), bảng quy tắc nghiệp vụ BR (mục 3.5).
+> - Khi SRS lệch với tài liệu nguồn, tài liệu nguồn thắng theo thứ tự ở [docs/README.md](../README.md) mục "Khi tài liệu mâu thuẫn". Sửa yêu cầu thì sửa tài liệu nguồn trước, rồi cập nhật SRS.
 
 ## Mục lục
 
@@ -107,7 +111,8 @@ Sản phẩm bàn giao gồm backend .NET 8 (5 service sau một gateway), trang
 | [decisions/](../decisions/README.md) | 13 ADR cho các điểm đề để ngỏ |
 | [architecture/](../architecture/README.md) | Chia service, phân lớp, tenant, transaction, bảo mật |
 | [design/](../design/README.md) | Bảng, API, event, trạng thái, luồng, giao diện, dự báo |
-| [testing/](../testing/scenarios.md) | 23 kịch bản kiểm thử bắt buộc |
+| [testing/](../testing/scenarios.md) | 23 kịch bản kiểm thử bắt buộc; [báo cáo backtest dự báo](../testing/forecast-backtest.md) |
+| [deploy/seed/README.md](../../deploy/seed/README.md) | Dữ liệu demo và tài khoản dùng khi nghiệm thu |
 | [PLAN.md](../PLAN.md) | Phạm vi, ưu tiên, lịch, RTM rút gọn |
 
 ### 1.5 Quy ước trong tài liệu
@@ -287,15 +292,14 @@ Cổng trên máy dev: gateway 8080 (HTTP) và 8443 (HTTPS); `admin` 5173; `pos`
 
 ## 3. Mô hình nghiệp vụ
 
-### 3.1 Có cần sơ đồ use case và ERD không
+### 3.1 Các mô hình trong tài liệu
 
-Có, vì ba lý do:
+Đề yêu cầu mô hình hóa bằng UML 2.0 và bàn giao ERD (mục e.3 của đề). SRS bổ sung hai mô hình mà phần còn lại của `docs/` chưa có ở mức yêu cầu:
 
-1. Đề yêu cầu mô hình hóa bằng UML 2.0 và bàn giao ERD (mục e.3 của đề); URS và RTM cũng nằm trong hồ sơ nộp ([PLAN.md](../PLAN.md) mục 13).
-2. Trước SRS này, bộ tài liệu mới có một sơ đồ "bản đồ" dạng flowchart ở [usecase-userstory/README.md](../usecase-userstory/README.md), chưa phải sơ đồ use case UML: thiếu ranh giới hệ thống, quan hệ `«include»`, `«extend»` và quan hệ kế thừa giữa actor.
-3. ERD hiện có nằm riêng theo từng schema ở [design/data-model/](../design/data-model/core.md), chỉ có quan hệ, không có thuộc tính, và không cho thấy liên kết logic giữa các service (chi nhánh và SKU ở `core` là bản sao dựng từ event).
+- **Sơ đồ use case UML:** có ranh giới hệ thống, quan hệ `«include»`, `«extend»` và kế thừa giữa actor. Sơ đồ ở [usecase-userstory/README.md](../usecase-userstory/README.md) chỉ là bản đồ dạng flowchart.
+- **ERD liên service có thuộc tính:** ERD ở [design/data-model/](../design/data-model/core.md) tách theo từng schema, chỉ có quan hệ, không cho thấy liên kết logic giữa các service (chi nhánh và SKU ở `core` là bản sao dựng từ event).
 
-Phân công giữa các tài liệu:
+Mỗi mô hình nằm ở đâu:
 
 | Sơ đồ | Đặt ở | Mức |
 | --- | --- | --- |
@@ -1388,9 +1392,10 @@ Canonical Order gồm: kênh, mã đơn ngoài (với đơn sàn), chi nhánh, t
 
 - **Actor:** Owner, Staff. **Yêu cầu:** FR-REP-02. **API:** `GET /api/insights/reports/inventory-value`, `/reports/top-sellers`, `/reports/slow-movers`.
 - **Luồng chính:**
-  1. Người dùng xem giá trị tồn theo chi nhánh và SKU từ `stock_snapshots`: `on_hand × avg_cost`, kèm tổng.
-  2. Người dùng xem bán chạy, bán chậm trong `days` ngày gần nhất (mặc định 30), lọc chi nhánh, giới hạn số dòng (mặc định 20).
-- **Quy tắc:** với Staff, báo cáo giá trị tồn không trả `avgCost` và `value`.
+  1. Người dùng xem giá trị tồn theo chi nhánh và SKU từ `stock_snapshots`, chỉ gồm dòng còn tồn: `value = on_hand × avg_cost`, kèm `totalValue` là tổng của mọi dòng khớp bộ lọc (không chỉ trang đang xem). Owner thấy dòng xếp theo `value` giảm dần.
+  2. Người dùng xem bán chạy, bán chậm trong `days` ngày gần nhất tính cả hôm nay (mặc định 30, từ 1 tới 365), lọc chi nhánh, giới hạn số dòng (mặc định 20, từ 1 tới 100). Số lượng cộng mọi chi nhánh khi không lọc chi nhánh.
+- **Ngoại lệ:** `days`, `limit`, `page`, `pageSize` ngoài khoảng trả 400.
+- **Quy tắc:** với Staff, báo cáo giá trị tồn để trống `avgCost`, `value`, `totalValue` và xếp dòng theo `on_hand` giảm dần, để thứ tự không lộ giá vốn. Bán chậm chỉ gồm SKU có tổng `on_hand` lớn hơn 0 trong phạm vi lọc; cùng số lượng bán thì SKU tồn nhiều hơn đứng trước.
 - **Tiêu chí chấp nhận:**
   1. Giá trị tồn mỗi dòng là `on_hand × avg_cost` theo chi nhánh và SKU, kèm tổng.
   2. Bán chạy xếp SKU giảm dần theo số lượng bán 30 ngày.
@@ -1402,7 +1407,7 @@ Canonical Order gồm: kênh, mã đơn ngoài (với đơn sàn), chi nhánh, t
 - **Luồng chính:**
   1. Mỗi thay đổi số dư hoặc ngưỡng ở `core` phát `StockChanged`; `insights` ghi đè `stock_snapshots` theo `version`.
   2. Khi `available` đi từ trên ngưỡng xuống bằng hoặc dưới ngưỡng, `insights` đẩy `LowStock` tới group của tenant.
-  3. Dashboard admin hiện danh sách SKU có `available ≤ threshold` và popup kèm âm thanh.
+  3. Dashboard admin hiện danh sách SKU có `available ≤ threshold`, xếp `available` tăng dần, và popup kèm âm thanh.
 - **Tiêu chí chấp nhận:**
   1. SKU đã đặt ngưỡng có tồn khả dụng xuống bằng hoặc dưới ngưỡng thì vào danh sách cảnh báo và có thông báo đẩy tới dashboard.
   2. Tồn khả dụng lên trên ngưỡng thì SKU rời danh sách.
@@ -1478,15 +1483,18 @@ Phương pháp: san bằng hàm mũ đơn trên số lượng bán theo ngày, v
 | `SafetyDays` | 3 | Số ngày dự phòng |
 | `BacktestDays` | 14 | Số ngày cuối giấu đi khi backtest |
 
-Công thức: `L₁ = y₁`, `Lₜ = α·yₜ + (1 − α)·Lₜ₋₁`; `daily_level = Lₙ`; `forecast_qty = daily_level × HorizonDays`; `suggested_reorder_qty = max(0, ⌈daily_level × (LeadTimeDays + SafetyDays)⌉ − available)`.
+Chuỗi của mỗi chi nhánh và SKU bắt đầu từ ngày muộn hơn trong hai ngày: ngày đầu cửa sổ và ngày bán đầu tiên, để SKU mới không bị kéo xuống bởi những ngày nó chưa có mặt. Mỗi chi nhánh và SKU từng bán, hoặc đang có tồn trong `stock_snapshots`, có một kết quả; SKU chưa bán lần nào là chưa đủ dữ liệu.
+
+Công thức: `L₁ = y₁`, `Lₜ = α·yₜ + (1 − α)·Lₜ₋₁`; `daily_level = Lₙ` (làm tròn 4 chữ số thập phân); `forecast_qty = daily_level × HorizonDays`; `suggested_reorder_qty = max(0, ⌈daily_level × (LeadTimeDays + SafetyDays)⌉ − available)`.
 
 #### UC-AI-01 Xem đề xuất nhập hàng
 
-- **Actor:** Owner. **Yêu cầu:** FR-AI-01, FR-AI-02. **API:** `GET /api/insights/forecast/reorder-suggestions?branchId=`.
+- **Actor:** Owner. **Yêu cầu:** FR-AI-01, FR-AI-02. **API:** `GET /api/insights/forecast/reorder-suggestions?branchId=&page=&pageSize=`.
 - **Luồng chính:**
   1. Owner mở màn hình dự báo, chọn chi nhánh.
-  2. Hệ thống trả thông tin lần chạy gần nhất (thời điểm, trạng thái, WAPE của dự báo và của phương án cơ sở) và từng dòng: SKU, nhu cầu dự báo 14 ngày, tồn khả dụng, số lượng đề xuất nhập.
-- **Ngoại lệ:** SKU có ít hơn 14 ngày lịch sử hiện "chưa đủ dữ liệu" thay cho con số; lần chạy gần nhất lỗi thì báo lỗi và vẫn hiện kết quả lần thành công trước.
+  2. Hệ thống trả `run` là lần chạy gần nhất (có thể là lần lỗi) và `lastSucceededRun` là lần thành công gần nhất; mỗi lần có thời điểm, phương pháp, trạng thái, lỗi nếu có, WAPE của dự báo và của phương án cơ sở.
+  3. Danh sách dòng lấy từ `lastSucceededRun`, phân trang: SKU, nhu cầu dự báo 14 ngày, tồn khả dụng hiện tại, số lượng đề xuất nhập. Dòng đủ dữ liệu đứng trước, xếp theo số đề xuất rồi nhu cầu giảm dần.
+- **Ngoại lệ:** SKU có ít hơn 14 ngày lịch sử hiện "chưa đủ dữ liệu" thay cho con số; lần chạy gần nhất lỗi thì báo lỗi và vẫn hiện kết quả lần thành công trước; chưa có lần chạy nào thì `run` để trống.
 - **Tiêu chí chấp nhận:**
   1. Mỗi dòng có SKU, nhu cầu dự báo 14 ngày, tồn khả dụng, số lượng đề xuất nhập.
   2. SKU ít hơn 14 ngày lịch sử hiện "chưa đủ dữ liệu".
@@ -1496,18 +1504,27 @@ Công thức: `L₁ = y₁`, `Lₜ = α·yₜ + (1 − α)·Lₜ₋₁`; `daily_
 
 #### UC-AI-02 Chạy và đánh giá dự báo
 
-- **Actor:** Owner, Hệ thống. **Yêu cầu:** FR-AI-01, FR-AI-03. **API:** `POST /api/insights/forecast/run` (trả 202 với `runId`); job Hangfire mỗi đêm.
+- **Actor:** Owner, Hệ thống. **Yêu cầu:** FR-AI-01, FR-AI-03. **API:** `POST /api/insights/forecast/run`; job Hangfire mỗi đêm lúc 00:30 giờ Việt Nam.
 - **Luồng chính:**
-  1. Job đêm lặp qua từng tenant, mỗi vòng một tenant context; hoặc Owner chạy tay cho tenant của mình.
+  1. Job đêm lặp qua từng tenant có dữ liệu bán hoặc tồn, mỗi vòng một tenant context; hoặc Owner chạy tay cho tenant của mình. Lần chạy tay chạy ngay trong request và trả 202 kèm `runId` khi lần chạy đã được ghi, kể cả khi lần chạy lỗi; kết quả xem ở UC-AI-01.
   2. Hệ thống gom `sales_facts` theo ngày (giờ Việt Nam), chi nhánh, SKU trong cửa sổ 60 ngày; ngày không bán tính là 0.
   3. Hệ thống tính dự báo và đề xuất cho mỗi chi nhánh, SKU; lưu `forecast_runs` (thời điểm, phương pháp, trạng thái) và `forecast_results`.
-  4. Backtest: giấu 14 ngày cuối; dự báo bằng mức cuối của phần huấn luyện; phương án cơ sở là trung bình 7 ngày cuối của phần huấn luyện; tính WAPE gộp cho cả hai và lưu vào lần chạy.
+  4. Backtest: giấu 14 ngày cuối; dự báo bằng mức cuối của phần huấn luyện; phương án cơ sở là trung bình 7 ngày cuối của phần huấn luyện; tính WAPE gộp trên các chi nhánh và SKU đủ dữ liệu tính tới mốc cắt (việc chọn SKU cũng không dùng ngày sau mốc cắt), lưu vào lần chạy.
 - **Ngoại lệ:** lỗi thì lần chạy ghi Failed kèm thông báo, kết quả trước vẫn giữ; tổng thực tế phần kiểm tra bằng 0 thì không tính WAPE và ghi rõ không có dữ liệu để đánh giá.
 - **Tiêu chí chấp nhận:**
   1. Mỗi SKU tại mỗi chi nhánh có một kết quả; lần chạy được lưu với thời điểm, phương pháp, trạng thái.
   2. Backtest giấu 14 ngày cuối; không ngày nào sau mốc cắt được dùng để dự báo (T18).
   3. Kết quả có WAPE của dự báo và của phương án cơ sở trung bình 7 ngày.
   4. Dự báo của một tenant chỉ dùng dữ liệu của tenant đó.
+
+Kết quả backtest trên dữ liệu seed ngày 2026-10-15 ([testing/forecast-backtest.md](../testing/forecast-backtest.md)):
+
+| Tenant | WAPE dự báo | WAPE cơ sở |
+| --- | --- | --- |
+| Thời trang Mộc | 0,9673 | 0,9561 |
+| Tạp hóa Xanh | 0,4814 | 0,4868 |
+
+Hai con số chứng minh quy trình backtest chạy đúng, không nói lên độ chính xác trên dữ liệu bán hàng thật, vì dữ liệu seed là giả lập (ADR-0010).
 
 ---
 
@@ -1531,7 +1548,7 @@ Dành cho Owner và Staff; Cashier không vào được. Menu chỉ hiện mục
 | `/inventory/stock` | Tồn theo chi nhánh, đặt ngưỡng | Owner, Staff | UC-INV-01, UC-INV-05 |
 | `/inventory/ledger` | Sổ giao dịch, chỉ xem | Owner, Staff | UC-INV-01 |
 | `/inventory/receipts` | Phiếu nhập, nhà cung cấp | Owner, Staff | UC-INV-02 |
-| `/inventory/transfers` | Chuyển kho: tạo, xuất, nhận | Owner, Staff | UC-INV-03 |
+| `/inventory/transfers` | Chuyển kho: tạo, xuất, nhận, xóa phiếu nháp | Owner, Staff | UC-INV-03 |
 | `/inventory/stocktakes` | Kiểm kê: mở phiên, nhập số đếm, chốt | Owner, Staff | UC-INV-04 |
 | `/orders`, `/orders/new`, `/orders/:id` | Đơn đa kênh; tạo đơn thủ công; chi tiết với duyệt, hoàn tất, hủy, in phiếu giao | Owner, Staff | UC-ORD-02, 03, 04, 06 |
 | `/reports/gross-profit` | Doanh thu, giá vốn, lợi nhuận gộp | Owner | UC-REP-01 |
@@ -1816,9 +1833,9 @@ Bảng này chép từ [architecture/security.md](../architecture/security.md), 
 | T15 | Phiên SignalR của tenant khác | Không nhận thông báo | UC-SIM-02 AC-3, UC-REP-03 AC-4 |
 | T16 | `UPDATE`, `DELETE` trực tiếp trên sổ | Database từ chối cả hai | UC-INV-01 AC-4 |
 | T17 | Tìm SKU, tạo đơn, báo cáo dưới tải với 100.000 dòng bán | p95 < 200 ms, < 500 ms, < 2 giây; ghi cấu hình đo | UC-POS-01 AC-6, UC-REP-01 AC-7 |
-| T18 | Backtest trên 60 ngày lịch sử | Có WAPE dự báo và cơ sở; không dùng dữ liệu sau mốc cắt | UC-AI-02 AC-2 |
+| T18 | Backtest trên 60 ngày lịch sử | Có WAPE dự báo và cơ sở; không dùng dữ liệu sau mốc cắt; kết quả trên seed ở [forecast-backtest.md](../testing/forecast-backtest.md) | UC-AI-02 AC-2 |
 | T19 | SKU 5 ngày lịch sử; lần chạy bị cắm lỗi | "Chưa đủ dữ liệu"; lần lỗi ghi Failed, kết quả trước vẫn hiện; không phiếu nhập, không dòng sổ | UC-AI-01 AC-2, AC-3, AC-5 |
-| T20 | `docker compose up` trên máy chỉ có Docker | 5 service, gateway, hai frontend, PostgreSQL, RabbitMQ khỏe; đăng nhập bằng tài khoản seed; chạy được kịch bản demo | NFR-USA-01, sản phẩm bàn giao |
+| T20 | `docker compose up` trên máy chỉ có Docker, rồi `run --rm seed` | 5 service, gateway, hai frontend, PostgreSQL, RabbitMQ khỏe; đăng nhập bằng tài khoản seed; chạy được kịch bản demo | NFR-USA-01, sản phẩm bàn giao |
 | T21 | Gọi API theo Swagger và Postman | Mã trạng thái và hình dạng phản hồi khớp tài liệu API | FR-AUTH-02, sản phẩm bàn giao |
 | T22 | Giao lại một `OrderConfirmed` đã xử lý | `sales_facts` không thêm dòng | UC-REP-01 AC-5 |
 | T23 | RabbitMQ tắt khi tạo hoặc duyệt đơn | Transaction commit; thông điệp gửi đúng một lượt khi broker chạy lại | NFR-SEC-02 |
@@ -1919,3 +1936,4 @@ Cả 13 ADR (gộp 18 quyết định D-01 đến D-18) đã được giảng vi
 | Phiên bản | Ngày | Thay đổi |
 | --- | --- | --- |
 | 1.0 | 2026-10-15 | Bản đầu: tổng hợp từ `docs/`; thêm sơ đồ use case UML, ERD khái niệm và logic liên service, quy tắc nghiệp vụ BR-01 đến BR-23 |
+| 1.1 | 2026-10-16 | Khớp tài liệu sau phase 8: chi tiết báo cáo tồn, bán chạy, bán chậm (UC-REP-02), cảnh báo tồn, đề xuất nhập hàng và lần chạy dự báo (UC-AI-01, UC-AI-02), kết quả backtest trên seed; viết lại phần mở đầu và mục 3.1 cho gọn |
