@@ -1540,17 +1540,17 @@ Dành cho Owner và Staff; Cashier không vào được. Menu chỉ hiện mục
 | --- | --- | --- | --- |
 | `/login` | Đăng nhập | Công khai | UC-AUTH-02 |
 | `/register` | Đăng ký tenant | Công khai | UC-AUTH-01 |
-| `/` | Tổng quan: cảnh báo tồn, đơn chờ duyệt | Owner, Staff | UC-REP-03 |
+| `/` | Tổng quan: thẻ số liệu (doanh thu hôm nay chỉ Owner, đơn chờ duyệt, SKU tồn thấp), cảnh báo tồn, đơn chờ duyệt, biểu đồ doanh thu 7 ngày (chỉ Owner) | Owner, Staff | UC-REP-01, UC-REP-03 |
 | `/branches` | Chi nhánh | Owner | UC-AUTH-04 |
 | `/users` | Người dùng | Owner | UC-AUTH-03 |
 | `/catalog/categories`, `/catalog/brands` | Danh mục, thương hiệu | Owner, Staff | UC-PROD-01 |
 | `/catalog/products`, `/catalog/products/:id` | Sản phẩm, SKU, mã vạch, giá (ô giá chỉ Owner sửa) | Owner, Staff | UC-PROD-02, 03, 04 |
-| `/inventory/stock` | Tồn theo chi nhánh, đặt ngưỡng | Owner, Staff | UC-INV-01, UC-INV-05 |
+| `/inventory/stock` | Tồn theo chi nhánh, đặt ngưỡng; dải tổng hợp giá trị tồn (chỉ Owner) và số SKU tồn thấp | Owner, Staff | UC-INV-01, UC-INV-05 |
 | `/inventory/ledger` | Sổ giao dịch, chỉ xem | Owner, Staff | UC-INV-01 |
 | `/inventory/receipts` | Phiếu nhập, nhà cung cấp | Owner, Staff | UC-INV-02 |
 | `/inventory/transfers` | Chuyển kho: tạo, xuất, nhận, xóa phiếu nháp | Owner, Staff | UC-INV-03 |
 | `/inventory/stocktakes` | Kiểm kê: mở phiên, nhập số đếm, chốt | Owner, Staff | UC-INV-04 |
-| `/orders`, `/orders/new`, `/orders/:id` | Đơn đa kênh; tạo đơn thủ công; chi tiết với duyệt, hoàn tất, hủy, in phiếu giao | Owner, Staff | UC-ORD-02, 03, 04, 06 |
+| `/orders`, `/orders/new`, `/orders/:id` | Đơn đa kênh, tab theo trạng thái kèm số đơn; tạo đơn thủ công; chi tiết với duyệt, hoàn tất, hủy, in phiếu giao | Owner, Staff | UC-ORD-02, 03, 04, 06 |
 | `/reports/gross-profit` | Doanh thu, giá vốn, lợi nhuận gộp | Owner | UC-REP-01 |
 | `/reports/inventory` | Giá trị tồn, bán chạy, bán chậm | Owner, Staff | UC-REP-02 |
 | `/forecast` | Đề xuất nhập hàng, chạy dự báo | Owner | UC-AI-01, UC-AI-02 |
@@ -1565,6 +1565,7 @@ Hành vi chung:
 - Màn hình sổ giao dịch không có nút sửa hay xóa.
 - Thông báo `OrderCreated` và `LowStock` hiện popup kèm âm thanh ở góc dưới bên phải, giữ 10 giây; bấm vào mở chi tiết đơn hoặc màn hình tồn.
 - Chuỗi hiển thị cho người dùng cuối viết bằng tiếng Việt.
+- Bố cục, màu và danh sách mục của bản Figma không làm: [design/ui/admin.md](../design/ui/admin.md) mục "Bố cục và phong cách".
 
 #### 5.1.2 Ứng dụng POS (`pos`)
 

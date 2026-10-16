@@ -376,7 +376,7 @@ Mỗi phase dài nửa tuần (khoảng 2,5 ngày làm việc) và kết thúc b
 | 7 | | | | W4-01, W4-02, W4-04 | W4-08 | | |
 | 8 | | | | W4-03, W4-05 | W4-06, W4-07 | W4-09 | |
 | 9 | W5-04 | W5-02 | W5-01, W5-02 | W5-02 | | W5-03, W5-04, W5-05 | |
-| 10 | W5-06 | | | | | | W5-07, W5-08, W5-09 |
+| 10 | W5-06 | | | | W5-10 | | W5-07, W5-08, W5-09 |
 
 Mỗi folder có file plan riêng trong `docs/plans/`, ghi việc của folder đó theo phase (mục 4.3).
 
@@ -496,6 +496,7 @@ Cổng phase 9: coverage đạt 80% cho ba module lõi; có báo cáo đo tải;
 | W5-08 | Tài liệu kiểm thử, hướng dẫn cài đặt, hướng dẫn sử dụng, kế hoạch triển khai | B, C | Mục e.4 đến e.6 của đề | Người ngoài nhóm cài được theo hướng dẫn |
 | W5-06 | Swagger từng service gộp ở gateway, Postman collection | C | Mục f của đề | Gọi theo tài liệu ra đúng kết quả |
 | W5-09 | Tập demo theo kịch bản, sửa lỗi, đóng băng code từ ngày thứ 4 | Cả nhóm | Mục f của đề | Demo chạy hai lần liên tiếp không lỗi |
+| W5-10 | admin: áp thiết kế Figma: theme, khung sidebar và topbar, tổng quan có thẻ số liệu và biểu đồ doanh thu 7 ngày, giao diện từng màn hình | C | FR-REP-01, FR-REP-03 | Mọi màn hình admin theo mục "Bố cục và phong cách" của docs/design/ui/admin.md, chỉ dùng API đã có |
 
 Cổng phase 10: RTM đủ 44 mã; người ngoài nhóm cài được theo hướng dẫn; kịch bản demo chạy hai lần liên tiếp không lỗi.
 
@@ -634,9 +635,9 @@ Ba mã AI do nhóm đặt, giảng viên đã xác nhận cùng D-14 ngày 2026-
 | FR-POS-02 | core, pos | W3-02, W3-07 | T02 |
 | FR-POS-03 | pos | W3-07 | DoD W3-07 |
 | FR-POS-04 | core | W3-02 | T02, T03 |
-| FR-REP-01 | insights, admin | W4-01, W4-02, W4-07 | T10 |
+| FR-REP-01 | insights, admin | W4-01, W4-02, W4-07, W5-10 | T10 |
 | FR-REP-02 | insights, admin | W4-01, W4-03, W4-07 | DoD W4-03 |
-| FR-REP-03 | core, insights, admin | W2-08, W4-03, W4-07 | DoD W4-03 |
+| FR-REP-03 | core, insights, admin | W2-08, W4-03, W4-07, W5-10 | DoD W4-03 |
 | FR-SIM-01 | channel | W3-03 | T03 |
 | FR-SIM-02 | insights, frontend | W4-04, W4-08 | T15 |
 | FR-SIM-03 | core, insights | W3-04, W4-02 | T06, T07 |

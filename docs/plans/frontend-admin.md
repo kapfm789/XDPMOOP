@@ -25,9 +25,11 @@ admin/
 | 7 | W4-08 | admin và pos: nhận thông báo SignalR (âm thanh, popup); PWA manifest và service worker | C | FR-SIM-02, FR-POS-01 | Đơn mới hiện không cần tải lại; POS cài được lên màn hình chính |
 | 8 | W4-06 | admin: màn hình chuyển kho, kiểm kê | A | FR-INV-03, FR-INV-04 | Thao tác trọn luồng từ giao diện |
 | 8 | W4-07 | admin: dashboard báo cáo, cảnh báo tồn, đề xuất nhập hàng | C | FR-REP-01..03, FR-AI-02 | Lọc đủ thời gian, chi nhánh, kênh, SKU |
+| 10 | W5-10 | admin: áp thiết kế Figma: theme, khung sidebar và topbar, tổng quan có thẻ số liệu và biểu đồ doanh thu 7 ngày, giao diện từng màn hình | C | FR-REP-01, FR-REP-03 | Mọi màn hình admin theo mục "Bố cục và phong cách" của docs/design/ui/admin.md, chỉ dùng API đã có |
 
 ## Quy tắc riêng
 
 - Ẩn báo cáo lợi nhuận và giá vốn với Staff (D-15); backend vẫn kiểm quyền.
 - Màn hình ledger chỉ xem, không có nút sửa hay xóa.
 - Thông báo đơn mới và cảnh báo tồn nhận qua SignalR, không tải lại trang (FR-SIM-02).
+- Bố cục, màu và các mục của bản Figma không được làm ghi ở [design/ui/admin.md](../design/ui/admin.md) mục "Bố cục và phong cách" (W5-10).
