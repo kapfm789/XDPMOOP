@@ -1,42 +1,65 @@
 # OISM: Hệ thống quản lý bán hàng và tồn kho đa kênh
 
-OISM (Omnichannel Inventory and Sales Management System) là hệ thống SaaS multi-tenant giúp cửa hàng bán lẻ quản lý đơn hàng và tồn kho trên nhiều kênh cùng lúc: quầy POS và các sàn Shopee, TikTok Shop, Lazada.
+*Omnichannel Inventory and Sales Management System*: phần mềm SaaS cho cửa hàng bán lẻ bán cùng lúc tại quầy (POS) và trên Shopee, TikTok Shop, Lazada, với một kho dữ liệu tồn và đơn hàng thống nhất.
+
+![.NET 8](https://img.shields.io/badge/.NET-8-512BD4?logo=dotnet&logoColor=white)
+![React](https://img.shields.io/badge/React-TypeScript-61DAFB?logo=react&logoColor=black)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
+![RabbitMQ](https://img.shields.io/badge/RabbitMQ-FF6600?logo=rabbitmq&logoColor=white)
+![Docker Compose](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+
+Đồ án của nhóm 3 dev, làm trong 5 tuần, chia 10 phase. Tài liệu thiết kế trong [`docs/`](docs/README.md) là nguồn chuẩn; code phải khớp tài liệu.
+
+
+## Mục lục
+
+- [Bài toán](#bài-toán)
+- [Tính năng](#tính-năng)
+- [Kiến trúc](#kiến-trúc)
+- [Công nghệ](#công-nghệ)
+- [Chạy thử trên máy](#chạy-thử-trên-máy)
+- [Phát triển và kiểm thử](#phát-triển-và-kiểm-thử)
+- [Cấu trúc repo](#cấu-trúc-repo)
+- [Tài liệu](#tài-liệu)
+- [Trạng thái](#trạng-thái)
 
 ## Bài toán
 
-Bán trên nhiều kênh rời nhau gây ra ba lỗi quen thuộc: bán vượt tồn vì đồng bộ chậm, giá vốn hàng bán (COGS) sai, và số liệu lệch vì sửa tồn bằng tay.
+Bán trên nhiều kênh rời nhau gây ra ba lỗi quen thuộc:
 
-## Cách giải quyết
+1. *Bán vượt tồn* vì tồn giữa các kênh đồng bộ chậm.
+2. *Giá vốn hàng bán (COGS) sai*, nên lợi nhuận báo cáo không đáng tin.
+3. *Số liệu tồn lệch* vì sửa tay mà không để lại dấu vết.
 
-- **Sổ kho chỉ thêm mới.** Mọi thay đổi tồn là một dòng trong `inventory_transactions`; không sửa thẳng cột tồn, sửa sai bằng dòng đảo.
-- **Chống bán vượt.** `available = on_hand - reserved`; đơn online vào là giữ hàng, khóa dòng số dư bằng `SELECT ... FOR UPDATE`. Đích: 50 đơn tranh 1 sản phẩm thì đúng 1 đơn thắng, tồn không âm.
-- **Giá vốn bình quân gia quyền.** Tính lại khi xác nhận phiếu nhập; chốt vào dòng đơn lúc xác nhận và không đổi nữa.
-- **Order hub.** Đơn từ POS, admin và webhook giả lập của sàn được chuẩn hóa về một Canonical Order, đi theo máy trạng thái Draft → Reserved → Confirmed → Completed (hoặc Cancelled).
-- **POS PWA.** Thanh toán tại quầy chạy giữ hàng, xác nhận, trừ tồn trong một transaction.
-- **Cách ly tenant.** Mọi bảng nghiệp vụ có `TenantId`, lọc bằng EF Core Global Query Filter.
+OISM giải quyết bằng năm cơ chế cốt lõi:
 
-## Chức năng
-
-| Nhóm | Nội dung |
+| Cơ chế | Kết quả |
 | --- | --- |
-| FR-AUTH | Đăng ký tenant, đăng nhập JWT, phân quyền Owner / Staff / Cashier, quản lý chi nhánh |
-| FR-PROD | Danh mục, thương hiệu, sản phẩm và biến thể (SKU), mã vạch, giá lẻ và giá sỉ |
-| FR-INV | Sổ kho, phiếu nhập, chuyển kho hai bước, kiểm kê |
-| FR-COST | Giá vốn bình quân gia quyền, chốt giá vốn vào dòng đơn |
-| FR-ORD | Nhận đơn đa kênh, máy trạng thái đơn, duyệt và hủy đơn |
-| FR-RSE | Tính `available`, giữ hàng, trừ hoặc giải phóng |
-| FR-POS | Bán nhanh tại quầy, chặn bán vượt tồn, tiền mặt hoặc QR, in hóa đơn qua trình duyệt |
-| FR-REP | Doanh thu và lợi nhuận gộp, giá trị tồn và tốc độ bán, cảnh báo tồn thấp |
-| FR-SIM | Giả lập webhook sàn, thông báo realtime bằng SignalR, job nền bằng Hangfire |
-| FR-AI | Dự báo và đề xuất nhập hàng (mã tạm, nhóm thêm theo gói việc 5 của đề) |
+| *Sổ kho chỉ thêm mới*: mọi biến động tồn là một dòng trong inventory_transactions, sửa sai bằng dòng đảo | Truy được vì sao con số tồn thay đổi |
+| *Giữ hàng có khóa dòng*: available = on_hand − reserved, khóa SELECT ... FOR UPDATE | 50 đơn tranh 1 sản phẩm thì đúng 1 đơn thắng, tồn không bao giờ âm |
+| *Giá vốn bình quân gia quyền*: tính lại mỗi lần nhập, chốt vào dòng đơn lúc xuất kho | Lợi nhuận quá khứ không đổi khi giá nhập mới thay đổi |
+| *Trung tâm đơn hàng*: đơn POS, đơn tạo tay và đơn sàn về chung một Canonical Order, chạy theo máy trạng thái Draft → Reserved → Confirmed → Completed (hoặc Cancelled) | Một quy trình xử lý cho mọi kênh |
+| *Cách ly tenant*: mọi bảng có TenantId, lọc tự động bằng EF Core Global Query Filter | Doanh nghiệp này không thấy dữ liệu của doanh nghiệp khác |
 
-Tổng cộng 30 FR và 11 NFR của đề, cộng 3 mã FR-AI. Chi tiết: [docs/requirements/](docs/requirements/functional.md); hạng mục không làm: [PLAN.md mục 2](docs/PLAN.md).
+## Tính năng
+
+| Phân hệ | Người dùng | Làm được gì |
+| --- | --- | --- |
+| Tài khoản và chi nhánh | Owner | Đăng ký cửa hàng, quản lý nhân viên theo vai trò Owner, Staff, Cashier, quản lý cửa hàng và kho |
+| Sản phẩm | Owner, Staff | Danh mục nhiều cấp, thương hiệu, sản phẩm có biến thể (màu, cỡ), mã vạch EAN-13 tự sinh hoặc Code128, giá lẻ và giá sỉ |
+| Kho | Owner, Staff | Xem tồn và sổ giao dịch, nhập hàng từ nhà cung cấp, chuyển kho hai bước, kiểm kê, đặt ngưỡng cảnh báo |
+| Đơn hàng | Owner, Staff | Danh sách đơn đa kênh, tạo đơn qua điện thoại, duyệt, hoàn tất, hủy, in phiếu giao; đơn giữ hàng quá 30 phút tự hủy |
+| Bán tại quầy (PWA) | Cashier, Owner | Quét mã rồi Enter là xong một đơn, tiền mặt hoặc chuyển khoản QR, in hóa đơn qua trình duyệt, cài được lên màn hình chính |
+| Kênh sàn | Owner | Cấu hình shop Shopee, TikTok, Lazada; nhận webhook giả lập; bắn hàng chục đơn cùng lúc để thử tải |
+| Báo cáo và cảnh báo | Owner, Staff | Doanh thu, giá vốn, lợi nhuận gộp lọc theo thời gian, chi nhánh, kênh, SKU (chỉ Owner); giá trị tồn, bán chạy, bán chậm; cảnh báo tồn thấp |
+| Dự báo nhập hàng | Owner | Dự báo nhu cầu 14 ngày bằng san bằng hàm mũ, đề xuất số lượng nên nhập, backtest so với phương án cơ sở |
+| Thông báo realtime | Mọi vai trò | Đơn mới và tồn thấp hiện popup kèm âm thanh, không cần tải lại trang |
+
+Phạm vi bám đề: 30 yêu cầu chức năng, 11 yêu cầu phi chức năng, cộng 3 mã cho phần dự báo AI. Không làm: kết nối API thật của sàn, bán offline, cổng thanh toán, trả hàng ([PLAN.md mục 2](docs/PLAN.md)).
 
 ## Kiến trúc
 
-> Nguồn chuẩn: [docs/architecture/](docs/architecture/README.md). Mục này là bản tóm tắt.
-
-Năm service .NET 8 đứng sau một API gateway, hai ứng dụng React, một database PostgreSQL với 5 schema và một RabbitMQ.
+Năm service .NET 8 đứng sau một API gateway, hai ứng dụng React, một PostgreSQL chia 5 schema và một RabbitMQ.
 
 ```mermaid
 flowchart TB
@@ -74,109 +97,163 @@ flowchart TB
   insights --- pg
 ```
 
-Đường liền có mũi tên là HTTP qua gateway; đường đứt là event qua RabbitMQ; đường liền không mũi tên là kết nối tới schema riêng của service trong database `oism`.
+Đường liền có mũi tên là HTTP qua gateway; đường đứt là event qua RabbitMQ; đường liền không mũi tên là kết nối tới schema riêng của từng service.
 
-| Khối | Trách nhiệm | Schema |
-| --- | --- | --- |
-| `gateway` | Định tuyến, kiểm JWT, TLS, WebSocket | Không |
-| `identity` | Tenant, người dùng, đăng nhập, phân quyền, chi nhánh | `identity` |
-| `catalog` | Danh mục, thương hiệu, sản phẩm, SKU, mã vạch, giá | `catalog` |
-| `core` | Sổ kho, số dư, giá vốn, đơn hàng, giữ hàng, POS checkout | `core` |
-| `channel` | Nhận webhook ba sàn, chống trùng, chuẩn hóa đơn | `channel` |
-| `insights` | Báo cáo, cảnh báo tồn, dự báo, thông báo realtime | `insights` |
-| `admin`, `pos` | Trang quản trị cho Owner và Staff; PWA bán tại quầy cho Cashier | Không |
+| Khối | Trách nhiệm |
+| --- | --- |
+| gateway | Định tuyến, kiểm JWT, TLS, WebSocket |
+| identity | Tenant, người dùng, đăng nhập, phân quyền, chi nhánh |
+| catalog | Danh mục, thương hiệu, sản phẩm, SKU, mã vạch, giá |
+| core | Sổ kho, số dư, giá vốn, đơn hàng, giữ hàng, POS checkout |
+| channel | Nhận webhook ba sàn, chống trùng, chuẩn hóa đơn |
+| insights | Báo cáo, cảnh báo tồn, dự báo, thông báo realtime |
+| admin, pos | Trang quản trị cho Owner và Staff; PWA bán tại quầy cho Cashier |
 
 Ba quy tắc tóm gọn cả kiến trúc:
 
-1. Thứ gì phải commit cùng nhau thì ở chung một service và một schema. Vì vậy đơn hàng, giữ hàng, sổ kho và giá vốn nằm chung `core`.
-2. Giữa các service chỉ có event qua outbox và inbox; không gọi HTTP chéo, không đọc schema của nhau.
-3. Trong một service, phụ thuộc chỉ hướng vào Domain; nghiệp vụ không nằm ở controller hay ở EF Core.
+1. *Thứ gì phải commit cùng nhau thì ở chung một service.* Đơn hàng, giữ hàng, sổ kho và giá vốn nằm chung core, chung một transaction.
+2. *Giữa các service chỉ có event*, phát qua outbox và nhận qua inbox; không gọi HTTP chéo, không đọc schema của nhau.
+3. *Mỗi service chia bốn lớp Clean Architecture*: Domain, Application, Infrastructure, Api; phụ thuộc chỉ hướng vào Domain.
 
-Mỗi service chia bốn lớp Clean Architecture:
+Chi tiết: [docs/architecture/](docs/architecture/README.md); lý do của từng lựa chọn: [docs/decisions/](docs/decisions/README.md).
 
-| Lớp | Chứa gì |
-| --- | --- |
-| Domain | Entity, value object, quy tắc nghiệp vụ (giá vốn, giữ hàng, máy trạng thái) |
-| Application | Use case (command, query, handler), interface repository, validation |
-| Infrastructure | EF Core DbContext, migration, repository, outbox và inbox, RabbitMQ, Hangfire |
-| Api | Controller, consumer, SignalR hub, đăng ký DI, Swagger |
-
-Các cơ chế xuyên suốt:
-
-- **Multi-tenant**: `TenantId` lấy từ JWT, áp qua Global Query Filter; event mang `TenantId`; dữ liệu của tenant khác trả 404.
-- **Transaction và khóa**: một use case là một transaction; khóa dòng chứng từ trước, rồi các dòng số dư theo `branch_id`, `sku_id` tăng dần.
-- **Thông điệp**: event ghi vào outbox trong cùng transaction với thay đổi nghiệp vụ, một tiến trình nền đẩy sang RabbitMQ; bên nhận ghi inbox trước khi xử lý để bỏ bản trùng.
-
-## Tech stack
-
-> Nguồn chuẩn: [conventions/backend.md](docs/conventions/backend.md), [conventions/frontend.md](docs/conventions/frontend.md), [testing/strategy.md](docs/testing/strategy.md).
+## Công nghệ
 
 | Phần | Công nghệ |
 | --- | --- |
-| Backend | C# 12, .NET 8, ASP.NET Core Web API |
-| Dữ liệu | PostgreSQL, EF Core với Npgsql, tên bảng và cột snake_case |
-| Thông điệp | RabbitMQ (RabbitMQ.Client); outbox và inbox tự viết trong `Oism.BuildingBlocks` |
-| Gateway | YARP |
-| Xác thực | JWT Bearer, mật khẩu băm BCrypt, access token 60 phút kèm refresh token |
+| Backend | C# 12, .NET 8, ASP.NET Core Web API, EF Core với Npgsql, FluentValidation, Swagger |
+| Dữ liệu và thông điệp | PostgreSQL, RabbitMQ (outbox và inbox tự viết), Hangfire cho job nền |
+| Gateway, bảo mật | YARP, JWT RS256, refresh token xoay vòng, BCrypt |
 | Realtime | SignalR |
-| Job nền | Hangfire trên PostgreSQL |
-| Kiểm tra đầu vào, tài liệu API | FluentValidation, Swagger (Swashbuckle) |
-| Frontend | React, Vite, TypeScript strict, TanStack Query, React Router, Ant Design; npm workspaces `admin`, `pos`, `shared` |
-| Test | xUnit, Testcontainers (PostgreSQL, RabbitMQ), coverlet, Vitest, k6 đo tải |
-| Đóng gói và CI | Docker Compose, GitHub Actions |
+| Frontend | React, Vite, TypeScript strict, TanStack Query, React Router, Ant Design; npm workspaces admin, pos, shared |
+| Kiểm thử | xUnit, Testcontainers, coverlet, Vitest, k6 |
+| Đóng gói, CI | Docker Compose, GitHub Actions |
 
-Dự án không dùng MediatR, AutoMapper, MassTransit và FluentAssertions.
+## Chạy thử trên máy
 
-## Chạy trên máy dev
+### 1. Chuẩn bị
 
-Chỉ cần [Docker Desktop](https://www.docker.com/products/docker-desktop/); .NET, PostgreSQL và RabbitMQ đều chạy trong container. Từ gốc repo:
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (trên Windows cần WSL 2). .NET, PostgreSQL và RabbitMQ đều chạy trong container, không cần cài riêng.
+- [Node.js](https://nodejs.org/) 20.19 trở lên cho frontend.
+
+### 2. Tạo khóa JWT
+
+Đăng nhập cần một cặp khóa RSA trong deploy/.env (file này bị git bỏ qua). Trong Git Bash, từ gốc repo:
+
+```bash
+grep -v '^JWT_' deploy/.env.example > deploy/.env
+openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out jwt.pem
+echo "JWT_PRIVATE_KEY=$(grep -v -- ----- jwt.pem | tr -d '[:space:]')" >> deploy/.env
+echo "JWT_PUBLIC_KEY=$(openssl pkey -in jwt.pem -pubout | grep -v -- ----- | tr -d '[:space:]')" >> deploy/.env
+rm jwt.pem
+```
+
+Máy đã có PostgreSQL chiếm cổng 5432 thì thêm dòng POSTGRES_PORT=5433.
+
+### 3. Bật backend và nạp dữ liệu demo
 
 ```bash
 docker compose -f deploy/docker-compose.yml up -d
+docker compose -f deploy/docker-compose.yml run --rm seed
 ```
 
-Lần đầu mất vài phút để tải image, tải package và build trong container. Xong thì:
+Lần đầu mất vài phút để tải image và build. Seed tạo 2 cửa hàng, mỗi cửa hàng 2 chi nhánh, khoảng 50 SKU và 60 ngày lịch sử bán; chạy lại không tạo bản trùng.
+
+### 4. Bật frontend
+
+```bash
+npm --prefix frontend run dev
+```
+
+### 5. Mở và đăng nhập
 
 | Địa chỉ | Là gì |
 | --- | --- |
-| `http://localhost:8080/api/<service>/health` | Health check của `identity`, `catalog`, `core`, `channel`, `insights` qua gateway |
-| `http://localhost:5101/swagger` … `5105/swagger` | Swagger của từng service |
-| `localhost:5432`, database `oism`, user và mật khẩu `oism` | PostgreSQL, mỗi service một schema |
-| `http://localhost:15672`, user và mật khẩu `oism` | Giao diện quản trị RabbitMQ |
+| http://localhost:5173 | Trang quản trị (admin) |
+| http://localhost:5174 | Bán tại quầy (POS) |
+| http://localhost:8080/api/core/health | Health check qua gateway (thay core bằng service khác) |
+| http://localhost:5101/swagger … 5105/swagger | Swagger của từng service |
+| http://localhost:15672 | Giao diện quản trị RabbitMQ (user và mật khẩu oism) |
 
-- Muốn đăng nhập được, sinh cặp khóa JWT cho máy mình theo hướng dẫn trong `deploy/.env.example` rồi dán vào `deploy/.env`; thiếu khóa thì đăng nhập trả 500 và mọi endpoint cần đăng nhập trả 401.
-- Máy đã có PostgreSQL chiếm cổng 5432: tạo `deploy/.env` chứa `POSTGRES_PORT=5433`. Các biến khác xem `deploy/.env.example`.
-- Sửa code không cần build lại image: mã nguồn `backend/` được mount vào container, mỗi lần container khởi động là build rồi chạy. Đang code service nào thì mở thêm một terminal chạy `docker compose -f deploy/docker-compose.yml watch core` (ghi được nhiều service, bỏ trống là cả 6): lưu file là service đó tự build và khởi động lại. Không chạy `watch` thì khởi động lại bằng tay: `docker compose -f deploy/docker-compose.yml restart core`. Migration mới được áp ngay lúc service khởi động lại.
-- `watch` theo dõi `src` của service và `backend/shared`; đổi `Directory.Build.props` hay `Directory.Packages.props` thì khởi động lại bằng tay.
-- Xem log build của một service: `docker compose -f deploy/docker-compose.yml logs -f core`. Build lỗi thì service nằm chờ ở trạng thái unhealthy và build lại ở lần khởi động lại sau.
-- Chạy toàn bộ test mà không cần cài .NET: `docker compose -f deploy/docker-compose.yml run --rm tests`.
-- Nạp dữ liệu demo (2 tenant, 2 chi nhánh mỗi tenant, khoảng 50 SKU, 60 ngày lịch sử bán) sau khi các service đã khỏe: `docker compose -f deploy/docker-compose.yml run --rm seed`. Chạy lại không tạo bản trùng. Tài khoản demo và cách seed dựng dữ liệu: [deploy/seed/README.md](deploy/seed/README.md).
-- Dừng: `docker compose -f deploy/docker-compose.yml down`; thêm `-v` để xóa luôn dữ liệu PostgreSQL.
-- Sau lần `up -d` đầu tiên, bật và tắt cả backend bằng nút ▶ và ■ của nhóm `oism` trong Docker Desktop cũng được; container đang chạy lúc tắt Docker Desktop tự bật lại ở lần mở sau. `down` xóa container, nên sau `down` phải chạy lại `up -d`.
+Tài khoản demo, mật khẩu chung Demo@2026:
 
-Frontend chạy trên máy host, cần Node 20.19 trở lên:
+| Cửa hàng | Owner (admin, POS) | Staff (admin) | Cashier (POS) |
+| --- | --- | --- | --- |
+| Thời trang Mộc | owner@moc.test | staff@moc.test | cashier@moc.test |
+| Tạp hóa Xanh | owner@xanh.test | staff@xanh.test | cashier@xanh.test |
+
+Thử nhanh: vào POS bằng cashier@moc.test, gõ PK-TL rồi Enter để thêm hàng, Enter lần nữa để thanh toán tiền mặt.
+
+### Dừng
+
+Bấm ■ ở nhóm oism trong Docker Desktop, hoặc chạy lệnh dưới. Thêm -v để xóa luôn dữ liệu (khi đó phải chạy lại seed).
 
 ```bash
-cd frontend
-npm run dev
+docker compose -f deploy/docker-compose.yml down
 ```
 
-`npm run dev` chạy cùng lúc `admin` ở `http://localhost:5173` và `pos` ở `http://localhost:5174`, Ctrl+C tắt cả hai; chạy riêng một ứng dụng bằng `npm run dev:admin` hoặc `npm run dev:pos`. Cả hai gọi gateway ở `http://localhost:8080` (đổi bằng biến `VITE_API_URL`). Ba lệnh này tự chạy `npm install` trước khi bật, nên lần đầu và mỗi lần kéo code có package mới không cần cài tay; package đã đủ thì bước này mất khoảng 1 đến 2 giây. Kiểm kiểu, test và build: `npm --prefix frontend run typecheck`, `npm --prefix frontend test`, `npm --prefix frontend run build`.
+## Phát triển và kiểm thử
 
-## Trạng thái
+| Việc | Lệnh |
+| --- | --- |
+| Build backend | `dotnet build backend/Oism.sln` |
+| Toàn bộ test backend (cần Docker cho test tích hợp) | `dotnet test backend/Oism.sln` |
+| Test backend không cần cài .NET | `docker compose -f deploy/docker-compose.yml run --rm tests` |
+| Tự build lại một service mỗi khi lưu file | `docker compose -f deploy/docker-compose.yml watch core` |
+| Khởi động lại một service | `docker compose -f deploy/docker-compose.yml restart core` |
+| Xem log | `docker compose -f deploy/docker-compose.yml logs -f core` |
+| Kiểm kiểu, test, build frontend | `npm --prefix frontend run typecheck`, `npm --prefix frontend test`, `npm --prefix frontend run build` |
+| Chạy riêng một ứng dụng | `npm --prefix frontend run dev:admin`, `npm --prefix frontend run dev:pos` |
 
-- Đã có code của phase 1: skeleton backend và Compose dev (W1-02, W1-03), outbox và inbox qua RabbitMQ (W1-13), danh mục và thương hiệu ở `catalog` (W1-06), hai ứng dụng React với đăng ký, đăng nhập và layout (W1-09), workflow CI (W1-11).
-- Đã có code của phase 2: `identity` với đăng ký tenant, đăng nhập, làm mới, đăng xuất, quản lý người dùng (W1-04) và chi nhánh (W1-05); sản phẩm, SKU, mã vạch và giá ở `catalog` (W1-07); consumer dựng bản sao SKU và chi nhánh ở `core` (W1-08); màn hình chi nhánh, người dùng, danh mục, thương hiệu trên `admin` (W1-10).
-- Đã có code của phase 3: sổ kho chỉ thêm mới, số dư, `PostLedger` và API xem tồn, xem sổ ở `core` (W2-01); mô hình đơn, máy trạng thái và tạo đơn thủ công ở `core` (W2-04); màn hình sản phẩm, SKU, mã vạch, giá trên `admin` (W2-07).
-- Đã có code của phase 4 tới 7: phiếu nhập và giá vốn bình quân, giữ hàng, duyệt và hủy đơn, POS checkout, chuyển kho, kiểm kê ở `core`; webhook ba sàn ở `channel`; báo cáo lợi nhuận gộp, tổng hợp ngày và thông báo realtime ở `insights`; màn hình kho, đơn hàng, kênh sàn trên `admin`, màn hình bán hàng và PWA của `pos`. Chi tiết theo task: [docs/README.md](docs/README.md) mục "Trạng thái".
-- Đã có code của phase 8: giá trị tồn, bán chạy, bán chậm và API cảnh báo tồn ở `insights` (W4-03); dự báo nhập hàng bằng san bằng hàm mũ, job đêm và backtest WAPE (W4-05); màn hình chuyển kho, kiểm kê (W4-06), tổng quan, báo cáo và đề xuất nhập hàng (W4-07) trên `admin`; seed data ở `deploy/seed` (W4-09).
-- 18 quyết định của nhóm, gồm cả việc chia microservice (D-17), đã được giảng viên xác nhận ngày 2026-10-04 (task W1-01): [docs/decisions/](docs/decisions/README.md).
+- Mã nguồn backend/ được mount vào container: sửa code hay thêm migration không cần build lại image, chỉ cần khởi động lại service. Migration mới được áp lúc service khởi động.
+- Các lệnh dev của frontend tự chạy npm install trước khi bật. Frontend gọi gateway ở http://localhost:8080, đổi bằng biến VITE_API_URL.
+- Mọi luồng đụng tới tồn kho có test tích hợp trên PostgreSQL thật (Testcontainers); test đồng thời chạy lặp 20 lần trong CI.
+- Quy ước code và git: [docs/conventions/](docs/conventions/backend.md). Quy tắc cho công cụ AI: [AGENTS.md](AGENTS.md).
+
+## Cấu trúc repo
+
+```
+backend/
+  gateway/                 API gateway (YARP)
+  services/                identity, catalog, core, channel, insights; mỗi service 4 lớp và 2 project test
+  shared/                  Oism.SharedKernel, Oism.BuildingBlocks (tenant, auth, outbox, inbox), Oism.Contracts (event)
+frontend/
+  admin/                   Trang quản trị (React)
+  pos/                     PWA bán tại quầy (React)
+  shared/                  API client, xác thực, kết nối realtime dùng chung
+deploy/
+  docker-compose.yml       Môi trường dev và gói demo
+  postgres/                Script tạo 5 schema
+  seed/                    Dữ liệu demo
+docs/                      Yêu cầu, use case, kiến trúc, quyết định, thiết kế, kiểm thử, kế hoạch
+.github/workflows/         CI: hai job Backend và Frontend
+```
+
+Cây đầy đủ và tài liệu chi phối từng folder: [docs/architecture/source-tree.md](docs/architecture/source-tree.md).
 
 ## Tài liệu
 
-- [Software Requirements Specification (SRS)](docs/SRS.md): Tài liệu yêu cầu phần mềm đầy đủ, bao gồm yêu cầu chức năng, phi chức năng, mô hình dữ liệu, giao diện API, UI/UX và yêu cầu phần cứng/phần mềm.
-- [Kế hoạch triển khai](docs/PLAN.md): 10 phase, ai làm gì, xong là thế nào.
-- [docs/plans/](docs/plans/): plan riêng cho từng folder (`backend/*`, `frontend/*`, `deploy`, `tools/k6`).
-- [Bản đồ tài liệu](docs/README.md): yêu cầu, use case, kiến trúc, quyết định, thiết kế, kiểm thử, quy ước.
-- [AGENTS.md](AGENTS.md): quy tắc cho công cụ AI; rule và skill của Claude Code nằm trong `.claude/`.
-- [Bản dịch và phân tích đề](OISM-ban-dich-va-phan-tich-tieng-Viet.md): 30 FR, 11 NFR và các điểm cần làm rõ.
+| Tài liệu | Nội dung |
+| --- | --- |
+| [Đặc tả yêu cầu (SRS)](docs/requirements/srs.md) | Toàn bộ yêu cầu trong một tài liệu: sơ đồ use case UML, ERD liên service, quy tắc nghiệp vụ, đặc tả 29 use case, NFR, kiểm thử chấp nhận, RTM |
+| [SRS bản tóm lược](docs/SRS.md) | Bản SRS ngắn gồm yêu cầu, mô hình dữ liệu, API, UI/UX |
+| [Bản đồ tài liệu](docs/README.md) | Điểm bắt đầu để tìm mọi tài liệu khác và thứ tự ưu tiên khi chúng mâu thuẫn |
+| [Yêu cầu](docs/requirements/functional.md), [use case](docs/usecase-userstory/README.md) | Mã yêu cầu và tiêu chí chấp nhận |
+| [Kiến trúc](docs/architecture/README.md), [quyết định](docs/decisions/README.md) | Chia service, tenant, transaction, bảo mật; 13 ADR |
+| [Thiết kế](docs/design/README.md) | Bảng, API, event, máy trạng thái, luồng, giao diện, dự báo |
+| [Kiểm thử](docs/testing/strategy.md) | Chiến lược, 23 kịch bản bắt buộc, báo cáo backtest |
+| [Kế hoạch](docs/PLAN.md) | 10 phase, phân công, ưu tiên, rủi ro, RTM rút gọn |
+| [Bản dịch và phân tích đề](OISM-ban-dich-va-phan-tich-tieng-Viet.md) | Đề gốc và các điểm cần làm rõ |
+
+## Trạng thái
+
+| Phase | Nội dung | Trạng thái |
+| --- | --- | --- |
+| 1–2 | Nền tảng, gateway, outbox/inbox, định danh, chi nhánh, danh mục, sản phẩm, SKU | Xong |
+| 3–4 | Sổ kho, số dư, phiếu nhập, giá vốn bình quân, máy trạng thái đơn, engine giữ hàng | Xong |
+| 5–6 | Duyệt, hủy, hết hạn đơn; POS checkout; chuyển kho; kiểm kê; webhook ba sàn | Xong |
+| 7–8 | Báo cáo lợi nhuận, báo cáo tồn, cảnh báo, dự báo nhập hàng, thông báo realtime, PWA, seed data | Xong |
+| 9 | Kiểm thử toàn hệ thống, đo tải k6, coverage, gói demo | Đang làm: k6 (T17) chưa chạy; seed chưa tự chạy khi compose up |
+| 10 | Tài liệu và bàn giao | Đang làm: đã có SRS |
+
+Chi tiết theo từng task: [docs/README.md](docs/README.md) mục "Trạng thái". Mọi quyết định thiết kế đã được giảng viên xác nhận ngày 2026-10-04.
