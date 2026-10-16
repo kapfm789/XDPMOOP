@@ -6,7 +6,7 @@ Thư mục `docs/` là nguồn chuẩn cho mọi quyết định về OISM. Code
 
 | Thư mục | Trả lời câu hỏi | Bắt đầu từ |
 | --- | --- | --- |
-| [requirements/](requirements/) | Đề yêu cầu gì, mang mã nào? | [functional.md](requirements/functional.md) |
+| [requirements/](requirements/) | Đề yêu cầu gì, mang mã nào? | [functional.md](requirements/functional.md); bản đặc tả liền mạch kèm sơ đồ use case và ERD: [srs.md](requirements/srs.md) |
 | [usecase-userstory/](usecase-userstory/) | Ai làm gì với hệ thống, thế nào là đạt? | [README.md](usecase-userstory/README.md) |
 | [architecture/](architecture/) | Hệ thống chia thế nào, vì sao, code đặt ở đâu? | [README.md](architecture/README.md) |
 | [decisions/](decisions/) | Những điểm đề chưa chốt được quyết ra sao? | [README.md](decisions/README.md) |
