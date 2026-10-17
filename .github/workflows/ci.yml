@@ -1,4 +1,6 @@
 # W1-11: build và test backend, build frontend trên mỗi PR và mỗi lần đẩy lên main.
+# W5-05: test kèm coverlet và chặn khi ba module lõi của core dưới 80% (docs/testing/coverage.md); build mọi image của
+# gói demo (deploy/docker-compose.demo.yml) để Dockerfile hỏng thì CI đỏ.
 name: CI
 
 on:
@@ -21,7 +23,18 @@ jobs:
           dotnet-version: 8.0.x
       - run: dotnet build backend/Oism.sln
       # Test tích hợp tự chạy PostgreSQL và RabbitMQ bằng Testcontainers; runner đã có Docker.
-      - run: dotnet test backend/Oism.sln --no-build
+      - run: dotnet test backend/Oism.sln --no-build --collect:"XPlat Code Coverage" --results-directory coverage
+      - name: Coverage of Inventory, Reservation, Costing
+        shell: pwsh
+        run: |
+          ./tools/coverage/core-coverage.ps1 -ResultsDir coverage -Output coverage/core-coverage.md
+          Get-Content coverage/core-coverage.md | Add-Content $env:GITHUB_STEP_SUMMARY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: coverage/
+          if-no-files-found: ignore
 
   frontend:
     name: Frontend
@@ -40,3 +53,11 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+
+  images:
+    name: Docker images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # Gateway, 5 service, seed, admin, pos; chỉ build, không đẩy lên registry nào.
+      - run: docker compose -f deploy/docker-compose.demo.yml build
