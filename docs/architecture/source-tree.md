@@ -51,7 +51,9 @@ XDPMOOP/
 │  ├─ .env.example                 giá trị mẫu; .env thật bị git bỏ qua
 │  ├─ postgres/init-schemas.sql
 │  └─ seed/
-├─ tools/k6/
+├─ tools/
+│  ├─ k6/
+│  └─ coverage/                    script tính độ bao phủ ba module của core (W5-01)
 ├─ docs/
 └─ .github/workflows/ci.yml
 ```

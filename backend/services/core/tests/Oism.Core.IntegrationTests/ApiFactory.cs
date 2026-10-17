@@ -30,8 +30,10 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         _rsa.Dispose();
     }
 
+    // Test đồng thời cho 50 transaction xếp hàng trên cùng một dòng khóa. Khi chạy kèm coverlet (W5-01), code chậm đi
+    // nhiều lần nên giao dịch cuối có thể chờ quá 30 giây mặc định của Npgsql: nới thời gian chờ lệnh cho test.
     protected override void ConfigureWebHost(IWebHostBuilder builder) => builder
-        .UseSetting("ConnectionStrings:Oism", _postgres.GetConnectionString())
+        .UseSetting("ConnectionStrings:Oism", $"{_postgres.GetConnectionString()};Command Timeout=180")
         .UseSetting("ConnectionStrings:RabbitMq", RabbitMqUri ?? Broker.GetConnectionString())
         .UseSetting("Jwt:PublicKey", Convert.ToBase64String(_rsa.ExportSubjectPublicKeyInfo()))
         // Test tự gọi job hết hạn; lịch chạy mỗi phút của Hangfire chỉ bật ở test của chính nó.

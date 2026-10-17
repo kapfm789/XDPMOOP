@@ -85,7 +85,7 @@ Tạo dữ liệu ở tenant B, đăng nhập tenant A, rồi gọi mọi endpoi
 ## Độ bao phủ
 
 - Mục tiêu: ít nhất 80% dòng lệnh, gộp test đơn vị và tích hợp, cho ba phần của `core`: Inventory, Reservation (giữ hàng), Costing (giá vốn) (NFR-MAINT-02).
-- Đo bằng coverlet trong CI; báo cáo đính kèm ở phase 9 (W5-01).
+- Đo bằng coverlet trong CI; module nào dưới 80% thì CI đỏ. Cách chia module, cách chạy và kết quả: [coverage.md](coverage.md) (W5-01).
 - Độ bao phủ cao không thay cho các kịch bản đồng thời, rollback, chống trùng và cách ly tenant.
 
 ## Đo tải
