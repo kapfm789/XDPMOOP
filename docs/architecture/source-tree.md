@@ -41,13 +41,16 @@ XDPMOOP/
 │           └─ Oism.<Service>.IntegrationTests/
 ├─ frontend/
 │  ├─ package.json                 npm workspaces: admin, pos, shared
+│  ├─ Dockerfile, nginx.conf       image của admin và pos cho gói demo (W5-04)
 │  ├─ shared/src/                  api, auth, realtime, types
 │  ├─ admin/src/                   pages, features, app
 │  └─ pos/
 │     ├─ public/                   manifest, service worker
 │     └─ src/                      pages, features, app
 ├─ deploy/
-│  ├─ docker-compose.yml
+│  ├─ docker-compose.yml           Compose dev
+│  ├─ docker-compose.demo.yml      gói demo (W5-04)
+│  ├─ README.md
 │  ├─ .env.example                 giá trị mẫu; .env thật bị git bỏ qua
 │  ├─ postgres/init-schemas.sql
 │  └─ seed/

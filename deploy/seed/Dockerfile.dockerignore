@@ -1,0 +1,8 @@
+# Build context của image seed là gốc repo: chỉ giữ phần Dockerfile chép vào.
+**
+!backend/Directory.Build.props
+!backend/Directory.Packages.props
+!backend/shared/Oism.Contracts/**
+!deploy/seed/**
+**/bin
+**/obj

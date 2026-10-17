@@ -1,0 +1,219 @@
+# Gói demo (W5-04): build image thật từ Dockerfile của từng phần, không cần cài .NET hay Node, không cần tự sinh khóa.
+# Chạy từ gốc repo trên máy chỉ có Docker:
+#   docker compose -f deploy/docker-compose.demo.yml up -d --build
+# Lần đầu mất vài phút để build image; seed tự chạy khi mọi service đã khỏe. Hướng dẫn: deploy/README.md.
+# Compose dev ở deploy/docker-compose.yml dùng cùng cổng: tắt một bên trước khi bật bên kia.
+name: oism-demo
+
+x-backend-env: &backend-env
+  # Service chỉ áp migration lúc khởi động ở môi trường Development; gói demo chạy local nên giữ môi trường này.
+  ASPNETCORE_ENVIRONMENT: Development
+  ConnectionStrings__Oism: Host=postgres;Database=oism;Username=${POSTGRES_USER:-oism};Password=${POSTGRES_PASSWORD:-oism}
+  ConnectionStrings__RabbitMq: amqp://${RABBITMQ_USER:-oism}:${RABBITMQ_PASSWORD:-oism}@rabbitmq:5672
+
+x-backend: &backend
+  restart: unless-stopped
+  environment: *backend-env
+  # Khóa công khai của JWT do service `secrets` sinh vào volume; đọc lúc khởi động rồi mới chạy service.
+  volumes:
+    - secrets:/secrets:ro
+  healthcheck:
+    test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+    interval: 10s
+    timeout: 3s
+    retries: 5
+    start_period: 60s
+  depends_on:
+    secrets:
+      condition: service_completed_successfully
+    postgres:
+      condition: service_healthy
+    rabbitmq:
+      condition: service_healthy
+
+x-frontend-health: &frontend-health
+  # 127.0.0.1 chứ không phải localhost: trong image alpine, localhost ra địa chỉ IPv6 trước mà nginx chỉ nghe IPv4.
+  test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+  interval: 10s
+  timeout: 3s
+  retries: 5
+
+services:
+  # Sinh một lần cho mỗi volume: cặp khóa RSA của JWT (khóa bí mật chỉ identity đọc) và chứng chỉ TLS tự ký cho
+  # HTTPS ở gateway. Không bí mật nào nằm trong repo; xóa volume `secrets` là sinh cặp mới.
+  secrets:
+    image: mcr.microsoft.com/dotnet/aspnet:8.0
+    user: root
+    restart: "no"
+    volumes:
+      - secrets:/secrets
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        set -eu
+        cd /secrets
+        if [ ! -s jwt-public ]; then
+          openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out jwt.pem
+          grep -v -- ----- jwt.pem | tr -d '[:space:]' > jwt-private
+          openssl pkey -in jwt.pem -pubout | grep -v -- ----- | tr -d '[:space:]' > jwt-public
+          rm jwt.pem
+        fi
+        if [ ! -s tls.crt ]; then
+          openssl req -x509 -newkey rsa:2048 -nodes -days 825 -subj /CN=localhost \
+            -addext subjectAltName=DNS:localhost,IP:127.0.0.1 -keyout tls.key -out tls.crt
+        fi
+        # Service chạy bằng người dùng app của image .NET, không phải root.
+        chmod 644 /secrets/*
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: oism
+      POSTGRES_USER: ${POSTGRES_USER:-oism}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-oism}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init-schemas.sql:/docker-entrypoint-initdb.d/init-schemas.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -U $${POSTGRES_USER} -d oism"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-oism}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-oism}
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # Cổng HTTP 8080 cho hai frontend; HTTPS 8443 với TLS 1.3 và chứng chỉ tự ký (docs/architecture/security.md).
+  gateway:
+    build:
+      context: ../backend
+      dockerfile: gateway/Oism.Gateway/Dockerfile
+    image: oism/gateway:demo
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Kestrel__Endpoints__Http__Url: http://+:8080
+      Kestrel__Endpoints__Https__Url: https://+:8443
+      Kestrel__Endpoints__Https__SslProtocols__0: Tls13
+      Kestrel__Endpoints__Https__Certificate__Path: /secrets/tls.crt
+      Kestrel__Endpoints__Https__Certificate__KeyPath: /secrets/tls.key
+    volumes:
+      - secrets:/secrets:ro
+    entrypoint: ["sh", "-c", "export Jwt__PublicKey=$$(cat /secrets/jwt-public); exec dotnet Oism.Gateway.dll"]
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
+    depends_on:
+      secrets:
+        condition: service_completed_successfully
+
+  identity:
+    <<: *backend
+    build:
+      context: ../backend
+      dockerfile: services/identity/src/Oism.Identity.Api/Dockerfile
+    image: oism/identity:demo
+    entrypoint:
+      - sh
+      - -c
+      - export Jwt__PrivateKey=$$(cat /secrets/jwt-private) Jwt__PublicKey=$$(cat /secrets/jwt-public); exec dotnet Oism.Identity.Api.dll
+
+  catalog:
+    <<: *backend
+    build:
+      context: ../backend
+      dockerfile: services/catalog/src/Oism.Catalog.Api/Dockerfile
+    image: oism/catalog:demo
+    entrypoint: ["sh", "-c", "export Jwt__PublicKey=$$(cat /secrets/jwt-public); exec dotnet Oism.Catalog.Api.dll"]
+
+  core:
+    <<: *backend
+    build:
+      context: ../backend
+      dockerfile: services/core/src/Oism.Core.Api/Dockerfile
+    image: oism/core:demo
+    entrypoint: ["sh", "-c", "export Jwt__PublicKey=$$(cat /secrets/jwt-public); exec dotnet Oism.Core.Api.dll"]
+
+  channel:
+    <<: *backend
+    build:
+      context: ../backend
+      dockerfile: services/channel/src/Oism.Channel.Api/Dockerfile
+    image: oism/channel:demo
+    entrypoint: ["sh", "-c", "export Jwt__PublicKey=$$(cat /secrets/jwt-public); exec dotnet Oism.Channel.Api.dll"]
+
+  insights:
+    <<: *backend
+    build:
+      context: ../backend
+      dockerfile: services/insights/src/Oism.Insights.Api/Dockerfile
+    image: oism/insights:demo
+    entrypoint: ["sh", "-c", "export Jwt__PublicKey=$$(cat /secrets/jwt-public); exec dotnet Oism.Insights.Api.dll"]
+
+  # Seed tự chạy mỗi lần `up` khi mọi service đã khỏe, rồi thoát; chạy lại không tạo bản trùng (deploy/seed/README.md).
+  # Là việc chạy một lần nên không có health check; lỗi thì thử lại tối đa 3 lần.
+  seed:
+    build:
+      context: ..
+      dockerfile: deploy/seed/Dockerfile
+    image: oism/seed:demo
+    restart: on-failure:3
+    environment:
+      SEED_GATEWAY_URL: http://gateway:8080
+      SEED_RABBITMQ: amqp://${RABBITMQ_USER:-oism}:${RABBITMQ_PASSWORD:-oism}@rabbitmq:5672
+      SEED_PASSWORD: ${SEED_PASSWORD:-Demo@2026}
+    depends_on:
+      gateway:
+        condition: service_healthy
+      identity:
+        condition: service_healthy
+      catalog:
+        condition: service_healthy
+      core:
+        condition: service_healthy
+      channel:
+        condition: service_healthy
+      insights:
+        condition: service_healthy
+
+  admin:
+    build:
+      context: ../frontend
+      args:
+        APP: admin
+    image: oism/admin:demo
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    healthcheck: *frontend-health
+
+  pos:
+    build:
+      context: ../frontend
+      args:
+        APP: pos
+    image: oism/pos:demo
+    restart: unless-stopped
+    ports:
+      - "5174:80"
+    healthcheck: *frontend-health
+
+volumes:
+  postgres-data:
+  secrets:

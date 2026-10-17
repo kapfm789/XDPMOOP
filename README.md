@@ -130,6 +130,14 @@ Chi tiết: [docs/architecture/](docs/architecture/README.md); lý do của từ
 
 ## Chạy thử trên máy
 
+**Chỉ cần xem demo, máy chỉ có Docker:** một lệnh dựng đủ 5 service, gateway (HTTP 8080, HTTPS 8443), hai frontend, PostgreSQL, RabbitMQ, tự sinh khóa JWT và nạp seed. Lần đầu mất khoảng 10 tới 15 phút; xong thì mở `http://localhost:5173` và đăng nhập bằng tài khoản demo ở bước 5. Chi tiết: [deploy/README.md](deploy/README.md).
+
+```bash
+docker compose -f deploy/docker-compose.demo.yml up -d --build
+```
+
+Các bước dưới là Compose dev cho người đang code: backend build lại từ mã nguồn mỗi lần khởi động, frontend chạy bằng Vite.
+
 ### 1. Chuẩn bị
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (trên Windows cần WSL 2). .NET, PostgreSQL và RabbitMQ đều chạy trong container, không cần cài riêng.
