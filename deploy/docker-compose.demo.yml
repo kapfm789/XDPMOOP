@@ -214,6 +214,24 @@ services:
       - "5174:80"
     healthcheck: *frontend-health
 
+  # Đo tải (W5-03, T17) trong mạng của gói demo, gọi thẳng gateway. Không khởi động cùng `up`:
+  #   docker compose -f deploy/docker-compose.demo.yml run --rm k6 run pos-search.js
+  # Kịch bản và cách chuẩn bị dữ liệu: tools/k6/README.md.
+  k6:
+    image: grafana/k6:1.0.0
+    # Tên kịch bản không có dấu / đầu, để Git Bash trên Windows không đổi nó thành đường dẫn Windows.
+    working_dir: /scripts
+    profiles: [k6]
+    restart: "no"
+    environment:
+      K6_GATEWAY: http://gateway:8080
+      K6_PASSWORD: ${SEED_PASSWORD:-Demo@2026}
+    volumes:
+      - ../tools/k6:/scripts:ro
+    depends_on:
+      gateway:
+        condition: service_healthy
+
 volumes:
   postgres-data:
   secrets:

@@ -9,8 +9,13 @@ k6/
 ├─ pos-search.js      tìm SKU và quét mã, mục tiêu p95 dưới 200 ms
 ├─ create-order.js    tạo đơn và POS checkout, mục tiêu dưới 500 ms
 ├─ gross-profit.js    báo cáo doanh thu với 100.000 bản ghi, mục tiêu dưới 2 giây
-└─ flash-sale.js      50 đơn đồng thời cho 1 sản phẩm
+├─ flash-sale.js      50 đơn đồng thời cho 1 sản phẩm
+├─ prepare-sales.sql  thêm 100.000 dòng bán cho tenant đo, trước khi chạy gross-profit.js
+├─ lib.js             đăng nhập, gọi gateway, tra dữ liệu seed
+└─ README.md          tải, ngưỡng và cách chạy trên gói demo
 ```
+
+Kết quả đo: [docs/testing/load-test.md](../testing/load-test.md).
 
 ## Việc theo phase
 
