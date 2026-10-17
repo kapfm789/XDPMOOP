@@ -55,6 +55,7 @@ public sealed class TenantQueryFilterTests(PostgresFixture postgres) : IClassFix
     private readonly Guid _tenantB = Guid.NewGuid();
 
     [Fact]
+    [Trait("Scenario", "T14")]
     public async Task Query_RowsOfTwoTenants_ReturnsOnlyCurrentTenant()
     {
         await SeedAsync(_tenantA, "a");
@@ -68,6 +69,7 @@ public sealed class TenantQueryFilterTests(PostgresFixture postgres) : IClassFix
     }
 
     [Fact]
+    [Trait("Scenario", "T14")]
     public async Task Query_ByIdOfAnotherTenant_FindsNothing()
     {
         var id = await SeedAsync(_tenantB, "b");
@@ -79,6 +81,7 @@ public sealed class TenantQueryFilterTests(PostgresFixture postgres) : IClassFix
     }
 
     [Fact]
+    [Trait("Scenario", "T14")]
     public async Task Query_NoTenantContext_ReturnsNothing()
     {
         await SeedAsync(_tenantA, "a");
@@ -89,6 +92,7 @@ public sealed class TenantQueryFilterTests(PostgresFixture postgres) : IClassFix
     }
 
     [Fact]
+    [Trait("Scenario", "T14")]
     public async Task SaveChanges_EntityOfAnotherTenant_Throws()
     {
         var note = new Note("a");
@@ -105,6 +109,7 @@ public sealed class TenantQueryFilterTests(PostgresFixture postgres) : IClassFix
     }
 
     [Fact]
+    [Trait("Scenario", "T14")]
     public async Task SaveChanges_NoTenantContext_Throws()
     {
         await using var db = postgres.CreateContext(tenantId: null);

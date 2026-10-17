@@ -53,4 +53,4 @@ flowchart LR
 - T14: tenant A dùng ID đơn, SKU, chi nhánh của tenant B trên mọi API đọc và ghi; kết quả phải là 404 (hoặc 409 theo ngoại lệ ở quy tắc 3) và không có quan hệ chéo nào được tạo.
 - T15: phiên SignalR của tenant B không nhận thông báo của tenant A.
 - Mỗi service có một test tự động duyệt mọi entity của DbContext và báo lỗi nếu entity nghiệp vụ nào không cài `ITenantOwned`.
-- Bộ test toàn hệ thống ở task W5-02 phủ thêm event và job.
+- Bộ test toàn hệ thống ở task W5-02 phủ thêm event và job; bảng đối chiếu từng endpoint, event, job với test ở [testing/tenant-isolation.md](../testing/tenant-isolation.md).

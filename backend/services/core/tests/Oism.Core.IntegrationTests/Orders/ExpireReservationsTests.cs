@@ -28,6 +28,7 @@ public sealed class ExpireReservationsTests(ApiFactory factory) : IClassFixture<
     [Trait("UseCase", "UC-ORD-05 AC-2")]
     [Trait("UseCase", "UC-ORD-05 AC-3")]
     [Trait("UseCase", "UC-ORD-05 AC-5")]
+    [Trait("Scenario", "T14")]
     public async Task ExpireReservations_ExpiredOrdersOfTwoTenants_CancelsEachInItsOwnTenantOnceAndLeavesFreshAndConfirmedOrdersAlone()
     {
         var branch = await factory.SeedBranchAsync(_tenantId);

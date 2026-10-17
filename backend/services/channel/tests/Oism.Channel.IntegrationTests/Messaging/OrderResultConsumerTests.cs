@@ -49,6 +49,7 @@ public sealed class OrderResultConsumerTests(ApiFactory factory) : IClassFixture
 
     [Fact]
     [Trait("UseCase", "UC-SIM-01 AC-6")]
+    [Trait("Scenario", "T14")]
     public async Task OrderReservedAndRejected_ForSubmittedWebhooks_MoveThemToReservedWithTheOrderOrRejectedWithTheReason()
     {
         var shop = await Owner.CreateShopAsync();

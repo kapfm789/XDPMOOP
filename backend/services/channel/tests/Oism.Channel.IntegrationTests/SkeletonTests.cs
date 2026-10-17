@@ -19,6 +19,7 @@ public sealed class SkeletonTests(ApiFactory factory) : IClassFixture<ApiFactory
     // docs/architecture/multi-tenancy.md: entity không có tenant_id phải được loại trừ tường minh ở đây.
     // inbox_messages là bảng hạ tầng: khóa là eventId của thông điệp, không thuộc tenant nào.
     [Fact]
+    [Trait("Scenario", "T14")]
     public void DbContext_EveryEntity_ImplementsITenantOwned()
     {
         using var scope = factory.Services.CreateScope();

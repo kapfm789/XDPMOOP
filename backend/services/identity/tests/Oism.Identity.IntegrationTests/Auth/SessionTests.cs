@@ -138,6 +138,7 @@ public sealed class SessionTests(ApiFactory factory) : IClassFixture<ApiFactory>
 
     [Fact]
     [Trait("UseCase", "UC-AUTH-02 AC-5")]
+    [Trait("Scenario", "T14")]
     public async Task Logout_WithoutAccessTokenOrWithSomeoneElsesRefreshToken_LeavesThatTokenUsable()
     {
         var victim = await _anonymous.RegisterTenantAsync();
