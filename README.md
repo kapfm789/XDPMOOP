@@ -259,7 +259,7 @@ Cây đầy đủ và tài liệu chi phối từng folder: [docs/architecture/s
 | 3–4 | Sổ kho, số dư, phiếu nhập, giá vốn bình quân, máy trạng thái đơn, engine giữ hàng | Sản phẩm, SKU, mã vạch, giá; tồn kho, sổ giao dịch, phiếu nhập | Xong |
 | 5–6 | Duyệt, hủy, hết hạn đơn; POS checkout; chuyển kho; kiểm kê; webhook ba sàn | POS: bán hàng, in hóa đơn; admin: đơn hàng đa kênh, tạo đơn, chi tiết đơn, kênh sàn | Xong |
 | 7–8 | Báo cáo lợi nhuận, báo cáo tồn, cảnh báo, dự báo nhập hàng, thông báo realtime, seed data | Thông báo realtime, PWA của POS; chuyển kho, kiểm kê, tổng quan, báo cáo, đề xuất nhập hàng | Xong |
-| 9 | Kiểm thử toàn hệ thống, đo tải k6, coverage, gói demo | | Đang làm: k6 (T17) chưa chạy; seed chưa tự chạy khi `compose up` |
+| 9 | Coverage 100% cho ba module lõi, test cách ly tenant toàn hệ thống, đo tải k6, gói Compose demo có HTTPS và seed tự chạy, CI build image | admin và pos chạy bằng nginx trong gói demo | Xong |
 | 10 | Tài liệu và bàn giao | Áp thiết kế Figma cho admin (W5-10) | Đang làm: đã có SRS; W5-10 mới xong phần tài liệu, giao diện chưa đổi |
 
 Chi tiết theo từng task: [docs/README.md](docs/README.md) mục "Trạng thái". Mọi quyết định thiết kế đã được giảng viên xác nhận ngày 2026-10-04.
