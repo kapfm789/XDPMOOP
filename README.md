@@ -248,7 +248,9 @@ Cây đầy đủ và tài liệu chi phối từng folder: [docs/architecture/s
 | [Yêu cầu](docs/requirements/functional.md), [use case](docs/usecase-userstory/README.md) | Mã yêu cầu và tiêu chí chấp nhận |
 | [Kiến trúc](docs/architecture/README.md), [quyết định](docs/decisions/README.md) | Chia service, tenant, transaction, bảo mật; 13 ADR |
 | [Thiết kế](docs/design/README.md) | Bảng, API, event, máy trạng thái, luồng, giao diện, dự báo |
-| [Kiểm thử](docs/testing/strategy.md) | Chiến lược, 23 kịch bản bắt buộc, báo cáo backtest |
+| [Kiểm thử](docs/testing/strategy.md) | Chiến lược, 23 kịch bản bắt buộc, [kết quả kiểm thử](docs/testing/test-report.md), coverage, đo tải, backtest |
+| [Bàn giao](docs/handover/README.md) | Hướng dẫn cài đặt, hướng dẫn sử dụng, kế hoạch triển khai và vận hành, kịch bản demo |
+| [API](docs/design/api/README.md) | Swagger gộp ở `http://localhost:8080/swagger`, [Postman collection](docs/design/api/postman/README.md) |
 | [Kế hoạch](docs/PLAN.md) | 10 phase, phân công, ưu tiên, rủi ro, RTM rút gọn |
 | [Bản dịch và phân tích đề](OISM-ban-dich-va-phan-tich-tieng-Viet.md) | Đề gốc và các điểm cần làm rõ |
 
@@ -261,6 +263,6 @@ Cây đầy đủ và tài liệu chi phối từng folder: [docs/architecture/s
 | 5–6 | Duyệt, hủy, hết hạn đơn; POS checkout; chuyển kho; kiểm kê; webhook ba sàn | POS: bán hàng, in hóa đơn; admin: đơn hàng đa kênh, tạo đơn, chi tiết đơn, kênh sàn | Xong |
 | 7–8 | Báo cáo lợi nhuận, báo cáo tồn, cảnh báo, dự báo nhập hàng, thông báo realtime, seed data | Thông báo realtime, PWA của POS; chuyển kho, kiểm kê, tổng quan, báo cáo, đề xuất nhập hàng | Xong |
 | 9 | Coverage 100% cho ba module lõi, test cách ly tenant toàn hệ thống, đo tải k6, gói Compose demo có HTTPS và seed tự chạy, CI build image | admin và pos chạy bằng nginx trong gói demo | Xong |
-| 10 | Tài liệu và bàn giao | Áp thiết kế Figma cho admin (W5-10) | Đang làm: đã có SRS; W5-10 mới xong phần tài liệu, giao diện chưa đổi |
+| 10 | Swagger gộp ở gateway, Postman collection; SRS bản chốt, RTM đủ 44 mã, sơ đồ lớp UML, ERD đối chiếu migration; tài liệu kiểm thử, cài đặt, sử dụng, triển khai; kịch bản demo | admin theo thiết kế Figma: thanh bên chia nhóm, tổng quan có thẻ số liệu và biểu đồ doanh thu 7 ngày | Xong |
 
 Chi tiết theo từng task: [docs/README.md](docs/README.md) mục "Trạng thái". Mọi quyết định thiết kế đã được giảng viên xác nhận ngày 2026-10-04.
