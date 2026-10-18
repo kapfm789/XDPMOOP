@@ -13,7 +13,7 @@ Là nhân viên kho, tôi muốn xem tồn hiện tại và lịch sử mọi bi
 Tiêu chí chấp nhận:
 
 1. Cho một SKU tại một chi nhánh, khi xem tồn, thì thấy `on_hand`, `reserved`, `available = on_hand - reserved` và giá vốn bình quân.
-2. Cho bộ lọc chi nhánh, SKU, khoảng thời gian, khi xem sổ, thì các dòng hiện theo thứ tự ghi, mỗi dòng có loại IN hoặc OUT, lý do, số lượng, số dư sau giao dịch, chứng từ và người tạo.
+2. Cho bộ lọc chi nhánh, SKU, khoảng thời gian, khi xem sổ, thì các dòng hiện theo thứ tự ghi ngược, dòng ghi sau cùng đứng trên cùng, mỗi dòng có loại IN hoặc OUT, lý do, số lượng, số dư sau giao dịch, chứng từ và người tạo.
 3. Cho bất kỳ SKU nào, khi cộng IN trừ OUT của sổ, thì bằng `on_hand`.
 4. Không có API hay màn hình nào sửa hoặc xóa dòng sổ; lệnh `UPDATE` hoặc `DELETE` trực tiếp bị database từ chối (T16).
 

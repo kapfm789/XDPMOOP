@@ -51,9 +51,9 @@ internal sealed class StockQueries(CoreDbContext db) : IStockQueries
                 && (query.To == null || line.CreatedAt <= query.To)
             select new { line, sku.SkuCode, sku.Name };
 
-        // Thứ tự của sổ là theo seq, không theo created_at.
+        // Thứ tự của sổ là theo seq, không theo created_at; dòng ghi sau cùng đứng đầu (UC-INV-01 AC-2).
         var page = await rows
-            .OrderBy(row => row.line.Seq)
+            .OrderByDescending(row => row.line.Seq)
             .Skip((query.Page - 1) * query.PageSize).Take(query.PageSize)
             .ToListAsync(ct);
         return new PagedResult<LedgerLineDto>(

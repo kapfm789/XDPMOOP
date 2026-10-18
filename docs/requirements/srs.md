@@ -1104,11 +1104,11 @@ Mỗi nhóm gồm bảng phát biểu yêu cầu, rồi đặc tả từng use c
 - **Actor:** Owner, Staff. **Yêu cầu:** FR-INV-01, FR-RSE-01, NFR-SEC-03. **API:** `GET /api/core/stock`, `GET /api/core/ledger`.
 - **Luồng chính:**
   1. Người dùng xem tồn, lọc theo chi nhánh, SKU, từ khóa (mã hoặc tên SKU); mỗi dòng có `onHand`, `reserved`, `available`, `avgCost`, ngưỡng.
-  2. Người dùng xem sổ, lọc theo chi nhánh, SKU, khoảng thời gian; dòng sổ hiện theo `seq` tăng dần.
+  2. Người dùng xem sổ, lọc theo chi nhánh, SKU, khoảng thời gian; dòng sổ hiện theo `seq` giảm dần, dòng ghi sau cùng đứng trên cùng.
 - **Quy tắc:** chỉ Owner thấy `avgCost` và `unitCost`. Sổ không có đường sửa hay xóa (BR-03).
 - **Tiêu chí chấp nhận:**
   1. Mỗi SKU tại mỗi chi nhánh hiện `on_hand`, `reserved`, `available = on_hand − reserved` và giá vốn bình quân.
-  2. Lọc sổ theo chi nhánh, SKU, thời gian; mỗi dòng có loại IN hoặc OUT, lý do, số lượng, số dư sau giao dịch, chứng từ, người tạo, theo thứ tự ghi.
+  2. Lọc sổ theo chi nhánh, SKU, thời gian; mỗi dòng có loại IN hoặc OUT, lý do, số lượng, số dư sau giao dịch, chứng từ, người tạo, dòng ghi sau cùng đứng trên cùng.
   3. Với mọi SKU, tổng IN trừ tổng OUT của sổ bằng `on_hand`.
   4. Không API hay màn hình nào sửa hoặc xóa dòng sổ; `UPDATE`, `DELETE` trực tiếp bị database từ chối (T16).
 

@@ -1441,8 +1441,8 @@
                 "exec": [
                   "pm.test('Mã 200', () => pm.response.to.have.status(200));",
                   "const json = pm.response.text() ? pm.response.json() : null;",
-                  "pm.test('Hai dòng IN, số dư cộng dồn', () => {",
-                  "  pm.expect(json.items.map((l) => [l.type, l.quantity, l.balanceAfter])).to.eql([['IN', 10, 10], ['IN', 5, 15]]);",
+                  "pm.test('Hai dòng IN, dòng mới nhất trước, số dư cộng dồn', () => {",
+                  "  pm.expect(json.items.map((l) => [l.type, l.quantity, l.balanceAfter])).to.eql([['IN', 5, 15], ['IN', 10, 10]]);",
                   "});"
                 ]
               }

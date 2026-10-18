@@ -16,7 +16,7 @@ Trang quản trị cho Owner và Staff, nằm ở `frontend/admin`. Mỗi dòng 
 | `/catalog/products` | Danh sách sản phẩm | Owner, Staff | `GET /api/catalog/products` | UC-PROD-02 | W2-07 |
 | `/catalog/products/:id` | Sản phẩm, SKU, mã vạch, giá | Owner, Staff; ô giá chỉ Owner sửa | `/api/catalog/products/{id}`, `/skus/{id}/barcodes`, `/skus/{id}/prices` | UC-PROD-02, 03, 04 | W2-07 |
 | `/inventory/stock` | Tồn theo chi nhánh, đặt ngưỡng; dải tổng hợp trên bảng: tổng giá trị tồn (chỉ Owner), số dòng tồn đang theo dõi, số SKU tồn thấp | Owner, Staff | `GET /api/core/stock`, `PUT /api/core/stock/threshold`; dải tổng hợp đọc `GET /api/insights/reports/inventory-value` (`totalValue`) và `GET /api/insights/alerts/low-stock` | UC-INV-01, UC-INV-05, UC-REP-02 | W2-08, W5-10 |
-| `/inventory/ledger` | Sổ giao dịch, chỉ xem | Owner, Staff | `GET /api/core/ledger` | UC-INV-01 | W2-08 |
+| `/inventory/ledger` | Sổ giao dịch, chỉ xem, dòng mới nhất trên cùng | Owner, Staff | `GET /api/core/ledger` | UC-INV-01 | W2-08 |
 | `/inventory/receipts` | Phiếu nhập: danh sách, tạo, sửa, xác nhận; thêm nhà cung cấp | Owner, Staff | `/api/core/purchase-receipts`, `/api/core/suppliers`; tìm SKU qua `/api/catalog/products` | UC-INV-02 | W2-08 |
 | `/inventory/transfers` | Chuyển kho: tạo, xuất, nhận, xóa phiếu nháp | Owner, Staff | `/api/core/transfers`; tìm SKU qua `/api/catalog/products` | UC-INV-03 | W4-06 |
 | `/inventory/stocktakes` | Kiểm kê: mở phiên, nhập số đếm, chốt | Owner, Staff | `/api/core/stocktakes`; nạp SKU của chi nhánh qua `GET /api/core/stock`; tìm SKU qua `/api/catalog/products` | UC-INV-04 | W4-06 |
