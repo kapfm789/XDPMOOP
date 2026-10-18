@@ -1,0 +1,1559 @@
+{
+  "info": {
+    "name": "OISM kịch bản demo",
+    "description": "Phần API của kịch bản demo ở docs/handover/demo-script.md, chạy trên dữ liệu seed của gói demo. Mỗi lần chạy tạo sản phẩm mới có hậu tố riêng nên chạy lặp lại được (W5-09: chạy hai lần liên tiếp không lỗi).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "password",
+      "value": "Demo@2026"
+    }
+  ],
+  "item": [
+    {
+      "name": "Bước 0. Chuẩn bị",
+      "description": "Đăng nhập ba vai trò của \"Thời trang Mộc\" và lấy chi nhánh, danh mục, nhà cung cấp, shop từ seed.",
+      "item": [
+        {
+          "name": "Gateway khỏe",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/core/health",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Hậu tố của lần chạy: mã SKU và tên sản phẩm mới mỗi lần, nên kịch bản chạy lặp lại được trên cùng dữ liệu seed.",
+                  "pm.collectionVariables.set('run', Date.now().toString(36).slice(-5).toUpperCase());",
+                  "pm.collectionVariables.set('today', new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 10));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Đăng nhập chủ cửa hàng",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/identity/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"owner@moc.test\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('Vai trò Owner', () => pm.expect(json.user.role).to.eql('Owner'));",
+                  "pm.collectionVariables.set('accessToken', json.accessToken);",
+                  "pm.collectionVariables.set('refreshToken', json.refreshToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Tên cửa hàng",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/identity/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('Đúng tenant seed', () => pm.expect(json.tenantName).to.eql('Thời trang Mộc'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Đăng nhập nhân viên",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/identity/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"staff@moc.test\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.collectionVariables.set('staffToken', json.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Đăng nhập thu ngân",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/identity/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"cashier@moc.test\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.collectionVariables.set('cashierToken', json.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Chi nhánh của seed",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/identity/branches"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "const q1 = json.find((b) => b.code === 'MOC-Q1');",
+                  "const q3 = json.find((b) => b.code === 'MOC-Q3');",
+                  "pm.test('Có MOC-Q1 và MOC-Q3', () => pm.expect(q1 && q3).to.be.ok);",
+                  "pm.collectionVariables.set('q1', q1.id);",
+                  "pm.collectionVariables.set('q3', q3.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Danh mục của seed",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/catalog/categories"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('Có danh mục', () => pm.expect(json.length).to.be.above(0));",
+                  "pm.collectionVariables.set('categoryId', json[0].id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Nhà cung cấp của seed",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/core/suppliers"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('Có nhà cung cấp', () => pm.expect(json.length).to.be.above(0));",
+                  "pm.collectionVariables.set('supplierId', json[0].id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Shop Shopee của seed",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/channel/channel-shops"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "const shop = json.find((s) => s.shopId === 'moc-shopee');",
+                  "pm.test('Shop moc-shopee đang bật, gắn MOC-Q1', () => {",
+                  "  pm.expect(shop.isActive).to.be.true;",
+                  "  pm.expect(shop.branchId).to.eql(pm.collectionVariables.get('q1'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bước 2. Sản phẩm",
+      "description": "UC-PROD-02, 03, 04: sản phẩm hai biến thể, mã vạch EAN-13 tự sinh, giá lẻ.",
+      "item": [
+        {
+          "name": "Tạo sản phẩm hai biến thể",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/catalog/products",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Áo polo demo {{run}}\",\n  \"categoryId\": \"{{categoryId}}\",\n  \"hasVariants\": true,\n  \"skus\": [\n    {\n      \"skuCode\": \"POLO-{{run}}-M\",\n      \"attributes\": {\n        \"Kích cỡ\": \"M\"\n      },\n      \"retailPrice\": 150000,\n      \"wholesalePrice\": 120000\n    },\n    {\n      \"skuCode\": \"POLO-{{run}}-L\",\n      \"attributes\": {\n        \"Kích cỡ\": \"L\"\n      },\n      \"retailPrice\": 160000,\n      \"wholesalePrice\": 125000\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "const sku = (size) => json.skus.find((s) => s.attributes['Kích cỡ'] === size);",
+                  "pm.collectionVariables.set('productId', json.id);",
+                  "pm.collectionVariables.set('skuM', sku('M').id);",
+                  "pm.collectionVariables.set('codeM', sku('M').skuCode);",
+                  "pm.collectionVariables.set('skuL', sku('L').id);",
+                  "pm.collectionVariables.set('codeL', sku('L').skuCode);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sinh mã vạch EAN-13",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/catalog/skus/{{skuM}}/barcodes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"symbology\": \"EAN13\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('13 chữ số', () => pm.expect(json.code).to.match(/^\\d{13}$/));",
+                  "pm.collectionVariables.set('barcodeM', json.code);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Chờ kho nhận SKU mới",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/core/pos/skus?branchId={{q1}}&query={{codeL}}"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.collectionVariables.get('pollTries')) setTimeout(() => {}, 1000);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.code === 200 ? pm.response.json() : null;",
+                  "const ready = json !== null && (json.some((s) => s.skuCode === pm.collectionVariables.get('codeL')));",
+                  "const tries = Number(pm.collectionVariables.get('pollTries') || 0);",
+                  "if (!ready && tries < 30) {",
+                  "  pm.collectionVariables.set('pollTries', tries + 1);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.unset('pollTries');",
+                  "  pm.test('Kho đã có bản sao SKU', () => pm.expect(ready, 'Hết 30 lần chờ').to.be.true);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bước 3. Nhập hàng và giá vốn",
+      "description": "UC-INV-02, FR-COST-01: 10 × 100.000 rồi 5 × 130.000 ra giá vốn 110.000 (T09).",
+      "item": [
+        {
+          "name": "Phiếu nhập lô đầu",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/core/purchase-receipts",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"branchId\": \"{{q1}}\",\n  \"supplierId\": \"{{supplierId}}\",\n  \"note\": \"Demo {{run}} lô đầu\",\n  \"items\": [\n    {\n      \"skuId\": \"{{skuM}}\",\n      \"quantity\": 10,\n      \"unitCost\": 100000\n    },\n    {\n      \"skuId\": \"{{skuL}}\",\n      \"quantity\": 1,\n      \"unitCost\": 90000\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.collectionVariables.set('receipt1', json.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Xác nhận lô đầu",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/core/purchase-receipts/{{receipt1}}/confirm"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('Đã nhập kho', () => pm.expect(json.status).to.eql('Confirmed'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Phiếu nhập lô hai",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/core/purchase-receipts",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"branchId\": \"{{q1}}\",\n  \"supplierId\": \"{{supplierId}}\",\n  \"note\": \"Demo {{run}} lô hai\",\n  \"items\": [\n    {\n      \"skuId\": \"{{skuM}}\",\n      \"quantity\": 5,\n      \"unitCost\": 130000\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.collectionVariables.set('receipt2', json.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Xác nhận lô hai",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/core/purchase-receipts/{{receipt2}}/confirm"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Tồn và giá vốn",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/core/stock?branchId={{q1}}&skuId={{skuM}}&page=1&pageSize=20"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('Tồn 15, giá vốn bình quân 110.000', () => {",
+                  "  pm.expect(json.items[0].onHand).to.eql(15);",
+                  "  pm.expect(json.items[0].avgCost).to.eql(110000);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sổ giao dịch",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/core/ledger?branchId={{q1}}&skuId={{skuM}}&page=1&pageSize=20"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('Hai dòng nhập', () => pm.expect(json.items.map((l) => [l.type, l.reason, l.quantity])).to.eql([['IN', 'Purchase', 10], ['IN', 'Purchase', 5]]));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bước 4. Đơn thủ công",
+      "description": "UC-ORD-02, 03, 06: tạo đơn giữ hàng, duyệt chốt giá vốn, hoàn tất.",
+      "item": [
+        {
+          "name": "Tạo đơn 2 cái",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/core/orders",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"branchId\": \"{{q1}}\",\n  \"note\": \"Khách đặt qua điện thoại, demo {{run}}\",\n  \"items\": [\n    {\n      \"skuId\": \"{{skuM}}\",\n      \"quantity\": 2\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('Chờ duyệt, 300.000', () => {",
+                  "  pm.expect(json.status).to.eql('Reserved');",
+                  "  pm.expect(json.totalAmount).to.eql(300000);",
+                  "});",
+                  "pm.collectionVariables.set('manualOrder', json.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Duyệt đơn",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/core/orders/{{manualOrder}}/confirm"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('Giá vốn chốt 110.000', () => pm.expect(json.items[0].costPrice).to.eql(110000));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Hủy đơn đã duyệt bị từ chối",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/core/orders/{{manualOrder}}/cancel"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 409 invalid_state_transition', () => {",
+                  "  pm.response.to.have.status(409);",
+                  "  pm.expect(pm.response.json().code).to.eql('invalid_state_transition');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Hoàn tất đơn",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/core/orders/{{manualOrder}}/complete"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('Hoàn tất', () => pm.expect(json.status).to.eql('Completed'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bước 5. Bán tại quầy",
+      "description": "UC-POS-01, 02: quét mã vạch, thanh toán tiền mặt; bấm hai lần chỉ ra một đơn (T03).",
+      "item": [
+        {
+          "name": "Quét mã vạch",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/core/pos/skus?branchId={{q1}}&query={{barcodeM}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{cashierToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('SKU quét đứng đầu, khả dụng 13', () => {",
+                  "  pm.expect(json[0].skuId).to.eql(pm.collectionVariables.get('skuM'));",
+                  "  pm.expect(json[0].available).to.eql(13);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Thanh toán tiền mặt",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Idempotency-Key",
+                "value": "{{posKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/core/pos/checkout",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{cashierToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"branchId\": \"{{q1}}\",\n  \"items\": [\n    {\n      \"skuId\": \"{{skuM}}\",\n      \"quantity\": 1\n    }\n  ],\n  \"payment\": {\n    \"method\": \"Cash\",\n    \"amount\": 200000\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('posKey', pm.variables.replaceIn('{{$guid}}'));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.collectionVariables.set('posOrder', json.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bấm thanh toán lần hai",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Idempotency-Key",
+                "value": "{{posKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/core/pos/checkout",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{cashierToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"branchId\": \"{{q1}}\",\n  \"items\": [\n    {\n      \"skuId\": \"{{skuM}}\",\n      \"quantity\": 1\n    }\n  ],\n  \"payment\": {\n    \"method\": \"Cash\",\n    \"amount\": 200000\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('Cùng một đơn', () => pm.expect(json.id).to.eql(pm.collectionVariables.get('posOrder')));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bước 6 và 7. Đơn sàn và flash sale",
+      "description": "UC-SIM-01, UC-ORD-01: đơn Shopee giả lập vào Chờ duyệt rồi được duyệt; 50 đơn tranh 1 sản phẩm chỉ 1 đơn giữ được (T01).",
+      "item": [
+        {
+          "name": "Bắn 1 đơn Shopee",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/channel/simulator/burst",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"channel\": \"shopee\",\n  \"shopId\": \"moc-shopee\",\n  \"skuCode\": \"{{codeM}}\",\n  \"quantityPerOrder\": 1,\n  \"orders\": 1,\n  \"concurrency\": 1,\n  \"unitPrice\": 150000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 202', () => pm.response.to.have.status(202));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('Đã gửi 1 webhook', () => pm.expect(json.sent).to.eql(1));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Chờ đơn Shopee được giữ hàng",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/core/orders?branchId={{q1}}&channel=Shopee&status=Reserved&page=1&pageSize=100"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.collectionVariables.get('pollTries')) setTimeout(() => {}, 1000);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.code === 200 ? pm.response.json() : null;",
+                  "const ready = json !== null && (json.items.some((o) => o.items.some((i) => i.skuId === pm.collectionVariables.get('skuM'))));",
+                  "const tries = Number(pm.collectionVariables.get('pollTries') || 0);",
+                  "if (!ready && tries < 30) {",
+                  "  pm.collectionVariables.set('pollTries', tries + 1);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.unset('pollTries');",
+                  "  pm.test('Đơn Shopee của SKU mới ở Chờ duyệt', () => pm.expect(ready, 'Hết 30 lần chờ').to.be.true);",
+                  "  if (ready) pm.collectionVariables.set('shopeeOrder', json.items.find((o) => o.items.some((i) => i.skuId === pm.collectionVariables.get('skuM'))).id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Duyệt đơn Shopee",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/core/orders/{{shopeeOrder}}/confirm"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('Kênh Shopee, đã duyệt', () => {",
+                  "  pm.expect(json.channel).to.eql('Shopee');",
+                  "  pm.expect(json.status).to.eql('Confirmed');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Flash sale: 50 đơn cho 1 sản phẩm",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/channel/simulator/burst",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"channel\": \"shopee\",\n  \"shopId\": \"moc-shopee\",\n  \"skuCode\": \"{{codeL}}\",\n  \"quantityPerOrder\": 1,\n  \"orders\": 50,\n  \"concurrency\": 50,\n  \"unitPrice\": 160000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 202', () => pm.response.to.have.status(202));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('Đã gửi 50 webhook', () => pm.expect(json.sent).to.eql(50));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Chờ kho xử lý hết webhook",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/channel/webhook-events?channel=shopee&status=Submitted&page=1&pageSize=1"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.collectionVariables.get('pollTries')) setTimeout(() => {}, 1000);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.code === 200 ? pm.response.json() : null;",
+                  "const ready = json !== null && (json.total === 0);",
+                  "const tries = Number(pm.collectionVariables.get('pollTries') || 0);",
+                  "if (!ready && tries < 30) {",
+                  "  pm.collectionVariables.set('pollTries', tries + 1);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.unset('pollTries');",
+                  "  pm.test('Không còn webhook chờ kho', () => pm.expect(ready, 'Hết 30 lần chờ').to.be.true);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Chỉ 1 đơn giữ được hàng",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/core/orders?branchId={{q1}}&channel=Shopee&status=Reserved&page=1&pageSize=100"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('Đúng 1 đơn Chờ duyệt cho SKU còn 1 cái', () =>",
+                  "  pm.expect(json.items.filter((o) => o.items.some((i) => i.skuId === pm.collectionVariables.get('skuL'))).length).to.eql(1));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Tồn không âm",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/core/stock?branchId={{q1}}&skuId={{skuL}}&page=1&pageSize=20"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('Tồn 1, đang giữ 1, khả dụng 0', () =>",
+                  "  pm.expect([json.items[0].onHand, json.items[0].reserved, json.items[0].available]).to.eql([1, 1, 0]));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bước 8 và 9. Chuyển kho và kiểm kê",
+      "description": "UC-INV-03, UC-INV-04: hàng đang chuyển chưa bán được ở nơi nhận (T12); kiểm kê ghi bút toán điều chỉnh.",
+      "item": [
+        {
+          "name": "Tạo phiếu chuyển Q1 sang Q3",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/core/transfers",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromBranchId\": \"{{q1}}\",\n  \"toBranchId\": \"{{q3}}\",\n  \"items\": [\n    {\n      \"skuId\": \"{{skuM}}\",\n      \"quantity\": 2\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.collectionVariables.set('transferId', json.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Xuất kho",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/core/transfers/{{transferId}}/ship"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('Đang vận chuyển, mang giá vốn 110.000', () => {",
+                  "  pm.expect(json.status).to.eql('InTransit');",
+                  "  pm.expect(json.items[0].unitCost).to.eql(110000);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Q3 chưa bán được hàng đang chuyển",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/core/pos/skus?branchId={{q3}}&query={{codeM}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('Khả dụng ở Q3 bằng 0', () => pm.expect(json.find((s) => s.skuId === pm.collectionVariables.get('skuM')).available).to.eql(0));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Nhận hàng",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/core/transfers/{{transferId}}/receive"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('Đã nhận', () => pm.expect(json.status).to.eql('Received'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mở phiên kiểm kê ở Q3",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/core/stocktakes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"branchId\": \"{{q3}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.collectionVariables.set('stocktakeId', json.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Nhập số đếm thấp hơn sổ 1 cái",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/core/stocktakes/{{stocktakeId}}/counts",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"skuId\": \"{{skuM}}\",\n      \"countedQty\": 1\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Chốt kiểm kê",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/core/stocktakes/{{stocktakeId}}/post"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('Trên sổ 2, lệch -1', () => pm.expect([json.items[0].systemQty, json.items[0].difference]).to.eql([2, -1]));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bước 10 và 11. Báo cáo, cảnh báo, dự báo",
+      "description": "UC-REP-01, 03, UC-AI-01, 02.",
+      "item": [
+        {
+          "name": "Lợi nhuận gộp của SKU mới hôm nay",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/insights/reports/gross-profit?from={{today}}&to={{today}}&skuId={{skuM}}&groupBy=channel",
+            "description": "Đơn thủ công 2 cái, POS 1 cái, Shopee 1 cái, đều giá 150.000 và giá vốn 110.000."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.collectionVariables.get('pollTries')) setTimeout(() => {}, 1000);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.code === 200 ? pm.response.json() : null;",
+                  "const ready = json !== null && (json.totals.quantity === 4);",
+                  "const tries = Number(pm.collectionVariables.get('pollTries') || 0);",
+                  "if (!ready && tries < 30) {",
+                  "  pm.collectionVariables.set('pollTries', tries + 1);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.unset('pollTries');",
+                  "  pm.test('Đủ 4 cái đã bán', () => pm.expect(ready, 'Hết 30 lần chờ').to.be.true);",
+                  "  pm.test('Doanh thu 600.000, giá vốn 440.000, lãi gộp 160.000', () =>",
+                  "    pm.expect([json.totals.revenue, json.totals.cogs, json.totals.grossProfit]).to.eql([600000, 440000, 160000]));",
+                  "  pm.test('Ba kênh', () => pm.expect(json.rows.map((r) => r.key).sort()).to.eql(['Admin', 'POS', 'Shopee']));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Nhân viên không xem được lợi nhuận",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/insights/reports/gross-profit?from={{today}}&to={{today}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staffToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 403 forbidden', () => {",
+                  "  pm.response.to.have.status(403);",
+                  "  pm.expect(pm.response.json().code).to.eql('forbidden');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Đặt ngưỡng 20 cho SKU mới ở Q1",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/core/stock/threshold",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"branchId\": \"{{q1}}\",\n  \"skuId\": \"{{skuM}}\",\n  \"threshold\": 20\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('Khả dụng 9 sau đơn, POS, Shopee và chuyển kho', () => pm.expect(json.available).to.eql(9));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cảnh báo tồn thấp",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/insights/alerts/low-stock?branchId={{q1}}"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.collectionVariables.get('pollTries')) setTimeout(() => {}, 1000);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.code === 200 ? pm.response.json() : null;",
+                  "const ready = json !== null && (json.some((a) => a.skuId === pm.collectionVariables.get('skuM') && a.available === 9 && a.threshold === 20));",
+                  "const tries = Number(pm.collectionVariables.get('pollTries') || 0);",
+                  "if (!ready && tries < 30) {",
+                  "  pm.collectionVariables.set('pollTries', tries + 1);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.unset('pollTries');",
+                  "  pm.test('SKU mới có cảnh báo', () => pm.expect(ready, 'Hết 30 lần chờ').to.be.true);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Chạy dự báo",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/insights/forecast/run"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 202', () => pm.response.to.have.status(202));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.collectionVariables.set('forecastRun', json.runId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Đề xuất nhập hàng",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/insights/forecast/reorder-suggestions?branchId={{q1}}&page=1&pageSize=100"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('Lần chạy vừa ghi thành công', () => {",
+                  "  pm.expect(json.run.id).to.eql(pm.collectionVariables.get('forecastRun'));",
+                  "  pm.expect(json.run.status).to.eql('Succeeded');",
+                  "});",
+                  "pm.test('Có SKU đủ dữ liệu từ lịch sử seed', () => pm.expect(json.items.some((i) => i.hasEnoughData)).to.be.true);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bước 12. Cách ly tenant",
+      "description": "NFR-TENANT-01: chủ cửa hàng khác không thấy đơn của \"Thời trang Mộc\" (T14).",
+      "item": [
+        {
+          "name": "Đăng nhập chủ \"Tạp hóa Xanh\"",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/identity/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"owner@xanh.test\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.collectionVariables.set('otherToken', json.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mở đơn của cửa hàng khác",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/core/orders/{{manualOrder}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{otherToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 404 not_found', () => {",
+                  "  pm.response.to.have.status(404);",
+                  "  pm.expect(pm.response.json().code).to.eql('not_found');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Đăng xuất chủ \"Thời trang Mộc\"",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/identity/auth/logout",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 204', () => pm.response.to.have.status(204));",
+                  "const json = pm.response.text() ? pm.response.json() : null;"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

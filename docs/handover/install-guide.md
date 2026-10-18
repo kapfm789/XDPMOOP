@@ -115,6 +115,7 @@ Mật khẩu đổi được bằng biến `SEED_PASSWORD` trong `deploy/.env` t
 | `Bind for 0.0.0.0:8080 failed: port is already allocated` | Cổng đang bị chương trình khác dùng, thường là Compose dev của dự án | Dừng chương trình đó (`docker compose -f deploy/docker-compose.yml down` nếu là Compose dev) rồi chạy lại lệnh ở bước 4 |
 | Lệnh `docker` báo không kết nối được Docker daemon | Docker Desktop chưa chạy xong | Mở Docker Desktop, chờ "Engine running" |
 | Build dừng với lỗi tải package (`NU1301`, `npm ERR! network`) | Mạng chập chờn lúc tải package | Chạy lại lệnh ở bước 4; phần đã build được giữ trong cache |
+| Build dừng với `failed to receive status: rpc error ... EOF` | Máy ảo của Docker thiếu RAM khi build 9 image song song | Build lần lượt từng image rồi chạy lại bước 4 không cần `--build`: `docker compose -f deploy/docker-compose.demo.yml build gateway`, rồi lần lượt `identity`, `catalog`, `core`, `channel`, `insights`, `seed`, `admin`, `pos` |
 | `seed` khởi động lại nhiều lần rồi `Exited (1)` | Service chưa khỏe kịp, thường do máy thiếu RAM | Tăng RAM cho Docker (Docker Desktop, Settings, Resources), rồi `docker compose -f deploy/docker-compose.demo.yml up -d seed` |
 | Đăng nhập báo sai mật khẩu với tài khoản mẫu | Seed chưa chạy xong, hoặc `SEED_PASSWORD` đã đổi | Xem `logs seed`; dùng mật khẩu trong `deploy/.env` nếu có |
 | Trang quản trị trắng hoặc báo lỗi mạng | Gateway chưa khỏe | `docker compose -f deploy/docker-compose.demo.yml ps`, chờ `gateway` ở `healthy` |

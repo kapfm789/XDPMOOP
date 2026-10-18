@@ -47,6 +47,8 @@
                 "exec": [
                   "// Mỗi lần chạy dùng một tenant mới để chạy lặp lại được.",
                   "pm.collectionVariables.set('runId', Date.now().toString(36));",
+                  "// Số điện thoại 10 chữ số, khác nhau giữa các lần chạy (API nhận 8 đến 15 chữ số).",
+                  "pm.collectionVariables.set('cashierPhone', '09' + String(Date.now()).slice(-8));",
                   "pm.collectionVariables.set('today', new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 10));"
                 ]
               }
@@ -533,7 +535,7 @@
             "url": "{{baseUrl}}/api/identity/users",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"fullName\": \"Thu ngân Postman\",\n  \"phone\": \"09{{$randomInt}}{{$randomInt}}\",\n  \"email\": \"cashier-{{runId}}@postman.oism.local\",\n  \"password\": \"{{password}}\",\n  \"role\": \"Cashier\",\n  \"branchId\": \"{{branchId}}\"\n}",
+              "raw": "{\n  \"fullName\": \"Thu ngân Postman\",\n  \"phone\": \"{{cashierPhone}}\",\n  \"email\": \"cashier-{{runId}}@postman.oism.local\",\n  \"password\": \"{{password}}\",\n  \"role\": \"Cashier\",\n  \"branchId\": \"{{branchId}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1187,12 +1189,12 @@
                   "const json = pm.response.code === 200 ? pm.response.json() : null;",
                   "const ready = json !== null && (json.some((s) => s.skuCode === pm.collectionVariables.get('skuACode')));",
                   "const tries = Number(pm.collectionVariables.get('pollTries') || 0);",
-                  "if (!ready && tries < 20) {",
+                  "if (!ready && tries < 30) {",
                   "  pm.collectionVariables.set('pollTries', tries + 1);",
                   "  pm.execution.setNextRequest(pm.info.requestName);",
                   "} else {",
                   "  pm.collectionVariables.unset('pollTries');",
-                  "  pm.test('core đã có bản sao SKU', () => pm.expect(ready, 'Hết 20 lần chờ').to.be.true);",
+                  "  pm.test('core đã có bản sao SKU', () => pm.expect(ready, 'Hết 30 lần chờ').to.be.true);",
                   "}"
                 ]
               }
@@ -2435,12 +2437,12 @@
                   "const json = pm.response.code === 200 ? pm.response.json() : null;",
                   "const ready = json !== null && (json.items.filter((e) => e.eventId === 'pm-evt-' + pm.collectionVariables.get('runId')).length === 1 && json.items.find((e) => e.eventId === 'pm-evt-' + pm.collectionVariables.get('runId')).status === 'Reserved');",
                   "const tries = Number(pm.collectionVariables.get('pollTries') || 0);",
-                  "if (!ready && tries < 20) {",
+                  "if (!ready && tries < 30) {",
                   "  pm.collectionVariables.set('pollTries', tries + 1);",
                   "  pm.execution.setNextRequest(pm.info.requestName);",
                   "} else {",
                   "  pm.collectionVariables.unset('pollTries');",
-                  "  pm.test('Webhook chuyển sang Reserved, chỉ một bản ghi', () => pm.expect(ready, 'Hết 20 lần chờ').to.be.true);",
+                  "  pm.test('Webhook chuyển sang Reserved, chỉ một bản ghi', () => pm.expect(ready, 'Hết 30 lần chờ').to.be.true);",
                   "  if (ready) pm.collectionVariables.set('channelOrderId', json.items.find((e) => e.eventId === 'pm-evt-' + pm.collectionVariables.get('runId')).orderId);",
                   "}"
                 ]
@@ -2539,12 +2541,12 @@
                   "const json = pm.response.code === 200 ? pm.response.json() : null;",
                   "const ready = json !== null && (json.totals.quantity === 4);",
                   "const tries = Number(pm.collectionVariables.get('pollTries') || 0);",
-                  "if (!ready && tries < 20) {",
+                  "if (!ready && tries < 30) {",
                   "  pm.collectionVariables.set('pollTries', tries + 1);",
                   "  pm.execution.setNextRequest(pm.info.requestName);",
                   "} else {",
                   "  pm.collectionVariables.unset('pollTries');",
-                  "  pm.test('Đủ bốn đơn vị đã bán', () => pm.expect(ready, 'Hết 20 lần chờ').to.be.true);",
+                  "  pm.test('Đủ bốn đơn vị đã bán', () => pm.expect(ready, 'Hết 30 lần chờ').to.be.true);",
                   "  pm.test('Doanh thu 600.000, giá vốn 440.000, lãi gộp 160.000', () =>",
                   "    pm.expect([json.totals.revenue, json.totals.cogs, json.totals.grossProfit]).to.eql([600000, 440000, 160000]));",
                   "}"
@@ -2610,12 +2612,12 @@
                   "const json = pm.response.code === 200 ? pm.response.json() : null;",
                   "const ready = json !== null && (json.some((a) => a.skuId === pm.collectionVariables.get('skuAId') && a.available === 11 && a.threshold === 100));",
                   "const tries = Number(pm.collectionVariables.get('pollTries') || 0);",
-                  "if (!ready && tries < 20) {",
+                  "if (!ready && tries < 30) {",
                   "  pm.collectionVariables.set('pollTries', tries + 1);",
                   "  pm.execution.setNextRequest(pm.info.requestName);",
                   "} else {",
                   "  pm.collectionVariables.unset('pollTries');",
-                  "  pm.test('SKU dưới ngưỡng có cảnh báo', () => pm.expect(ready, 'Hết 20 lần chờ').to.be.true);",
+                  "  pm.test('SKU dưới ngưỡng có cảnh báo', () => pm.expect(ready, 'Hết 30 lần chờ').to.be.true);",
                   "}"
                 ]
               }
@@ -2647,12 +2649,12 @@
                   "const json = pm.response.code === 200 ? pm.response.json() : null;",
                   "const ready = json !== null && (json.items.some((r) => r.skuId === pm.collectionVariables.get('skuAId') && r.onHand === 11));",
                   "const tries = Number(pm.collectionVariables.get('pollTries') || 0);",
-                  "if (!ready && tries < 20) {",
+                  "if (!ready && tries < 30) {",
                   "  pm.collectionVariables.set('pollTries', tries + 1);",
                   "  pm.execution.setNextRequest(pm.info.requestName);",
                   "} else {",
                   "  pm.collectionVariables.unset('pollTries');",
-                  "  pm.test('Giá trị tồn theo giá vốn', () => pm.expect(ready, 'Hết 20 lần chờ').to.be.true);",
+                  "  pm.test('Giá trị tồn theo giá vốn', () => pm.expect(ready, 'Hết 30 lần chờ').to.be.true);",
                   "  pm.test('value = onHand × avgCost', () => {",
                   "    const row = json.items.find((r) => r.skuId === pm.collectionVariables.get('skuAId'));",
                   "    pm.expect(row.value).to.eql(11 * 110000);",

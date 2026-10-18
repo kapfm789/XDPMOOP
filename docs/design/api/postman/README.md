@@ -33,7 +33,7 @@ Các biến còn lại (`accessToken`, `branchId`, `skuAId` ...) do test script 
 | 5. insights | UC-REP-01 đến 03, UC-AI-01, 02 | Lợi nhuận gộp ví dụ 300.000 − 220.000 = 80.000 cộng thêm đơn POS và đơn sàn (T10), Staff xem lợi nhuận 403, cảnh báo tồn, giá trị tồn theo giá vốn, bán chạy, bán chậm, SKU mới "chưa đủ dữ liệu" (T19) |
 | 6. Kết thúc phiên | UC-AUTH-02 | Dùng lại refresh token đã xoay 401, đăng xuất thu hồi token |
 
-Dữ liệu đi giữa các service bằng event nên có độ trễ ngắn. Các request đứng đầu một chặng phụ thuộc event (`Chờ core nhận SKU và chi nhánh`, `Chờ đơn sàn được giữ hàng`, các báo cáo của `insights`) tự gọi lại tối đa 20 lần, cách nhau 1 giây, rồi mới báo lỗi.
+Dữ liệu đi giữa các service bằng event nên có độ trễ ngắn. Các request đứng đầu một chặng phụ thuộc event (`Chờ core nhận SKU và chi nhánh`, `Chờ đơn sàn được giữ hàng`, các báo cáo của `insights`) tự gọi lại tối đa 30 lần, cách nhau 1 giây, rồi mới báo lỗi.
 
 ## Sửa collection
 
