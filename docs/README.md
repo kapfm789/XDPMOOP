@@ -11,7 +11,8 @@ Thư mục `docs/` là nguồn chuẩn cho mọi quyết định về OISM. Code
 | [architecture/](architecture/) | Hệ thống chia thế nào, vì sao, code đặt ở đâu? | [README.md](architecture/README.md) |
 | [decisions/](decisions/) | Những điểm đề chưa chốt được quyết ra sao? | [README.md](decisions/README.md) |
 | [design/](design/) | Bảng, API, event, trạng thái, luồng cụ thể ra sao? | [README.md](design/README.md) |
-| [testing/](testing/) | Kiểm thử gì, viết ở đâu, thế nào là qua? | [strategy.md](testing/strategy.md) |
+| [testing/](testing/) | Kiểm thử gì, viết ở đâu, thế nào là qua? | [strategy.md](testing/strategy.md); kết quả ở [test-report.md](testing/test-report.md) |
+| [handover/](handover/) | Cài, dùng, vận hành, trình diễn hệ thống thế nào? | [README.md](handover/README.md) |
 | [conventions/](conventions/) | Viết code, commit, làm việc với AI theo kiểu nào? | [backend.md](conventions/backend.md) |
 | [plans/](plans/) và [PLAN.md](PLAN.md) | Ai làm, phase nào, xong khi nào? | [PLAN.md](PLAN.md) |
 

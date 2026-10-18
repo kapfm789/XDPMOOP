@@ -59,7 +59,7 @@
 
 | Mã | Cho trước | Khi | Thì | Đặt ở |
 | --- | --- | --- | --- | --- |
-| T20 | Máy chỉ có Docker; repo vừa clone | `docker compose up` theo hướng dẫn | 5 service, gateway, hai frontend, PostgreSQL, RabbitMQ đều khỏe; đăng nhập bằng tài khoản seed; chạy được kịch bản demo | Kiểm tay theo hướng dẫn cài đặt |
+| T20 | Máy chỉ có Docker; repo vừa clone | `docker compose up` theo hướng dẫn | 5 service, gateway, hai frontend, PostgreSQL, RabbitMQ đều khỏe; đăng nhập bằng tài khoản seed; chạy được kịch bản demo | Kiểm tay theo [hướng dẫn cài đặt](../handover/install-guide.md) |
 | T21 | Swagger và Postman collection | Gọi lần lượt các API theo tài liệu | Mã trạng thái và hình dạng phản hồi khớp [design/api/](../design/api/README.md) | Test `Swagger_Document_MarksRolesAndPublicEndpoints` ở `SkeletonTests` của từng service; collection [design/api/postman/](../design/api/postman/README.md) chạy bằng Postman hoặc newman |
 
 ## Liên kết với use case

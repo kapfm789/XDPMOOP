@@ -52,7 +52,7 @@ Mỗi quy tắc trên có một chỗ trong code hoặc test giữ nó, để kh
 | Sổ chỉ thêm mới | Trigger ở database chặn UPDATE và DELETE, test T16 |
 | Không rò dữ liệu giữa tenant | Global Query Filter, test mỗi `DbContext` chỉ có entity `ITenantOwned`, bộ test cách ly toàn hệ thống T14, T15 ([testing/tenant-isolation.md](../testing/tenant-isolation.md)) |
 | Event qua outbox, consumer có inbox | Test T22, T23 ([architecture/messaging.md](messaging.md)) |
-| Phân lớp | Project reference một chiều: Domain không tham chiếu project nào ngoài `Oism.SharedKernel`; Application không tham chiếu Infrastructure ([layering.md](layering.md)) |
+| Phân lớp | Project reference một chiều, và `LayeringTests` trong project test đơn vị của mỗi service kiểm Domain chỉ tham chiếu thư viện chuẩn và `Oism.SharedKernel`, Application không tham chiếu Infrastructure, Api hay EF Core ([layering.md](layering.md)) |
 | Quyền theo vai trò | Fallback policy từ chối mọi endpoint không khai báo policy; Swagger ghi vai trò của từng endpoint và có test cho từng service |
 
 ## Vòng đời nền tảng
