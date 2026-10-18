@@ -32,6 +32,7 @@ Khi `seed` ở trạng thái `exited (0)`:
 | `http://localhost:5174` | Bán hàng tại quầy (`pos`), cài được thành PWA |
 | `http://localhost:8080` | Gateway, HTTP; hai frontend gọi cổng này |
 | `https://localhost:8443` | Gateway, HTTPS với TLS 1.3; chứng chỉ tự ký nên trình duyệt sẽ cảnh báo |
+| `http://localhost:8080/swagger` | Swagger gộp của 5 service; Postman collection ở [docs/design/api/postman/](../docs/design/api/postman/README.md) |
 
 Tài khoản demo và mật khẩu ở [seed/README.md](seed/README.md); mật khẩu đổi được bằng biến `SEED_PASSWORD` trong `deploy/.env` trước lần `up` đầu.
 
