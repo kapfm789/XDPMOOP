@@ -51,6 +51,7 @@ Trang quản trị cho Owner và Staff, nằm ở `frontend/admin`. Mỗi dòng 
 | Thanh bên | Nền trắng, logo OISM; menu chia nhóm có icon: Tổng quan; Sản phẩm (Danh mục, Thương hiệu, Sản phẩm); Kho (Tồn kho, Sổ giao dịch, Phiếu nhập, Chuyển kho, Kiểm kê); Đơn hàng (Danh sách đơn, Tạo đơn); Báo cáo (Lợi nhuận gộp, Tồn kho và tốc độ bán, Dự báo nhập hàng); Kênh sàn; Cài đặt (Chi nhánh, Người dùng). Thu gọn được còn icon. Mục và nhóm vẫn lọc theo vai trò như bảng trên |
 | Thanh trên | Tên cửa hàng lấy từ `tenantName` của `GET /api/identity/me`; chuông thông báo; avatar chữ cái đầu, họ tên và tag vai trò (Chủ cửa hàng, Nhân viên); nút đăng xuất |
 | Đầu trang | Breadcrumb theo nhóm menu, tiêu đề trang; dưới đó là hàng bộ lọc rồi tới các thẻ nội dung có tiêu đề |
+| Tổng quan | Ba thẻ số liệu trên cùng. Owner: biểu đồ doanh thu 7 ngày bên trái, cao bằng cột phải; cột phải là đơn chờ duyệt rồi cảnh báo tồn thấp. Staff không có biểu đồ: đơn chờ duyệt và cảnh báo tồn thấp nằm cạnh nhau. Màn hình hẹp thì các thẻ xếp dọc |
 | Bảng | Đầu bảng nền xám nhạt, dòng cao, mã chứng từ in đậm màu chính, trạng thái là tag màu, phân trang phía server ở chân thẻ |
 | Kênh | Tag màu theo kênh: Shopee cam, TikTok đen, Lazada xanh đậm, POS và Admin xanh |
 | Chi tiết đơn | Đầu trang có mã đơn, tag trạng thái và các nút hành động; thanh bước Tạo, Giữ hàng, Đã duyệt, Hoàn tất; bảng hàng kèm tổng tiền; khung phần giữ hàng; khung thanh toán chỉ với đơn POS |
