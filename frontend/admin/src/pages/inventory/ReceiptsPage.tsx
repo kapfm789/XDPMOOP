@@ -1,10 +1,10 @@
-import { Typography } from 'antd';
+import { PageHeader } from '../../app/PageHeader';
 import { ReceiptsPanel } from '../../features/inventory/ReceiptsPanel';
 
 export function ReceiptsPage() {
   return (
     <>
-      <Typography.Title level={3}>Phiếu nhập</Typography.Title>
+      <PageHeader />
       <ReceiptsPanel />
     </>
   );

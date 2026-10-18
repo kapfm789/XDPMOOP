@@ -1,10 +1,10 @@
-import { Typography } from 'antd';
+import { PageHeader } from '../../app/PageHeader';
 import { UsersPanel } from '../../features/users/UsersPanel';
 
 export function UsersPage() {
   return (
     <>
-      <Typography.Title level={3}>Người dùng</Typography.Title>
+      <PageHeader />
       <UsersPanel />
     </>
   );

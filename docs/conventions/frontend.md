@@ -23,7 +23,7 @@ Các lựa chọn trên đã chốt ở task W1-09 với các bản: React 19, V
 | `run dev` | Chạy cùng lúc `admin` ở cổng 5173 và `pos` ở cổng 5174 trong một terminal; Ctrl+C tắt cả hai |
 | `run dev:admin`, `run dev:pos` | Chạy riêng `admin` ở cổng 5173 hoặc `pos` ở cổng 5174 |
 | `run typecheck` | Kiểm kiểu cả ba gói |
-| `test` | Chạy test Vitest của `shared` và `pos` |
+| `test` | Chạy test Vitest của `shared`, `admin` và `pos` |
 | `run build` | Kiểm kiểu rồi build `admin` và `pos` |
 | `run preview:pos` | Chạy bản build của `pos` ở cổng 5174, để thử PWA: service worker chỉ đăng ký ở bản build |
 
@@ -89,7 +89,7 @@ frontend/<app>/src/
 
 ## Test
 
-- Logic thuần (tính tổng giỏ, định dạng tiền, lọc theo vai trò) có test đơn vị bằng Vitest.
+- Logic thuần (tính tổng giỏ, định dạng tiền, lọc theo vai trò, khớp route với menu của `admin`) có test đơn vị bằng Vitest.
 - Luồng màn hình kiểm tay theo tiêu chí chấp nhận của use case ở cuối mỗi phase.
 
 ## Điều không làm

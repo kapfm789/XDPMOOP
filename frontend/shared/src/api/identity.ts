@@ -5,6 +5,7 @@ import type {
   CreateBranchRequest,
   CreateUserRequest,
   LoginResponse,
+  Me,
   RegisterTenantRequest,
   RegisterTenantResponse,
   UpdateBranchRequest,
@@ -36,6 +37,8 @@ export async function logout() {
     endSession(true);
   }
 }
+
+export const getMe = () => api<Me>('/api/identity/me');
 
 export const listBranches = (isActive?: boolean) =>
   api<Branch[]>(`/api/identity/branches${isActive === undefined ? '' : `?isActive=${isActive}`}`);

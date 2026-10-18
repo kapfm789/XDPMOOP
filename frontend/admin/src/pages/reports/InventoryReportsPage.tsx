@@ -1,10 +1,10 @@
-import { Typography } from 'antd';
+import { PageHeader } from '../../app/PageHeader';
 import { InventoryReportsPanel } from '../../features/reports/InventoryReportsPanel';
 
 export function InventoryReportsPage() {
   return (
     <>
-      <Typography.Title level={3}>Báo cáo tồn kho</Typography.Title>
+      <PageHeader />
       <InventoryReportsPanel />
     </>
   );

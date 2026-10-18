@@ -1,6 +1,7 @@
 import { LoginForm, useAuth } from '@oism/shared';
-import { Card, Flex, Typography } from 'antd';
+import { Typography } from 'antd';
 import { Link, Navigate, useLocation } from 'react-router-dom';
+import { AuthCard } from '../../features/auth/AuthCard';
 
 export function LoginPage() {
   const { user } = useAuth();
@@ -10,13 +11,11 @@ export function LoginPage() {
   if (user) return <Navigate to={from} replace />;
 
   return (
-    <Flex justify="center" align="center" style={{ minHeight: '100vh', padding: 16, boxSizing: 'border-box' }}>
-      <Card title="OISM Quản trị" style={{ width: 400 }}>
-        <LoginForm />
-        <Typography.Paragraph style={{ marginTop: 16, marginBottom: 0, textAlign: 'center' }}>
-          Chưa có cửa hàng? <Link to="/register">Đăng ký</Link>
-        </Typography.Paragraph>
-      </Card>
-    </Flex>
+    <AuthCard title="Đăng nhập quản trị" subtitle="Dành cho chủ cửa hàng và nhân viên" width={420}>
+      <LoginForm />
+      <Typography.Paragraph style={{ marginTop: 16, marginBottom: 0, textAlign: 'center' }}>
+        Chưa có cửa hàng? <Link to="/register">Đăng ký</Link>
+      </Typography.Paragraph>
+    </AuthCard>
   );
 }

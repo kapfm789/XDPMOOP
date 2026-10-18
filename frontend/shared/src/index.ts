@@ -56,6 +56,7 @@ export {
 export {
   createBranch,
   createUser,
+  getMe,
   listBranches,
   listUsers,
   registerTenant,

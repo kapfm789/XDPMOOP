@@ -1,6 +1,7 @@
 import { useAuth } from '@oism/shared';
-import { Card, Flex, Typography } from 'antd';
+import { Typography } from 'antd';
 import { Link, Navigate } from 'react-router-dom';
+import { AuthCard } from '../../features/auth/AuthCard';
 import { RegisterTenantForm } from '../../features/auth/RegisterTenantForm';
 
 export function RegisterPage() {
@@ -10,13 +11,11 @@ export function RegisterPage() {
   if (user) return <Navigate to="/" replace />;
 
   return (
-    <Flex justify="center" align="center" style={{ minHeight: '100vh', padding: 16, boxSizing: 'border-box' }}>
-      <Card title="Đăng ký cửa hàng" style={{ width: 440 }}>
-        <RegisterTenantForm />
-        <Typography.Paragraph style={{ marginTop: 16, marginBottom: 0, textAlign: 'center' }}>
-          Đã có tài khoản? <Link to="/login">Đăng nhập</Link>
-        </Typography.Paragraph>
-      </Card>
-    </Flex>
+    <AuthCard title="Đăng ký cửa hàng" subtitle="Tạo cửa hàng mới và tài khoản chủ cửa hàng" width={460}>
+      <RegisterTenantForm />
+      <Typography.Paragraph style={{ marginTop: 16, marginBottom: 0, textAlign: 'center' }}>
+        Đã có tài khoản? <Link to="/login">Đăng nhập</Link>
+      </Typography.Paragraph>
+    </AuthCard>
   );
 }

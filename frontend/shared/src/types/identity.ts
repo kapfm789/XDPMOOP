@@ -9,6 +9,9 @@ export type User = {
   branchId?: string | null;
 };
 
+// GET /api/identity/me: người đang đăng nhập kèm tên cửa hàng.
+export type Me = User & { tenantName: string };
+
 export type LoginResponse = {
   accessToken: string;
   expiresIn: number;

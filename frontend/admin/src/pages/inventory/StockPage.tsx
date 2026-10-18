@@ -1,10 +1,10 @@
-import { Typography } from 'antd';
+import { PageHeader } from '../../app/PageHeader';
 import { StockPanel } from '../../features/inventory/StockPanel';
 
 export function StockPage() {
   return (
     <>
-      <Typography.Title level={3}>Tồn kho</Typography.Title>
+      <PageHeader />
       <StockPanel />
     </>
   );

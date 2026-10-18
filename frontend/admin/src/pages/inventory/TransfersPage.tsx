@@ -1,10 +1,10 @@
-import { Typography } from 'antd';
+import { PageHeader } from '../../app/PageHeader';
 import { TransfersPanel } from '../../features/inventory/TransfersPanel';
 
 export function TransfersPage() {
   return (
     <>
-      <Typography.Title level={3}>Chuyển kho</Typography.Title>
+      <PageHeader />
       <TransfersPanel />
     </>
   );

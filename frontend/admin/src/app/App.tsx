@@ -26,6 +26,7 @@ import { RegisterPage } from '../pages/register/RegisterPage';
 import { UsersPage } from '../pages/users/UsersPage';
 import { AdminLayout } from './AdminLayout';
 import { ADMIN_ROLES, OWNER_ONLY } from './menu';
+import { ADMIN_THEME } from './theme';
 
 const queryClient = new QueryClient();
 
@@ -100,7 +101,7 @@ const router = createBrowserRouter([
 
 export function App() {
   return (
-    <ConfigProvider locale={viVN}>
+    <ConfigProvider locale={viVN} theme={ADMIN_THEME}>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <RouterProvider router={router} />
