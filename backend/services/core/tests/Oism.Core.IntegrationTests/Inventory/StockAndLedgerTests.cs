@@ -52,7 +52,7 @@ public sealed class StockAndLedgerTests(ApiFactory factory) : IClassFixture<ApiF
 
     [Fact]
     [Trait("UseCase", "UC-INV-01 AC-2")]
-    public async Task ListLedger_FilteredByBranchSkuAndTime_ReturnsLinesInWriteOrderWithCostOnlyToOwner()
+    public async Task ListLedger_FilteredByBranchSkuAndTime_ReturnsNewestLineFirstWithCostOnlyToOwner()
     {
         var (branch, otherBranch) = (Guid.NewGuid(), Guid.NewGuid());
         var shirt = await factory.SeedSkuAsync(_tenantId, "AO-01", "Áo thun, Đen");
@@ -70,19 +70,19 @@ public sealed class StockAndLedgerTests(ApiFactory factory) : IClassFixture<ApiF
         var untilFirst = (await Staff.GetFromJsonAsync<PagedResult<LedgerLineDto>>($"{filter}&to={Timestamp(first.CreatedAt)}"))!;
         var everything = (await Staff.GetFromJsonAsync<PagedResult<LedgerLineDto>>("/ledger?pageSize=3"))!;
 
-        // Thứ tự ghi; mỗi dòng có loại, lý do, số lượng, số dư sau giao dịch, chứng từ và người tạo.
+        // Dòng ghi sau cùng đứng đầu; mỗi dòng có loại, lý do, số lượng, số dư sau giao dịch, chứng từ và người tạo.
         Assert.Equal(
-            [("IN", "Purchase", 10, 10, (decimal?)100_000m), ("OUT", "Sale", 4, 6, 100_000m)],
+            [("OUT", "Sale", 4, 6, (decimal?)100_000m), ("IN", "Purchase", 10, 10, 100_000m)],
             lines.Items.Select(line => (line.Type, line.Reason, line.Quantity, line.BalanceAfter, line.UnitCost)));
         Assert.Equal(
             (first.Id, first.Seq, "AO-01", "Áo thun, Đen", "PurchaseReceipt", first.ReferenceId, first.CreatedBy, first.CreatedAt),
-            (lines.Items[0].Id, lines.Items[0].Seq, lines.Items[0].SkuCode, lines.Items[0].Name, lines.Items[0].ReferenceType,
-                lines.Items[0].ReferenceId, lines.Items[0].CreatedBy, lines.Items[0].CreatedAt));
+            (lines.Items[1].Id, lines.Items[1].Seq, lines.Items[1].SkuCode, lines.Items[1].Name, lines.Items[1].ReferenceType,
+                lines.Items[1].ReferenceId, lines.Items[1].CreatedBy, lines.Items[1].CreatedAt));
         Assert.All(ofStaff.EnumerateArray(), line => Assert.False(line.TryGetProperty("unitCost", out _)));
         Assert.Equal(second.Id, Assert.Single(fromSecond.Items).Id);
         Assert.Equal(first.Id, Assert.Single(untilFirst.Items).Id);
         Assert.Equal((4, 3), (everything.Total, everything.Items.Count));
-        Assert.Equal(everything.Items.Select(line => line.Seq).Order(), everything.Items.Select(line => line.Seq));
+        Assert.Equal(everything.Items.Select(line => line.Seq).OrderDescending(), everything.Items.Select(line => line.Seq));
         await factory.AssertInventoryInvariantsAsync(_tenantId);
 
         static string Timestamp(DateTimeOffset value) => Uri.EscapeDataString(value.ToString("O"));

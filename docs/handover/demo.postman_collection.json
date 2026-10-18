@@ -568,7 +568,7 @@
                 "exec": [
                   "pm.test('Mã 200', () => pm.response.to.have.status(200));",
                   "const json = pm.response.text() ? pm.response.json() : null;",
-                  "pm.test('Hai dòng nhập', () => pm.expect(json.items.map((l) => [l.type, l.reason, l.quantity])).to.eql([['IN', 'Purchase', 10], ['IN', 'Purchase', 5]]));"
+                  "pm.test('Hai dòng nhập, dòng mới nhất trước', () => pm.expect(json.items.map((l) => [l.type, l.reason, l.quantity])).to.eql([['IN', 'Purchase', 5], ['IN', 'Purchase', 10]]));"
                 ]
               }
             }

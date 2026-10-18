@@ -28,7 +28,7 @@ Tiền tố `/api/core`. Use case ở [inventory.md](../../usecase-userstory/inv
 Staff không thấy `avgCost` trong phản hồi của `/stock` và `unitCost` trong `/ledger`; hai trường này chỉ trả cho Owner.
 
 - `/stock` trả theo khuôn phân trang chung, xếp theo `skuCode` rồi `branchId`. `query` khớp một phần mã hoặc tên SKU, không phân biệt hoa thường. `available` bằng `onHand - reserved`.
-- `/ledger` trả theo khuôn phân trang chung, xếp theo `seq` tăng dần. Mỗi dòng gồm `seq`, `id`, `branchId`, `skuId`, `skuCode`, `name`, `type` (`IN`, `OUT`), `reason`, `quantity`, `balanceAfter`, `unitCost` (chỉ Owner), `referenceType`, `referenceId`, `reversalOfId?`, `createdBy?`, `createdAt`. `from` và `to` lọc theo `createdAt`, tính cả hai đầu.
+- `/ledger` trả theo khuôn phân trang chung, xếp theo `seq` giảm dần: dòng ghi sau cùng đứng đầu. Mỗi dòng gồm `seq`, `id`, `branchId`, `skuId`, `skuCode`, `name`, `type` (`IN`, `OUT`), `reason`, `quantity`, `balanceAfter`, `unitCost` (chỉ Owner), `referenceType`, `referenceId`, `reversalOfId?`, `createdBy?`, `createdAt`. `from` và `to` lọc theo `createdAt`, tính cả hai đầu.
 - `page` nhỏ hơn 1 hoặc `pageSize` ngoài khoảng 1 đến 100 trả 400 `validation_failed`.
 - `/stock/threshold` trả dòng số dư theo đúng khuôn một dòng của `/stock`. `threshold` bỏ trống hoặc `null` là bỏ ngưỡng, SKU đó không còn sinh cảnh báo; số âm trả 400 `validation_failed`. `branchId` hoặc `skuId` chưa có bản sao ở `core` trả 409 `reference_not_ready`. SKU chưa có dòng số dư tại chi nhánh thì dòng được tạo với tồn 0. Mỗi lần đặt làm `version` của dòng số dư tăng 1 và phát `StockChanged` mang ngưỡng mới.
 - Sổ chỉ có đường đọc: không endpoint nào sửa hay xóa dòng sổ (NFR-SEC-03).
