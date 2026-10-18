@@ -16,7 +16,7 @@ builder.Services.AddEventConsumer<SkuUpsertedConsumer, SkuUpserted>();
 builder.Services.AddEventConsumer<BranchUpsertedConsumer, BranchUpserted>();
 builder.Services.AddEventConsumer<SubmitOrderConsumer, SubmitOrder>();
 builder.Services.AddControllers();
-builder.Services.AddSwaggerGen();
+builder.Services.AddOismSwagger("core");
 
 var app = builder.Build();
 

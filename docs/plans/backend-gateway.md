@@ -26,6 +26,7 @@ gateway/
 
 ## Quy tắc riêng
 
-- Route không yêu cầu JWT đúng bằng danh sách endpoint công khai ở [security.md](../architecture/security.md): đăng ký tenant, đăng nhập, làm mới token, `POST /api/channel/webhooks/{channel}` và `/api/<service>/health`. Mọi route khác yêu cầu.
+- Route không yêu cầu JWT đúng bằng danh sách endpoint công khai ở [security.md](../architecture/security.md): đăng ký tenant, đăng nhập, làm mới token, `POST /api/channel/webhooks/{channel}`, `/api/<service>/health` và Swagger gộp ở `/swagger` (chỉ ở Development). Mọi route khác yêu cầu.
+- `Swagger/` lấy tài liệu của từng service theo địa chỉ cluster trong `ReverseProxy` và đặt `servers` thành `/api/<service>`; đó là endpoint riêng của gateway, không phải route chuyển tiếp ([design/api/README.md](../design/api/README.md)).
 - Gateway chỉ chuyển tiếp: không sửa nội dung request, chỉ truyền header xác thực và correlation id.
 - HTTPS với TLS 1.3 bật ở gateway (NFR-SEC-01); các service phía sau nói HTTP trong mạng nội bộ của Compose.

@@ -10,7 +10,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 foreach (var handler in typeof(IUnitOfWork).Assembly.GetTypes().Where(type => type.Name.EndsWith("Handler")))
     builder.Services.AddScoped(handler);
 builder.Services.AddControllers();
-builder.Services.AddSwaggerGen();
+builder.Services.AddOismSwagger("catalog");
 
 var app = builder.Build();
 

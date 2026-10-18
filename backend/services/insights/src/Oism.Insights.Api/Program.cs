@@ -26,7 +26,7 @@ builder.Services.AddScoped<SignalRNotificationPublisher>();
 builder.Services.AddScoped<INotificationPublisher>(provider => provider.GetRequiredService<SignalRNotificationPublisher>());
 builder.Services.AddScoped<IAfterCommitAction>(provider => provider.GetRequiredService<SignalRNotificationPublisher>());
 builder.Services.AddControllers();
-builder.Services.AddSwaggerGen();
+builder.Services.AddOismSwagger("insights");
 
 var app = builder.Build();
 

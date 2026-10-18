@@ -15,7 +15,7 @@ foreach (var handler in typeof(IUnitOfWork).Assembly.GetTypes().Where(type => ty
 builder.Services.AddEventConsumer<OrderReservedConsumer, OrderReserved>();
 builder.Services.AddEventConsumer<OrderRejectedConsumer, OrderRejected>();
 builder.Services.AddControllers();
-builder.Services.AddSwaggerGen();
+builder.Services.AddOismSwagger("channel");
 
 var app = builder.Build();
 

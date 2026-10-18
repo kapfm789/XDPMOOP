@@ -10,7 +10,7 @@ Api nhận request, gọi một handler và trả kết quả. Nguồn chuẩn: 
 
 - Endpoint, vai trò, dữ liệu vào ra và mã lỗi phải khớp `docs/design/api/<service>.md`. Thêm hoặc đổi endpoint thì sửa file đó trong cùng thay đổi.
 - Route trong service không mang tiền tố `/api/<service>`; gateway đã bỏ tiền tố đó.
-- Mỗi action khai báo policy theo vai trò, khớp bảng quyền ở `docs/architecture/security.md`. Endpoint công khai phải ghi rõ `AllowAnonymous` và chỉ gồm: đăng ký tenant, đăng nhập, làm mới token, webhook, health check.
+- Mỗi action khai báo policy theo vai trò, khớp bảng quyền ở `docs/architecture/security.md`. Endpoint công khai phải ghi rõ `AllowAnonymous` và chỉ gồm: đăng ký tenant, đăng nhập, làm mới token, webhook, health check; Swagger (chỉ ở Development) đứng trước xác thực trong pipeline.
 - Controller không chứa nghiệp vụ, không có `try/catch`, không dùng `DbContext`. Lỗi do middleware chung đổi sang ProblemDetails kèm `code`.
 - Không nhận `tenantId` từ URL hay body. Tenant lấy từ token.
 - Trường chỉ Owner được xem (giá vốn, lợi nhuận) bị loại khỏi phản hồi cho vai trò khác ở backend, không ở giao diện.

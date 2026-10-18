@@ -1,4 +1,6 @@
 using System.Net;
+using System.Net.Http.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.DependencyInjection;
 using Oism.BuildingBlocks.Messaging;
 using Oism.Core.Infrastructure;
@@ -14,6 +16,19 @@ public sealed class SkeletonTests(ApiFactory factory) : IClassFixture<ApiFactory
         var response = await factory.CreateClient().GetAsync("/health");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    // T21: Swagger sinh từ code ghi vai trò và yêu cầu Bearer khớp cột "Vai trò" của docs/design/api/.
+    [Fact]
+    [Trait("Scenario", "T21")]
+    public async Task Swagger_Document_MarksRolesAndPublicEndpoints()
+    {
+        var paths = (await factory.CreateClient().GetFromJsonAsync<JsonObject>("/swagger/v1/swagger.json"))!["paths"]!;
+        var checkout = paths["/pos/checkout"]!["post"]!;
+
+        Assert.Equal("Vai trò: Owner, Cashier.", (string?)checkout["description"]);
+        Assert.NotNull(checkout["security"]);
+        Assert.Contains(checkout["parameters"]!.AsArray(), parameter => (string?)parameter!["name"] == "Idempotency-Key");
     }
 
     // docs/architecture/multi-tenancy.md: entity không có tenant_id phải được loại trừ tường minh ở đây.

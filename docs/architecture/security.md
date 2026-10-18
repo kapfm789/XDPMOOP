@@ -50,7 +50,7 @@ Cashier gắn với một chi nhánh qua claim `branch_id` và chỉ thanh toán
 
 - Mỗi endpoint khai báo vai trò bằng policy của ASP.NET Core; policy định nghĩa một lần trong `Oism.BuildingBlocks/Auth`.
 - Endpoint không khai báo policy thì mặc định từ chối. Endpoint công khai phải ghi rõ `AllowAnonymous`.
-- Endpoint công khai chỉ gồm: đăng ký tenant, đăng nhập, làm mới token, webhook của sàn, health check.
+- Endpoint công khai chỉ gồm: đăng ký tenant, đăng nhập, làm mới token, webhook của sàn, health check, và tài liệu Swagger. Swagger không mang dữ liệu nghiệp vụ và chỉ bật ở môi trường Development ([design/api/README.md](../design/api/README.md)).
 - Lỗi thiếu quyền trả 403. Dữ liệu của tenant khác trả 404 ([multi-tenancy.md](multi-tenancy.md)).
 
 ## Webhook

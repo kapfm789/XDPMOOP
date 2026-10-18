@@ -10,6 +10,13 @@ Mọi API đi qua gateway theo dạng `/api/<service>/...`; gateway bỏ tiền 
 | channel | [channel.md](channel.md) |
 | insights | [insights.md](insights.md) |
 
+## Swagger và Postman
+
+- Mỗi service sinh Swagger từ code ở `/swagger/v1/swagger.json`. Endpoint có policy mang yêu cầu Bearer và dòng "Vai trò: ..." liệt kê vai trò của policy, để đối chiếu với cột "Vai trò" ở đây; endpoint công khai ghi "Công khai, không cần token." Cấu hình chung ở `Oism.BuildingBlocks/Web/OismSwagger.cs`.
+- Gateway gộp năm tài liệu ở `/swagger` (ví dụ `http://localhost:8080/swagger`), mỗi service một mục trong ô chọn định nghĩa. Gateway lấy tài liệu của service theo địa chỉ cluster trong cấu hình YARP và đặt `servers` thành `/api/<service>`, nên "Try it out" gọi qua gateway như frontend. Bấm Authorize rồi dán `accessToken` lấy từ `POST /api/identity/auth/login`.
+- Swagger của service và của gateway chỉ bật ở môi trường Development; cả hai gói Compose đều chạy Development ([plans/deploy.md](../../plans/deploy.md)).
+- Postman collection gọi lần lượt mọi nhóm API theo đúng file trong thư mục này, kèm test cho từng request: [postman/README.md](postman/README.md).
+
 ## Xác thực
 
 - Header `Authorization: Bearer <access token>` cho mọi endpoint, trừ các endpoint ghi "Công khai".

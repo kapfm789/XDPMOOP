@@ -179,7 +179,8 @@ npm --prefix frontend run dev
 | http://localhost:5173 | Trang quản trị (admin) |
 | http://localhost:5174 | Bán tại quầy (POS) |
 | http://localhost:8080/api/core/health | Health check qua gateway (thay `core` bằng service khác) |
-| http://localhost:5101/swagger … 5105/swagger | Swagger của từng service |
+| http://localhost:8080/swagger | Swagger gộp của 5 service, gọi thử qua gateway |
+| http://localhost:5101/swagger … 5105/swagger | Swagger riêng của từng service |
 | http://localhost:15672 | Giao diện quản trị RabbitMQ (user và mật khẩu `oism`) |
 
 Tài khoản demo, mật khẩu chung `Demo@2026`:
