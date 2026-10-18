@@ -1,15 +1,9 @@
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { PageHeader } from '../../app/PageHeader';
 import { OrderDetailPanel } from '../../features/orders/OrderDetailPanel';
 
 export function OrderDetailPage() {
   const { id } = useParams();
 
-  return (
-    <>
-      <Link to="/orders" className="no-print">
-        ← Danh sách đơn hàng
-      </Link>
-      {id && <OrderDetailPanel key={id} orderId={id} />}
-    </>
-  );
+  return id && <OrderDetailPanel key={id} orderId={id} header={(props) => <PageHeader crumb={props.title} {...props} />} />;
 }

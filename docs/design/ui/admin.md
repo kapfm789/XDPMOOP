@@ -37,6 +37,9 @@ Trang quản trị cho Owner và Staff, nằm ở `frontend/admin`. Mỗi dòng 
 - Giá vốn và lợi nhuận không hiện với Staff: các trường đó không có trong phản hồi của backend.
 - Màn hình sổ giao dịch không có nút sửa hay xóa.
 - Thông báo `OrderCreated` và `LowStock` hiện popup kèm âm thanh ở mọi màn hình, góc dưới bên phải, giữ 10 giây; bấm vào mở chi tiết đơn hoặc màn hình tồn. Danh sách đơn, danh sách tồn và cảnh báo tồn ở trang tổng quan đang mở tự tải lại khi có thông báo tương ứng; cảnh báo tồn còn tự tải lại mỗi phút vì SKU lên lại trên ngưỡng không sinh thông báo.
+- Chuông ở thanh trên đếm số thông báo nhận được từ lúc mở trang mà chưa xem, và liệt kê tối đa 10 thông báo gần nhất; bấm một dòng mở chi tiết đơn hoặc màn hình tồn. Không có API lưu thông báo nên tải lại trang là danh sách trống.
+- Cột "Mức tồn" ở màn hình tồn và bảng cảnh báo chỉ để đọc nhanh, tính từ `available` và `threshold` backend trả về: đỏ "Hết hàng" khi khả dụng bằng 0, cam "Sắp hết" khi khả dụng bằng hoặc dưới ngưỡng, xanh lá "Đủ hàng" cho phần còn lại. Danh sách cảnh báo chính thức vẫn là `GET /api/insights/alerts/low-stock`.
+- Biểu đồ doanh thu 7 ngày vẽ bằng SVG trong `frontend/admin`, mỗi cột một ngày theo giờ Việt Nam, ngày không bán có cột 0; dự án không thêm thư viện biểu đồ.
 
 ## Bố cục và phong cách
 

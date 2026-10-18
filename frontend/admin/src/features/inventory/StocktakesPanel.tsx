@@ -12,10 +12,12 @@ import {
   type StocktakeStatus,
 } from '@oism/shared';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Alert, Button, Flex, Form, InputNumber, message, Popconfirm, Select, Space, Table, Tag, Typography } from 'antd';
+import { Alert, Button, Card, Flex, Form, InputNumber, message, Popconfirm, Select, Space, Table, Typography } from 'antd';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { FilterBar } from '../common/FilterBar';
 import { FormModal } from '../common/FormModal';
+import { StatusTag } from '../common/StatusTag';
 import { AddBranchSkus, type CountLine } from './AddBranchSkus';
 import { SkuSelect } from './SkuSelect';
 import { CHANNEL_LABELS } from '../orders/labels';
@@ -62,117 +64,121 @@ export function StocktakesPanel() {
 
   return (
     <>
-      <Flex justify="space-between" gap={16} wrap style={{ marginBottom: 16 }}>
-        <Flex gap={8} wrap>
-          <Select
-            allowClear
-            placeholder="Mọi chi nhánh"
-            aria-label="Lọc theo chi nhánh"
-            options={branches.options}
-            value={filter.branchId}
-            onChange={(branchId?: string) => narrow({ branchId })}
-            style={{ width: 240 }}
-          />
-          <Select
-            allowClear
-            placeholder="Mọi trạng thái"
-            aria-label="Lọc theo trạng thái"
-            options={STATUS_OPTIONS}
-            value={filter.status}
-            onChange={(status?: StocktakeStatus) => narrow({ status })}
-            style={{ width: 180 }}
-          />
-        </Flex>
-        <Button type="primary" onClick={() => setOpening(true)}>
-          Mở phiên kiểm kê
-        </Button>
-      </Flex>
-      {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
-      {post.error && (
-        <Alert
-          type="error"
-          showIcon
-          closable
-          onClose={() => post.reset()}
-          title={errorMessage(post.error)}
-          description={belowReservedLines(post.error, post.variables)}
-          style={{ marginBottom: 16 }}
+      <FilterBar>
+        <Select
+          allowClear
+          placeholder="Mọi chi nhánh"
+          aria-label="Lọc theo chi nhánh"
+          options={branches.options}
+          value={filter.branchId}
+          onChange={(branchId?: string) => narrow({ branchId })}
+          style={{ width: 240 }}
         />
-      )}
-      <Table<Stocktake>
-        scroll={{ x: 'max-content' }}
-        rowKey="id"
-        loading={stocktakes.isPending}
-        dataSource={stocktakes.data?.items}
-        pagination={{
-          current: filter.page,
-          pageSize: PAGE_SIZE,
-          total: stocktakes.data?.total,
-          showSizeChanger: false,
-          onChange: (page) => setFilter((current) => ({ ...current, page })),
-        }}
-        expandable={{
-          expandedRowRender: (stocktake) => (
-            <Table<StocktakeItem>
-              rowKey="id"
-              size="small"
-              pagination={false}
-              dataSource={stocktake.items}
-              locale={{ emptyText: 'Chưa nhập số đếm nào' }}
-              columns={[
-                { title: 'Mã SKU', dataIndex: 'skuCode' },
-                { title: 'Tên', dataIndex: 'skuName' },
-                { title: 'Số đếm', dataIndex: 'countedQty', align: 'right' },
-                { title: 'Trên sổ lúc chốt', dataIndex: 'systemQty', align: 'right' },
-                {
-                  title: 'Chênh lệch',
-                  dataIndex: 'difference',
-                  align: 'right',
-                  render: (difference?: number | null) =>
-                    difference === null || difference === undefined ? (
-                      ''
-                    ) : (
-                      <Typography.Text type={difference < 0 ? 'danger' : difference > 0 ? 'success' : undefined}>
-                        {difference > 0 ? `+${difference}` : difference}
-                      </Typography.Text>
-                    ),
-                },
-              ]}
-            />
-          ),
-        }}
-        columns={[
-          { title: 'Chi nhánh', dataIndex: 'branchId', render: (id: string) => branches.name(id) },
-          { title: 'Số SKU đã đếm', align: 'right', render: (_, stocktake) => stocktake.items.length },
-          {
-            title: 'Trạng thái',
-            dataIndex: 'status',
-            render: (status: StocktakeStatus) => (status === 'Posted' ? <Tag color="green">Đã chốt</Tag> : <Tag color="blue">Đang đếm</Tag>),
-          },
-          { title: 'Chốt lúc', dataIndex: 'postedAt', render: (at?: string | null) => (at ? formatDateTime(at) : '') },
-          {
-            render: (_, stocktake) =>
-              stocktake.status === 'Open' && (
-                <Space>
-                  <Button type="link" onClick={() => setCounting(stocktake)}>
-                    Nhập số đếm
-                  </Button>
-                  <Popconfirm
-                    title="Chốt phiên kiểm kê?"
-                    description="Tồn của các SKU đã đếm được đặt bằng số đếm và sổ ghi dòng điều chỉnh. Phiên đã chốt không sửa được."
-                    okText="Chốt"
-                    cancelText="Hủy"
-                    onConfirm={() => post.mutate(stocktake)}
-                  >
-                    <Button type="link" loading={post.isPending && post.variables.id === stocktake.id}>
-                      Chốt
+        <Select
+          allowClear
+          placeholder="Mọi trạng thái"
+          aria-label="Lọc theo trạng thái"
+          options={STATUS_OPTIONS}
+          value={filter.status}
+          onChange={(status?: StocktakeStatus) => narrow({ status })}
+          style={{ width: 180 }}
+        />
+      </FilterBar>
+      <Card
+        title="Phiên kiểm kê"
+        extra={
+          <Button type="primary" onClick={() => setOpening(true)}>
+            Mở phiên kiểm kê
+          </Button>
+        }
+      >
+        {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
+        {post.error && (
+          <Alert
+            type="error"
+            showIcon
+            closable
+            onClose={() => post.reset()}
+            title={errorMessage(post.error)}
+            description={belowReservedLines(post.error, post.variables)}
+            style={{ marginBottom: 16 }}
+          />
+        )}
+        <Table<Stocktake>
+          scroll={{ x: 'max-content' }}
+          rowKey="id"
+          loading={stocktakes.isPending}
+          dataSource={stocktakes.data?.items}
+          pagination={{
+            current: filter.page,
+            pageSize: PAGE_SIZE,
+            total: stocktakes.data?.total,
+            showSizeChanger: false,
+            onChange: (page) => setFilter((current) => ({ ...current, page })),
+          }}
+          expandable={{
+            expandedRowRender: (stocktake) => (
+              <Table<StocktakeItem>
+                rowKey="id"
+                size="small"
+                pagination={false}
+                dataSource={stocktake.items}
+                locale={{ emptyText: 'Chưa nhập số đếm nào' }}
+                columns={[
+                  { title: 'Mã SKU', dataIndex: 'skuCode' },
+                  { title: 'Tên', dataIndex: 'skuName' },
+                  { title: 'Số đếm', dataIndex: 'countedQty', align: 'right' },
+                  { title: 'Trên sổ lúc chốt', dataIndex: 'systemQty', align: 'right' },
+                  {
+                    title: 'Chênh lệch',
+                    dataIndex: 'difference',
+                    align: 'right',
+                    render: (difference?: number | null) =>
+                      difference === null || difference === undefined ? (
+                        ''
+                      ) : (
+                        <Typography.Text type={difference < 0 ? 'danger' : difference > 0 ? 'success' : undefined}>
+                          {difference > 0 ? `+${difference}` : difference}
+                        </Typography.Text>
+                      ),
+                  },
+                ]}
+              />
+            ),
+          }}
+          columns={[
+            { title: 'Chi nhánh', dataIndex: 'branchId', render: (id: string) => branches.name(id) },
+            { title: 'Số SKU đã đếm', align: 'right', render: (_, stocktake) => stocktake.items.length },
+            {
+              title: 'Trạng thái',
+              dataIndex: 'status',
+              render: (status: StocktakeStatus) => (status === 'Posted' ? <StatusTag tone="success">Đã chốt</StatusTag> : <StatusTag tone="pending">Đang đếm</StatusTag>),
+            },
+            { title: 'Chốt lúc', dataIndex: 'postedAt', render: (at?: string | null) => (at ? formatDateTime(at) : '') },
+            {
+              render: (_, stocktake) =>
+                stocktake.status === 'Open' && (
+                  <Space>
+                    <Button type="link" onClick={() => setCounting(stocktake)}>
+                      Nhập số đếm
                     </Button>
-                  </Popconfirm>
-                </Space>
-              ),
-          },
-        ]}
-      />
+                    <Popconfirm
+                      title="Chốt phiên kiểm kê?"
+                      description="Tồn của các SKU đã đếm được đặt bằng số đếm và sổ ghi dòng điều chỉnh. Phiên đã chốt không sửa được."
+                      okText="Chốt"
+                      cancelText="Hủy"
+                      onConfirm={() => post.mutate(stocktake)}
+                    >
+                      <Button type="link" loading={post.isPending && post.variables.id === stocktake.id}>
+                        Chốt
+                      </Button>
+                    </Popconfirm>
+                  </Space>
+                ),
+            },
+          ]}
+        />
+      </Card>
       {opening && (
         <FormModal<{ branchId: string }>
           title="Mở phiên kiểm kê"

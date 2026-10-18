@@ -1,9 +1,11 @@
 import { createProduct, errorMessage, listProducts, type ProductListItem, useAuth } from '@oism/shared';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Alert, Button, Card, Flex, Form, Input, Select, Switch, Table, Tag, TreeSelect } from 'antd';
+import { Alert, Button, Card, Flex, Form, Input, Select, Switch, Table, TreeSelect } from 'antd';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { FilterBar } from '../common/FilterBar';
 import { FormModal } from '../common/FormModal';
+import { StatusTag } from '../common/StatusTag';
 import { ProductFields, type ProductValues } from './ProductFields';
 import { SkuFields, type SkuValues, toSkuRequest } from './SkuFields';
 import { useCatalogOptions } from './useCatalogOptions';
@@ -34,70 +36,79 @@ export function ProductsPanel() {
 
   return (
     <>
-      <Flex justify="space-between" gap={16} wrap style={{ marginBottom: 16 }}>
-        <Flex gap={8} wrap>
-          <Input.Search
-            allowClear
-            placeholder="Tìm theo tên hoặc mã SKU"
-            aria-label="Tìm sản phẩm"
-            onSearch={(query) => narrow({ query })}
-            style={{ width: 280 }}
-          />
-          <TreeSelect
-            allowClear
-            treeDefaultExpandAll
-            placeholder="Danh mục"
-            treeData={options.categoryTree}
-            value={filter.categoryId}
-            onChange={(categoryId?: string) => narrow({ categoryId })}
-            style={{ width: 200 }}
-          />
-          <Select
-            allowClear
-            placeholder="Thương hiệu"
-            options={options.brandOptions}
-            value={filter.brandId}
-            onChange={(brandId?: string) => narrow({ brandId })}
-            style={{ width: 200 }}
-          />
-        </Flex>
-        <Button type="primary" onClick={() => setCreating(true)}>
-          Thêm sản phẩm
-        </Button>
-      </Flex>
-      {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
-      <Table<ProductListItem>
-        rowKey="id"
-        loading={products.isPending}
-        dataSource={products.data?.items}
-        pagination={{
-          current: filter.page,
-          pageSize: PAGE_SIZE,
-          total: products.data?.total,
-          showSizeChanger: false,
-          onChange: (page) => setFilter((current) => ({ ...current, page })),
-        }}
-        columns={[
-          {
-            title: 'Tên sản phẩm',
-            dataIndex: 'name',
-            render: (name: string, product) => <Link to={`/catalog/products/${product.id}`}>{name}</Link>,
-          },
-          { title: 'Danh mục', dataIndex: 'categoryId', render: (id: string) => options.categoryName(id) },
-          { title: 'Thương hiệu', dataIndex: 'brandId', render: (id?: string | null) => options.brandName(id) },
-          {
-            title: 'Loại',
-            dataIndex: 'hasVariants',
-            render: (hasVariants: boolean) => (hasVariants ? 'Có biến thể' : 'Sản phẩm đơn'),
-          },
-          { title: 'Số SKU', dataIndex: 'skuCount', align: 'right' },
-          {
-            title: 'Trạng thái',
-            dataIndex: 'isActive',
-            render: (isActive: boolean) => (isActive ? <Tag color="green">Đang bán</Tag> : <Tag>Ngừng bán</Tag>),
-          },
-        ]}
-      />
+      <FilterBar>
+        <Input.Search
+          allowClear
+          placeholder="Tìm theo tên hoặc mã SKU"
+          aria-label="Tìm sản phẩm"
+          onSearch={(query) => narrow({ query })}
+          style={{ width: 280 }}
+        />
+        <TreeSelect
+          allowClear
+          treeDefaultExpandAll
+          placeholder="Danh mục"
+          treeData={options.categoryTree}
+          value={filter.categoryId}
+          onChange={(categoryId?: string) => narrow({ categoryId })}
+          style={{ width: 200 }}
+        />
+        <Select
+          allowClear
+          placeholder="Thương hiệu"
+          options={options.brandOptions}
+          value={filter.brandId}
+          onChange={(brandId?: string) => narrow({ brandId })}
+          style={{ width: 200 }}
+        />
+      </FilterBar>
+      <Card
+        title="Danh sách sản phẩm"
+        extra={
+          <Button type="primary" onClick={() => setCreating(true)}>
+            Thêm sản phẩm
+          </Button>
+        }
+      >
+        {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
+        <Table<ProductListItem>
+          rowKey="id"
+          loading={products.isPending}
+          dataSource={products.data?.items}
+          pagination={{
+            current: filter.page,
+            pageSize: PAGE_SIZE,
+            total: products.data?.total,
+            showSizeChanger: false,
+            onChange: (page) => setFilter((current) => ({ ...current, page })),
+          }}
+          columns={[
+            {
+              title: 'Tên sản phẩm',
+              dataIndex: 'name',
+              render: (name: string, product) => (
+                <Link to={`/catalog/products/${product.id}`} style={{ fontWeight: 600 }}>
+                  {name}
+                </Link>
+              ),
+            },
+            { title: 'Danh mục', dataIndex: 'categoryId', render: (id: string) => options.categoryName(id) },
+            { title: 'Thương hiệu', dataIndex: 'brandId', render: (id?: string | null) => options.brandName(id) },
+            {
+              title: 'Loại',
+              dataIndex: 'hasVariants',
+              render: (hasVariants: boolean) => (hasVariants ? 'Có biến thể' : 'Sản phẩm đơn'),
+            },
+            { title: 'Số SKU', dataIndex: 'skuCount', align: 'right' },
+            {
+              title: 'Trạng thái',
+              dataIndex: 'isActive',
+              render: (isActive: boolean) =>
+                isActive ? <StatusTag tone="success">Đang bán</StatusTag> : <StatusTag tone="neutral">Ngừng bán</StatusTag>,
+            },
+          ]}
+        />
+      </Card>
       {creating && (
         <FormModal<Values>
           title="Thêm sản phẩm"

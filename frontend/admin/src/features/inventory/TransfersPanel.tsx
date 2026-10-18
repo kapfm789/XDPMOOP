@@ -14,9 +14,11 @@ import {
   useAuth,
 } from '@oism/shared';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Alert, Button, Flex, Form, InputNumber, message, Popconfirm, Select, Space, Table, type TableColumnsType, Tag } from 'antd';
+import { Alert, Button, Card, Flex, Form, InputNumber, message, Popconfirm, Select, Space, Table, type TableColumnsType } from 'antd';
 import { useState } from 'react';
+import { FilterBar } from '../common/FilterBar';
 import { FormModal } from '../common/FormModal';
+import { DocumentCode, StatusTag, type Tone } from '../common/StatusTag';
 import { SkuSelect, type SkuOption } from './SkuSelect';
 import { useBranchOptions } from './useBranchOptions';
 
@@ -30,10 +32,10 @@ type Action = { transfer: StockTransfer; action: 'ship' | 'receive' | 'delete' }
 
 const PAGE_SIZE = 20;
 
-const STATUS: Record<TransferStatus, { label: string; color?: string }> = {
-  Draft: { label: 'Nháp' },
-  InTransit: { label: 'Đang vận chuyển', color: 'blue' },
-  Received: { label: 'Đã nhận', color: 'green' },
+const STATUS: Record<TransferStatus, { label: string; tone: Tone }> = {
+  Draft: { label: 'Nháp', tone: 'neutral' },
+  InTransit: { label: 'Đang vận chuyển', tone: 'pending' },
+  Received: { label: 'Đã nhận', tone: 'success' },
 };
 
 // UC-INV-03: chuyển kho hai bước. Xuất trừ tồn nơi gửi, nhận cộng tồn nơi nhận; backend quyết định đủ tồn hay không.
@@ -84,7 +86,7 @@ export function TransfersPanel() {
 
   return (
     <>
-      <Flex justify="space-between" gap={16} wrap style={{ marginBottom: 16 }}>
+      <FilterBar>
         <Select
           allowClear
           placeholder="Mọi trạng thái"
@@ -94,101 +96,107 @@ export function TransfersPanel() {
           onChange={(status?: TransferStatus) => setFilter({ status, page: 1 })}
           style={{ width: 200 }}
         />
-        <Button type="primary" onClick={() => setCreating(true)}>
-          Tạo phiếu chuyển
-        </Button>
-      </Flex>
-      {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
-      {act.error && (
-        <Alert
-          type="error"
-          showIcon
-          closable
-          onClose={() => act.reset()}
-          title={errorMessage(act.error)}
-          description={shortageLines(act.error, act.variables?.transfer)}
-          style={{ marginBottom: 16 }}
-        />
-      )}
-      <Table<StockTransfer>
-        scroll={{ x: 'max-content' }}
-        rowKey="id"
-        loading={transfers.isPending}
-        dataSource={transfers.data?.items}
-        pagination={{
-          current: filter.page,
-          pageSize: PAGE_SIZE,
-          total: transfers.data?.total,
-          showSizeChanger: false,
-          onChange: (page) => setFilter((current) => ({ ...current, page })),
-        }}
-        expandable={{
-          expandedRowRender: (transfer) => (
-            <Table<TransferItem> rowKey="id" size="small" pagination={false} dataSource={transfer.items} columns={itemColumns} />
-          ),
-        }}
-        columns={[
-          { title: 'Mã phiếu', dataIndex: 'transferNumber' },
-          { title: 'Nơi gửi', dataIndex: 'fromBranchId', render: (id: string) => branches.name(id) },
-          { title: 'Nơi nhận', dataIndex: 'toBranchId', render: (id: string) => branches.name(id) },
-          { title: 'Số dòng', align: 'right', render: (_, transfer) => transfer.items.length },
-          {
-            title: 'Trạng thái',
-            dataIndex: 'status',
-            render: (status: TransferStatus) => <Tag color={STATUS[status].color}>{STATUS[status].label}</Tag>,
-          },
-          { title: 'Xuất lúc', dataIndex: 'shippedAt', render: (at?: string | null) => (at ? formatDateTime(at) : '') },
-          { title: 'Nhận lúc', dataIndex: 'receivedAt', render: (at?: string | null) => (at ? formatDateTime(at) : '') },
-          {
-            render: (_, transfer) => {
-              const busy = (action: Action['action']) =>
-                act.isPending && act.variables.transfer.id === transfer.id && act.variables.action === action;
-              if (transfer.status === 'Draft') {
-                return (
-                  <Space>
-                    <Popconfirm
-                      title="Xuất kho phiếu này?"
-                      description="Tồn nơi gửi giảm ngay; hàng nằm ở trạng thái đang vận chuyển tới khi nơi nhận xác nhận."
-                      okText="Xuất kho"
-                      cancelText="Hủy"
-                      onConfirm={() => act.mutate({ transfer, action: 'ship' })}
-                    >
-                      <Button type="link" loading={busy('ship')}>
-                        Xuất kho
-                      </Button>
-                    </Popconfirm>
-                    <Popconfirm
-                      title="Xóa phiếu nháp này?"
-                      okText="Xóa"
-                      cancelText="Hủy"
-                      onConfirm={() => act.mutate({ transfer, action: 'delete' })}
-                    >
-                      <Button type="link" danger loading={busy('delete')}>
-                        Xóa
-                      </Button>
-                    </Popconfirm>
-                  </Space>
-                );
-              }
-              return (
-                transfer.status === 'InTransit' && (
-                  <Popconfirm
-                    title="Xác nhận đã nhận đủ hàng?"
-                    description="Tồn nơi nhận tăng và giá vốn nơi nhận được tính lại."
-                    okText="Đã nhận"
-                    cancelText="Hủy"
-                    onConfirm={() => act.mutate({ transfer, action: 'receive' })}
-                  >
-                    <Button type="link" loading={busy('receive')}>
-                      Nhận hàng
-                    </Button>
-                  </Popconfirm>
-                )
-              );
+      </FilterBar>
+      <Card
+        title="Danh sách phiếu chuyển kho"
+        extra={
+          <Button type="primary" onClick={() => setCreating(true)}>
+            Tạo phiếu chuyển
+          </Button>
+        }
+      >
+        {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
+        {act.error && (
+          <Alert
+            type="error"
+            showIcon
+            closable
+            onClose={() => act.reset()}
+            title={errorMessage(act.error)}
+            description={shortageLines(act.error, act.variables?.transfer)}
+            style={{ marginBottom: 16 }}
+          />
+        )}
+        <Table<StockTransfer>
+          scroll={{ x: 'max-content' }}
+          rowKey="id"
+          loading={transfers.isPending}
+          dataSource={transfers.data?.items}
+          pagination={{
+            current: filter.page,
+            pageSize: PAGE_SIZE,
+            total: transfers.data?.total,
+            showSizeChanger: false,
+            onChange: (page) => setFilter((current) => ({ ...current, page })),
+          }}
+          expandable={{
+            expandedRowRender: (transfer) => (
+              <Table<TransferItem> rowKey="id" size="small" pagination={false} dataSource={transfer.items} columns={itemColumns} />
+            ),
+          }}
+          columns={[
+            { title: 'Mã phiếu', dataIndex: 'transferNumber', render: (transferNumber: string) => <DocumentCode code={transferNumber} /> },
+            { title: 'Nơi gửi', dataIndex: 'fromBranchId', render: (id: string) => branches.name(id) },
+            { title: 'Nơi nhận', dataIndex: 'toBranchId', render: (id: string) => branches.name(id) },
+            { title: 'Số dòng', align: 'right', render: (_, transfer) => transfer.items.length },
+            {
+              title: 'Trạng thái',
+              dataIndex: 'status',
+              render: (status: TransferStatus) => <StatusTag tone={STATUS[status].tone}>{STATUS[status].label}</StatusTag>,
             },
-          },
-        ]}
-      />
+            { title: 'Xuất lúc', dataIndex: 'shippedAt', render: (at?: string | null) => (at ? formatDateTime(at) : '') },
+            { title: 'Nhận lúc', dataIndex: 'receivedAt', render: (at?: string | null) => (at ? formatDateTime(at) : '') },
+            {
+              render: (_, transfer) => {
+                const busy = (action: Action['action']) =>
+                  act.isPending && act.variables.transfer.id === transfer.id && act.variables.action === action;
+                if (transfer.status === 'Draft') {
+                  return (
+                    <Space>
+                      <Popconfirm
+                        title="Xuất kho phiếu này?"
+                        description="Tồn nơi gửi giảm ngay; hàng nằm ở trạng thái đang vận chuyển tới khi nơi nhận xác nhận."
+                        okText="Xuất kho"
+                        cancelText="Hủy"
+                        onConfirm={() => act.mutate({ transfer, action: 'ship' })}
+                      >
+                        <Button type="link" loading={busy('ship')}>
+                          Xuất kho
+                        </Button>
+                      </Popconfirm>
+                      <Popconfirm
+                        title="Xóa phiếu nháp này?"
+                        okText="Xóa"
+                        cancelText="Hủy"
+                        onConfirm={() => act.mutate({ transfer, action: 'delete' })}
+                      >
+                        <Button type="link" danger loading={busy('delete')}>
+                          Xóa
+                        </Button>
+                      </Popconfirm>
+                    </Space>
+                  );
+                }
+                return (
+                  transfer.status === 'InTransit' && (
+                    <Popconfirm
+                      title="Xác nhận đã nhận đủ hàng?"
+                      description="Tồn nơi nhận tăng và giá vốn nơi nhận được tính lại."
+                      okText="Đã nhận"
+                      cancelText="Hủy"
+                      onConfirm={() => act.mutate({ transfer, action: 'receive' })}
+                    >
+                      <Button type="link" loading={busy('receive')}>
+                        Nhận hàng
+                      </Button>
+                    </Popconfirm>
+                  )
+                );
+              },
+            },
+          ]}
+        />
+      </Card>
       {creating && (
         <FormModal<Values>
           title="Tạo phiếu chuyển kho"

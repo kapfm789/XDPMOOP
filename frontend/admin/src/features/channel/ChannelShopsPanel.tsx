@@ -8,10 +8,11 @@ import {
   simulateBurst,
 } from '@oism/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Alert, Button, Flex, Form, Input, InputNumber, message, Modal, Select, Switch, Table, Typography } from 'antd';
+import { Alert, Button, Card, Flex, Form, Input, InputNumber, message, Modal, Select, Switch, Table, Typography } from 'antd';
 import { useState } from 'react';
 import { FormModal } from '../common/FormModal';
 import { useBranchOptions } from '../inventory/useBranchOptions';
+import { ChannelTag } from '../orders/labels';
 
 type ShopValues = { channel: SalesChannel; shopId: string; branchId: string };
 
@@ -39,43 +40,47 @@ export function ChannelShopsPanel() {
 
   return (
     <>
-      <Flex justify="end" style={{ marginBottom: 16 }}>
-        <Button type="primary" onClick={() => setAdding(true)}>
-          Thêm shop
-        </Button>
-      </Flex>
-      {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
-      <Table<ChannelShop>
-        scroll={{ x: 'max-content' }}
-        rowKey="id"
-        loading={shops.isPending}
-        dataSource={shops.data}
-        pagination={false}
-        columns={[
-          { title: 'Kênh', dataIndex: 'channel' },
-          { title: 'Mã shop', dataIndex: 'shopId' },
-          { title: 'Chi nhánh xuất hàng', dataIndex: 'branchId', render: (id: string) => branches.name(id) },
-          {
-            title: 'Hoạt động',
-            render: (_, shop) => (
-              <Switch
-                checked={shop.isActive}
-                loading={toggle.isPending && toggle.variables.id === shop.id}
-                onChange={() => toggle.mutate(shop)}
-                aria-label={`Bật hoặc tắt shop ${shop.shopId}`}
-              />
-            ),
-          },
-          {
-            render: (_, shop) => (
-              // Shop đã tắt không nhận webhook nên không bắn tải được.
-              <Button type="link" disabled={!shop.isActive} onClick={() => setBursting(shop)}>
-                Bắn đơn giả lập
-              </Button>
-            ),
-          },
-        ]}
-      />
+      <Card
+        title="Shop của sàn"
+        extra={
+          <Button type="primary" onClick={() => setAdding(true)}>
+            Thêm shop
+          </Button>
+        }
+      >
+        {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
+        <Table<ChannelShop>
+          scroll={{ x: 'max-content' }}
+          rowKey="id"
+          loading={shops.isPending}
+          dataSource={shops.data}
+          pagination={false}
+          columns={[
+            { title: 'Kênh', dataIndex: 'channel', render: (channel: SalesChannel) => <ChannelTag channel={channel} /> },
+            { title: 'Mã shop', dataIndex: 'shopId', render: (shopId: string) => <Typography.Text strong>{shopId}</Typography.Text> },
+            { title: 'Chi nhánh xuất hàng', dataIndex: 'branchId', render: (id: string) => branches.name(id) },
+            {
+              title: 'Hoạt động',
+              render: (_, shop) => (
+                <Switch
+                  checked={shop.isActive}
+                  loading={toggle.isPending && toggle.variables.id === shop.id}
+                  onChange={() => toggle.mutate(shop)}
+                  aria-label={`Bật hoặc tắt shop ${shop.shopId}`}
+                />
+              ),
+            },
+            {
+              render: (_, shop) => (
+                // Shop đã tắt không nhận webhook nên không bắn tải được.
+                <Button type="link" disabled={!shop.isActive} onClick={() => setBursting(shop)}>
+                  Bắn đơn giả lập
+                </Button>
+              ),
+            },
+          ]}
+        />
+      </Card>
       {adding && (
         <FormModal<ShopValues>
           title="Thêm shop của sàn"

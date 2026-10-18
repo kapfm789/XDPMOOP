@@ -15,10 +15,11 @@ import {
   useAuth,
 } from '@oism/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Alert, Button, Descriptions, Flex, Form, Input, message, Popconfirm, Select, Spin, Switch, Table, Tag, Typography } from 'antd';
-import { useState } from 'react';
+import { Alert, Button, Card, Descriptions, Flex, Form, Input, message, Popconfirm, Select, Spin, Switch, Table, Tag, Typography } from 'antd';
+import { type ReactNode, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { FormModal } from '../common/FormModal';
+import { StatusTag } from '../common/StatusTag';
 import { ProductFields, type ProductValues } from './ProductFields';
 import { type AttributePair, SkuFields, type SkuValues, toAttributes, toPairs, toSkuRequest } from './SkuFields';
 import { useCatalogOptions } from './useCatalogOptions';
@@ -33,7 +34,14 @@ const SYMBOLOGY_LABELS: Record<BarcodeSymbology, string> = { EAN13: 'EAN-13', Co
 
 // UC-PROD-02, 03, 04: một sản phẩm cùng SKU, mã vạch và giá của nó. Ô giá chỉ Owner sửa được;
 // mã trùng, số kiểm tra EAN-13 và quyền đặt giá do backend quyết định.
-export function ProductDetailPanel({ productId }: { productId: string }) {
+// Đầu trang (breadcrumb, tiêu đề) do màn hình dựng; panel đưa tên sản phẩm, tag trạng thái và nút sửa.
+export function ProductDetailPanel({
+  productId,
+  header,
+}: {
+  productId: string;
+  header: (props: { title: string; tags: ReactNode; extra: ReactNode }) => ReactNode;
+}) {
   const queryClient = useQueryClient();
   const isOwner = useAuth().user?.role === 'Owner';
   const options = useCatalogOptions();
@@ -64,89 +72,92 @@ export function ProductDetailPanel({ productId }: { productId: string }) {
 
   return (
     <>
-      <Flex justify="space-between" align="center" gap={16}>
-        <Typography.Title level={3}>{product.name}</Typography.Title>
-        <Button onClick={() => setDialog({ kind: 'product' })}>Sửa sản phẩm</Button>
-      </Flex>
-      <Descriptions
-        column={2}
-        style={{ marginBottom: 24 }}
-        items={[
-          { key: 'category', label: 'Danh mục', children: options.categoryName(product.categoryId) },
-          { key: 'brand', label: 'Thương hiệu', children: options.brandName(product.brandId) || 'Không có' },
-          { key: 'type', label: 'Loại', children: product.hasVariants ? 'Có biến thể' : 'Sản phẩm đơn' },
-          {
-            key: 'status',
-            label: 'Trạng thái',
-            children: product.isActive ? <Tag color="green">Đang bán</Tag> : <Tag>Ngừng bán</Tag>,
-          },
-          { key: 'description', label: 'Mô tả', span: 2, children: product.description || 'Không có' },
-        ]}
-      />
-      <Flex justify="space-between" align="center" style={{ marginBottom: 16 }}>
-        <Typography.Title level={4} style={{ margin: 0 }}>
-          SKU
-        </Typography.Title>
-        {product.hasVariants && (
-          <Button type="primary" onClick={() => setDialog({ kind: 'addSku' })}>
-            Thêm SKU
-          </Button>
-        )}
-      </Flex>
-      <Table<Sku>
-        rowKey="id"
-        dataSource={product.skus}
-        pagination={false}
-        columns={[
-          { title: 'Mã SKU', dataIndex: 'skuCode' },
-          { title: 'Tên hiển thị', dataIndex: 'name' },
-          { title: 'Giá lẻ', dataIndex: 'retailPrice', align: 'right', render: formatMoney },
-          { title: 'Giá sỉ', dataIndex: 'wholesalePrice', align: 'right', render: formatMoney },
-          {
-            title: 'Mã vạch',
-            render: (_, sku) => (
-              <Flex gap={4} wrap>
-                {sku.barcodes.map((barcode) => (
-                  <Popconfirm
-                    key={barcode.id}
-                    title={`Xóa mã vạch ${barcode.code}?`}
-                    okText="Xóa"
-                    cancelText="Hủy"
-                    onConfirm={() => removeCode.mutate({ skuId: sku.id, barcodeId: barcode.id })}
-                  >
-                    {/* Bấm dấu x mở hộp xác nhận thay vì gỡ thẻ ngay. */}
-                    <Tag closable onClose={(event) => event.preventDefault()} style={{ cursor: 'pointer' }}>
-                      {barcode.code} · {SYMBOLOGY_LABELS[barcode.symbology]}
-                    </Tag>
-                  </Popconfirm>
-                ))}
-              </Flex>
-            ),
-          },
-          {
-            title: 'Trạng thái',
-            dataIndex: 'isActive',
-            render: (isActive: boolean) => (isActive ? <Tag color="green">Đang bán</Tag> : <Tag>Ngừng bán</Tag>),
-          },
-          {
-            render: (_, sku) => (
-              <Flex gap={8} wrap>
-                <Button type="link" onClick={() => setDialog({ kind: 'editSku', sku })}>
-                  Sửa
-                </Button>
-                {isOwner && (
-                  <Button type="link" onClick={() => setDialog({ kind: 'prices', sku })}>
-                    Đặt giá
+      {header({
+        title: product.name,
+        tags: <ActiveTag isActive={product.isActive} />,
+        extra: <Button onClick={() => setDialog({ kind: 'product' })}>Sửa sản phẩm</Button>,
+      })}
+      <Card title="Thông tin sản phẩm" style={{ marginBottom: 16 }}>
+        <Descriptions
+          column={{ xs: 1, md: 2 }}
+          items={[
+            { key: 'category', label: 'Danh mục', children: options.categoryName(product.categoryId) },
+            { key: 'brand', label: 'Thương hiệu', children: options.brandName(product.brandId) || 'Không có' },
+            { key: 'type', label: 'Loại', children: product.hasVariants ? 'Có biến thể' : 'Sản phẩm đơn' },
+            {
+              key: 'status',
+              label: 'Trạng thái',
+              children: <ActiveTag isActive={product.isActive} />,
+            },
+            { key: 'description', label: 'Mô tả', span: 2, children: product.description || 'Không có' },
+          ]}
+        />
+      </Card>
+      <Card
+        title="SKU, mã vạch và giá"
+        extra={
+          product.hasVariants && (
+            <Button type="primary" onClick={() => setDialog({ kind: 'addSku' })}>
+              Thêm SKU
+            </Button>
+          )
+        }
+      >
+        <Table<Sku>
+          rowKey="id"
+          dataSource={product.skus}
+          pagination={false}
+          columns={[
+            { title: 'Mã SKU', dataIndex: 'skuCode', render: (skuCode: string) => <Typography.Text strong>{skuCode}</Typography.Text> },
+            { title: 'Tên hiển thị', dataIndex: 'name' },
+            { title: 'Giá lẻ', dataIndex: 'retailPrice', align: 'right', render: formatMoney },
+            { title: 'Giá sỉ', dataIndex: 'wholesalePrice', align: 'right', render: formatMoney },
+            {
+              title: 'Mã vạch',
+              render: (_, sku) => (
+                <Flex gap={4} wrap>
+                  {sku.barcodes.map((barcode) => (
+                    <Popconfirm
+                      key={barcode.id}
+                      title={`Xóa mã vạch ${barcode.code}?`}
+                      okText="Xóa"
+                      cancelText="Hủy"
+                      onConfirm={() => removeCode.mutate({ skuId: sku.id, barcodeId: barcode.id })}
+                    >
+                      {/* Bấm dấu x mở hộp xác nhận thay vì gỡ thẻ ngay. */}
+                      <Tag closable onClose={(event) => event.preventDefault()} style={{ cursor: 'pointer' }}>
+                        {barcode.code} · {SYMBOLOGY_LABELS[barcode.symbology]}
+                      </Tag>
+                    </Popconfirm>
+                  ))}
+                </Flex>
+              ),
+            },
+            {
+              title: 'Trạng thái',
+              dataIndex: 'isActive',
+              render: (isActive: boolean) => <ActiveTag isActive={isActive} />,
+            },
+            {
+              render: (_, sku) => (
+                <Flex gap={8} wrap>
+                  <Button type="link" onClick={() => setDialog({ kind: 'editSku', sku })}>
+                    Sửa
                   </Button>
-                )}
-                <Button type="link" onClick={() => setDialog({ kind: 'barcode', sku })}>
-                  Thêm mã vạch
-                </Button>
-              </Flex>
-            ),
-          },
-        ]}
-      />
+                  {isOwner && (
+                    <Button type="link" onClick={() => setDialog({ kind: 'prices', sku })}>
+                      Đặt giá
+                    </Button>
+                  )}
+                  <Button type="link" onClick={() => setDialog({ kind: 'barcode', sku })}>
+                    Thêm mã vạch
+                  </Button>
+                </Flex>
+              ),
+            },
+          ]}
+        />
+      </Card>
       {dialog?.kind === 'product' && (
         <FormModal<ProductValues & { isActive: boolean }>
           title={`Sửa sản phẩm ${product.name}`}
@@ -242,4 +253,8 @@ export function ProductDetailPanel({ productId }: { productId: string }) {
       )}
     </>
   );
+}
+
+function ActiveTag({ isActive }: { isActive: boolean }) {
+  return isActive ? <StatusTag tone="success">Đang bán</StatusTag> : <StatusTag tone="neutral">Ngừng bán</StatusTag>;
 }

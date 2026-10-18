@@ -10,9 +10,11 @@ import {
   useAuth,
 } from '@oism/shared';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { Alert, DatePicker, Flex, Select, Table, type TableColumnsType, Tag } from 'antd';
+import { Alert, Card, DatePicker, Select, Table, type TableColumnsType, Tag, Typography } from 'antd';
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { FilterBar } from '../common/FilterBar';
+import { StatusTag } from '../common/StatusTag';
 import { useBranchOptions } from './useBranchOptions';
 
 type Filter = { branchId?: string; from?: string; to?: string; page: number };
@@ -54,7 +56,7 @@ export function LedgerPanel() {
   const narrow = (change: Partial<Filter>) => setFilter((current) => ({ ...current, ...change, page: 1 }));
 
   const columns: TableColumnsType<LedgerLine> = [
-    { title: 'Số thứ tự', dataIndex: 'seq', align: 'right' },
+    { title: 'Số thứ tự', dataIndex: 'seq', align: 'right', render: (seq: number) => <Typography.Text strong>{seq}</Typography.Text> },
     { title: 'Thời gian', dataIndex: 'createdAt', render: (createdAt: string) => formatDateTime(createdAt) },
     { title: 'Chi nhánh', dataIndex: 'branchId', render: (id: string) => branches.name(id) },
     { title: 'Mã SKU', dataIndex: 'skuCode' },
@@ -62,7 +64,7 @@ export function LedgerPanel() {
     {
       title: 'Loại',
       dataIndex: 'type',
-      render: (type: LedgerType) => (type === 'IN' ? <Tag color="green">Nhập</Tag> : <Tag color="volcano">Xuất</Tag>),
+      render: (type: LedgerType) => (type === 'IN' ? <StatusTag tone="success">Nhập</StatusTag> : <StatusTag tone="info">Xuất</StatusTag>),
     },
     { title: 'Lý do', dataIndex: 'reason', render: (reason: LedgerReason) => REASON_LABELS[reason] },
     { title: 'Số lượng', dataIndex: 'quantity', align: 'right' },
@@ -82,7 +84,7 @@ export function LedgerPanel() {
 
   return (
     <>
-      <Flex gap={8} wrap align="center" style={{ marginBottom: 16 }}>
+      <FilterBar>
         <Select
           allowClear
           placeholder="Mọi chi nhánh"
@@ -105,22 +107,24 @@ export function LedgerPanel() {
             Đang xem một SKU
           </Tag>
         )}
-      </Flex>
-      {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
-      <Table<LedgerLine>
-        scroll={{ x: 'max-content' }}
-        rowKey="seq"
-        loading={ledger.isPending}
-        dataSource={ledger.data?.items}
-        columns={columns}
-        pagination={{
-          current: filter.page,
-          pageSize: PAGE_SIZE,
-          total: ledger.data?.total,
-          showSizeChanger: false,
-          onChange: (page) => setFilter((current) => ({ ...current, page })),
-        }}
-      />
+      </FilterBar>
+      <Card title="Sổ giao dịch">
+        {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
+        <Table<LedgerLine>
+          scroll={{ x: 'max-content' }}
+          rowKey="seq"
+          loading={ledger.isPending}
+          dataSource={ledger.data?.items}
+          columns={columns}
+          pagination={{
+            current: filter.page,
+            pageSize: PAGE_SIZE,
+            total: ledger.data?.total,
+            showSizeChanger: false,
+            onChange: (page) => setFilter((current) => ({ ...current, page })),
+          }}
+        />
+      </Card>
     </>
   );
 }

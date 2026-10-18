@@ -13,9 +13,11 @@ import {
   updatePurchaseReceipt,
 } from '@oism/shared';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Alert, Button, Flex, Form, Input, InputNumber, message, Popconfirm, Select, Space, Table, Tag } from 'antd';
+import { Alert, Button, Card, Flex, Form, Input, InputNumber, message, Popconfirm, Select, Space, Table } from 'antd';
 import { useState } from 'react';
+import { FilterBar } from '../common/FilterBar';
 import { FormModal } from '../common/FormModal';
+import { DocumentCode, StatusTag } from '../common/StatusTag';
 import { SkuSelect, type SkuOption } from './SkuSelect';
 import { useBranchOptions } from './useBranchOptions';
 
@@ -68,99 +70,103 @@ export function ReceiptsPanel() {
 
   return (
     <>
-      <Flex justify="space-between" gap={16} wrap style={{ marginBottom: 16 }}>
-        <Flex gap={8} wrap>
-          <Select
-            allowClear
-            placeholder="Mọi chi nhánh"
-            aria-label="Lọc theo chi nhánh"
-            options={branches.options}
-            value={filter.branchId}
-            onChange={(branchId?: string) => narrow({ branchId })}
-            style={{ width: 240 }}
-          />
-          <Select
-            allowClear
-            placeholder="Mọi trạng thái"
-            aria-label="Lọc theo trạng thái"
-            options={STATUS_OPTIONS}
-            value={filter.status}
-            onChange={(status?: PurchaseReceiptStatus) => narrow({ status })}
-            style={{ width: 180 }}
-          />
-        </Flex>
-        <Space>
-          <Button onClick={() => setAddingSupplier(true)}>Thêm nhà cung cấp</Button>
-          <Button type="primary" onClick={() => setEditing('new')}>
-            Tạo phiếu nhập
-          </Button>
-        </Space>
-      </Flex>
-      {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
-      <Table<PurchaseReceipt>
-        scroll={{ x: 'max-content' }}
-        rowKey="id"
-        loading={receipts.isPending}
-        dataSource={receipts.data?.items}
-        pagination={{
-          current: filter.page,
-          pageSize: PAGE_SIZE,
-          total: receipts.data?.total,
-          showSizeChanger: false,
-          onChange: (page) => setFilter((current) => ({ ...current, page })),
-        }}
-        expandable={{
-          expandedRowRender: (receipt) => (
-            <Table<PurchaseReceiptItem>
-              rowKey="id"
-              size="small"
-              pagination={false}
-              dataSource={receipt.items}
-              columns={[
-                { title: 'Mã SKU', dataIndex: 'skuCode' },
-                { title: 'Tên', dataIndex: 'skuName' },
-                { title: 'Số lượng', dataIndex: 'quantity', align: 'right' },
-                { title: 'Đơn giá nhập', dataIndex: 'unitCost', align: 'right', render: (unitCost: number) => formatMoney(unitCost) },
-              ]}
-            />
-          ),
-        }}
-        columns={[
-          { title: 'Mã phiếu', dataIndex: 'receiptNumber' },
-          { title: 'Chi nhánh', dataIndex: 'branchId', render: (id: string) => branches.name(id) },
-          { title: 'Nhà cung cấp', dataIndex: 'supplierId', render: (id: string) => supplierNames.get(id) ?? '' },
-          { title: 'Số dòng', align: 'right', render: (_, receipt) => receipt.items.length },
-          { title: 'Ngày tạo', dataIndex: 'createdAt', render: (createdAt: string) => formatDateTime(createdAt) },
-          {
-            title: 'Trạng thái',
-            dataIndex: 'status',
-            render: (status: PurchaseReceiptStatus) =>
-              status === 'Confirmed' ? <Tag color="green">Đã nhập kho</Tag> : <Tag>Nháp</Tag>,
-          },
-          { title: 'Ghi chú', dataIndex: 'note' },
-          {
-            render: (_, receipt) =>
-              receipt.status === 'Draft' && (
-                <Space>
-                  <Button type="link" onClick={() => setEditing(receipt)}>
-                    Sửa
-                  </Button>
-                  <Popconfirm
-                    title="Xác nhận nhập kho?"
-                    description="Tồn và giá vốn sẽ được cập nhật. Phiếu đã xác nhận không sửa được."
-                    okText="Xác nhận"
-                    cancelText="Hủy"
-                    onConfirm={() => confirm.mutate(receipt)}
-                  >
-                    <Button type="link" loading={confirm.isPending && confirm.variables.id === receipt.id}>
-                      Xác nhận nhập kho
+      <FilterBar>
+        <Select
+          allowClear
+          placeholder="Mọi chi nhánh"
+          aria-label="Lọc theo chi nhánh"
+          options={branches.options}
+          value={filter.branchId}
+          onChange={(branchId?: string) => narrow({ branchId })}
+          style={{ width: 240 }}
+        />
+        <Select
+          allowClear
+          placeholder="Mọi trạng thái"
+          aria-label="Lọc theo trạng thái"
+          options={STATUS_OPTIONS}
+          value={filter.status}
+          onChange={(status?: PurchaseReceiptStatus) => narrow({ status })}
+          style={{ width: 180 }}
+        />
+      </FilterBar>
+      <Card
+        title="Danh sách phiếu nhập"
+        extra={
+          <Space>
+            <Button onClick={() => setAddingSupplier(true)}>Thêm nhà cung cấp</Button>
+            <Button type="primary" onClick={() => setEditing('new')}>
+              Tạo phiếu nhập
+            </Button>
+          </Space>
+        }
+      >
+        {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
+        <Table<PurchaseReceipt>
+          scroll={{ x: 'max-content' }}
+          rowKey="id"
+          loading={receipts.isPending}
+          dataSource={receipts.data?.items}
+          pagination={{
+            current: filter.page,
+            pageSize: PAGE_SIZE,
+            total: receipts.data?.total,
+            showSizeChanger: false,
+            onChange: (page) => setFilter((current) => ({ ...current, page })),
+          }}
+          expandable={{
+            expandedRowRender: (receipt) => (
+              <Table<PurchaseReceiptItem>
+                rowKey="id"
+                size="small"
+                pagination={false}
+                dataSource={receipt.items}
+                columns={[
+                  { title: 'Mã SKU', dataIndex: 'skuCode' },
+                  { title: 'Tên', dataIndex: 'skuName' },
+                  { title: 'Số lượng', dataIndex: 'quantity', align: 'right' },
+                  { title: 'Đơn giá nhập', dataIndex: 'unitCost', align: 'right', render: (unitCost: number) => formatMoney(unitCost) },
+                ]}
+              />
+            ),
+          }}
+          columns={[
+            { title: 'Mã phiếu', dataIndex: 'receiptNumber', render: (receiptNumber: string) => <DocumentCode code={receiptNumber} /> },
+            { title: 'Chi nhánh', dataIndex: 'branchId', render: (id: string) => branches.name(id) },
+            { title: 'Nhà cung cấp', dataIndex: 'supplierId', render: (id: string) => supplierNames.get(id) ?? '' },
+            { title: 'Số dòng', align: 'right', render: (_, receipt) => receipt.items.length },
+            { title: 'Ngày tạo', dataIndex: 'createdAt', render: (createdAt: string) => formatDateTime(createdAt) },
+            {
+              title: 'Trạng thái',
+              dataIndex: 'status',
+              render: (status: PurchaseReceiptStatus) =>
+                status === 'Confirmed' ? <StatusTag tone="success">Đã nhập kho</StatusTag> : <StatusTag tone="pending">Nháp</StatusTag>,
+            },
+            { title: 'Ghi chú', dataIndex: 'note' },
+            {
+              render: (_, receipt) =>
+                receipt.status === 'Draft' && (
+                  <Space>
+                    <Button type="link" onClick={() => setEditing(receipt)}>
+                      Sửa
                     </Button>
-                  </Popconfirm>
-                </Space>
-              ),
-          },
-        ]}
-      />
+                    <Popconfirm
+                      title="Xác nhận nhập kho?"
+                      description="Tồn và giá vốn sẽ được cập nhật. Phiếu đã xác nhận không sửa được."
+                      okText="Xác nhận"
+                      cancelText="Hủy"
+                      onConfirm={() => confirm.mutate(receipt)}
+                    >
+                      <Button type="link" loading={confirm.isPending && confirm.variables.id === receipt.id}>
+                        Xác nhận nhập kho
+                      </Button>
+                    </Popconfirm>
+                  </Space>
+                ),
+            },
+          ]}
+        />
+      </Card>
       {editing && (
         <FormModal<Values>
           title={editing === 'new' ? 'Tạo phiếu nhập' : `Sửa phiếu nhập ${editing.receiptNumber}`}

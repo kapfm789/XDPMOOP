@@ -7,7 +7,7 @@ import {
   updateCategory,
 } from '@oism/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Alert, Button, Flex, Form, Input, message, Popconfirm, Table, TreeSelect } from 'antd';
+import { Alert, Button, Card, Flex, Form, Input, message, Popconfirm, Table, TreeSelect } from 'antd';
 import { useState } from 'react';
 import { FormModal } from '../common/FormModal';
 
@@ -46,54 +46,58 @@ export function CategoriesPanel() {
 
   return (
     <>
-      <Flex justify="end" style={{ marginBottom: 16 }}>
-        <Button type="primary" onClick={() => setEditing({})}>
-          Thêm danh mục
-        </Button>
-      </Flex>
-      {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
-      <Table<Row>
-        rowKey="id"
-        loading={isPending}
-        dataSource={data && toRows(data)}
-        pagination={false}
-        expandable={{
-          expandedRowKeys: idsOf(data ?? []).filter((id) => !collapsed.has(id)),
-          onExpand: (expanded, category) =>
-            setCollapsed((current) => {
-              const next = new Set(current);
-              if (expanded) next.delete(category.id);
-              else next.add(category.id);
-              return next;
-            }),
-        }}
-        columns={[
-          { title: 'Tên danh mục', dataIndex: 'name' },
-          {
-            width: 280,
-            render: (_, category) => (
-              <Flex gap={8}>
-                <Button type="link" onClick={() => setEditing({ parentId: category.id })}>
-                  Thêm con
-                </Button>
-                <Button type="link" onClick={() => setEditing(category as CategoryNode)}>
-                  Sửa
-                </Button>
-                <Popconfirm
-                  title={`Xóa danh mục ${category.name}?`}
-                  okText="Xóa"
-                  cancelText="Hủy"
-                  onConfirm={() => remove.mutate(category.id)}
-                >
-                  <Button type="link" danger>
-                    Xóa
+      <Card
+        title="Cây danh mục"
+        extra={
+          <Button type="primary" onClick={() => setEditing({})}>
+            Thêm danh mục
+          </Button>
+        }
+      >
+        {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
+        <Table<Row>
+          rowKey="id"
+          loading={isPending}
+          dataSource={data && toRows(data)}
+          pagination={false}
+          expandable={{
+            expandedRowKeys: idsOf(data ?? []).filter((id) => !collapsed.has(id)),
+            onExpand: (expanded, category) =>
+              setCollapsed((current) => {
+                const next = new Set(current);
+                if (expanded) next.delete(category.id);
+                else next.add(category.id);
+                return next;
+              }),
+          }}
+          columns={[
+            { title: 'Tên danh mục', dataIndex: 'name' },
+            {
+              width: 280,
+              render: (_, category) => (
+                <Flex gap={8}>
+                  <Button type="link" onClick={() => setEditing({ parentId: category.id })}>
+                    Thêm con
                   </Button>
-                </Popconfirm>
-              </Flex>
-            ),
-          },
-        ]}
-      />
+                  <Button type="link" onClick={() => setEditing(category as CategoryNode)}>
+                    Sửa
+                  </Button>
+                  <Popconfirm
+                    title={`Xóa danh mục ${category.name}?`}
+                    okText="Xóa"
+                    cancelText="Hủy"
+                    onConfirm={() => remove.mutate(category.id)}
+                  >
+                    <Button type="link" danger>
+                      Xóa
+                    </Button>
+                  </Popconfirm>
+                </Flex>
+              ),
+            },
+          ]}
+        />
+      </Card>
       {editing && (
         <FormModal<Values>
           title={'id' in editing ? `Sửa danh mục ${editing.name}` : 'Thêm danh mục'}

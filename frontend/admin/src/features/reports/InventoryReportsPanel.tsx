@@ -1,21 +1,31 @@
 import { errorMessage } from '@oism/shared';
-import { Alert, Flex, Select, Tabs } from 'antd';
+import { Alert, Card, Select } from 'antd';
 import { useState } from 'react';
+import { FilterBar } from '../common/FilterBar';
 import { useBranchOptions } from '../inventory/useBranchOptions';
 import { InventoryValueTable } from './InventoryValueTable';
 import { SellersTable } from './SellersTable';
 
 const DAY_OPTIONS = [7, 30, 90].map((days) => ({ value: days, label: `${days} ngày gần nhất` }));
 
+type Tab = 'value' | 'top' | 'slow';
+
+const TABS: { key: Tab; label: string }[] = [
+  { key: 'value', label: 'Giá trị tồn' },
+  { key: 'top', label: 'Bán chạy' },
+  { key: 'slow', label: 'Bán chậm' },
+];
+
 // UC-REP-02: giá trị tồn, bán chạy, bán chậm, cùng bộ lọc chi nhánh và khoảng ngày bán.
 export function InventoryReportsPanel() {
   const [branchId, setBranchId] = useState<string>();
   const [days, setDays] = useState(30);
+  const [tab, setTab] = useState<Tab>('value');
   const branches = useBranchOptions();
 
   return (
     <>
-      <Flex gap={8} wrap style={{ marginBottom: 16 }}>
+      <FilterBar>
         <Select
           allowClear
           placeholder="Mọi chi nhánh"
@@ -25,21 +35,22 @@ export function InventoryReportsPanel() {
           onChange={setBranchId}
           style={{ width: 240 }}
         />
-        <Select aria-label="Khoảng thời gian bán" options={DAY_OPTIONS} value={days} onChange={setDays} style={{ width: 180 }} />
-      </Flex>
+        {/* Khoảng ngày bán chỉ áp cho bán chạy và bán chậm; giá trị tồn là số hiện tại. */}
+        <Select
+          aria-label="Khoảng thời gian bán"
+          options={DAY_OPTIONS}
+          value={days}
+          onChange={setDays}
+          disabled={tab === 'value'}
+          style={{ width: 180 }}
+        />
+      </FilterBar>
       {branches.error && <Alert type="error" showIcon title={errorMessage(branches.error)} style={{ marginBottom: 16 }} />}
-      <Tabs
-        items={[
-          {
-            key: 'value',
-            label: 'Giá trị tồn',
-            // Đổi chi nhánh thì dựng lại bảng để quay về trang đầu.
-            children: <InventoryValueTable key={branchId ?? 'all'} branchId={branchId} branchName={branches.name} />,
-          },
-          { key: 'top', label: 'Bán chạy', children: <SellersTable kind="top" branchId={branchId} days={days} /> },
-          { key: 'slow', label: 'Bán chậm', children: <SellersTable kind="slow" branchId={branchId} days={days} /> },
-        ]}
-      />
+      <Card activeTabKey={tab} onTabChange={(key) => setTab(key as Tab)} tabList={TABS}>
+        {/* Đổi chi nhánh thì dựng lại bảng để quay về trang đầu. */}
+        {tab === 'value' && <InventoryValueTable key={branchId ?? 'all'} branchId={branchId} branchName={branches.name} />}
+        {tab !== 'value' && <SellersTable kind={tab} branchId={branchId} days={days} />}
+      </Card>
     </>
   );
 }

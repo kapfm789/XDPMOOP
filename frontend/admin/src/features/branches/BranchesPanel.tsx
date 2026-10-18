@@ -8,7 +8,7 @@ import {
   updateBranch,
 } from '@oism/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Alert, Button, Flex, Form, Input, message, Select, Switch, Table } from 'antd';
+import { Alert, Button, Card, Form, Input, message, Select, Switch, Table } from 'antd';
 import { useState } from 'react';
 import { FormModal } from '../common/FormModal';
 
@@ -31,36 +31,40 @@ export function BranchesPanel() {
 
   return (
     <>
-      <Flex justify="end" style={{ marginBottom: 16 }}>
-        <Button type="primary" onClick={() => setEditing('new')}>
-          Thêm chi nhánh
-        </Button>
-      </Flex>
-      {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
-      <Table<Branch>
-        rowKey="id"
-        loading={isPending}
-        dataSource={data}
-        pagination={false}
-        columns={[
-          { title: 'Mã', dataIndex: 'code' },
-          { title: 'Tên', dataIndex: 'name' },
-          { title: 'Loại', dataIndex: 'type', render: (type: BranchType) => BRANCH_TYPE_LABELS[type] },
-          { title: 'Địa chỉ', dataIndex: 'address' },
-          {
-            title: 'Hoạt động',
-            render: (_, branch) => (
-              <Switch
-                checked={branch.isActive}
-                loading={toggle.isPending && toggle.variables.id === branch.id}
-                onChange={() => toggle.mutate(branch)}
-                aria-label={`Bật hoặc tắt chi nhánh ${branch.code}`}
-              />
-            ),
-          },
-          { render: (_, branch) => <Button type="link" onClick={() => setEditing(branch)}>Sửa</Button> },
-        ]}
-      />
+      <Card
+        title="Danh sách chi nhánh"
+        extra={
+          <Button type="primary" onClick={() => setEditing('new')}>
+            Thêm chi nhánh
+          </Button>
+        }
+      >
+        {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
+        <Table<Branch>
+          rowKey="id"
+          loading={isPending}
+          dataSource={data}
+          pagination={false}
+          columns={[
+            { title: 'Mã', dataIndex: 'code' },
+            { title: 'Tên', dataIndex: 'name' },
+            { title: 'Loại', dataIndex: 'type', render: (type: BranchType) => BRANCH_TYPE_LABELS[type] },
+            { title: 'Địa chỉ', dataIndex: 'address' },
+            {
+              title: 'Hoạt động',
+              render: (_, branch) => (
+                <Switch
+                  checked={branch.isActive}
+                  loading={toggle.isPending && toggle.variables.id === branch.id}
+                  onChange={() => toggle.mutate(branch)}
+                  aria-label={`Bật hoặc tắt chi nhánh ${branch.code}`}
+                />
+              ),
+            },
+            { render: (_, branch) => <Button type="link" onClick={() => setEditing(branch)}>Sửa</Button> },
+          ]}
+        />
+      </Card>
       {editing && (
         <FormModal<Values>
           title={editing === 'new' ? 'Thêm chi nhánh' : `Sửa chi nhánh ${editing.code}`}

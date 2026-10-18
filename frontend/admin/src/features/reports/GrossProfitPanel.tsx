@@ -10,8 +10,10 @@ import {
   vietnamDate,
 } from '@oism/shared';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { Alert, Card, Col, DatePicker, Flex, Row, Select, Statistic, Table } from 'antd';
+import { Alert, Card, Col, DatePicker, Row, Select, Table, Typography } from 'antd';
 import { useState } from 'react';
+import { FilterBar } from '../common/FilterBar';
+import { StatCard } from '../common/StatCard';
 import { SkuSelect, type SkuOption } from '../inventory/SkuSelect';
 import { useBranchOptions } from '../inventory/useBranchOptions';
 import { CHANNEL_LABELS } from '../orders/labels';
@@ -66,7 +68,7 @@ export function GrossProfitPanel() {
 
   return (
     <>
-      <Flex gap={8} wrap style={{ marginBottom: 16 }}>
+      <FilterBar>
         <DatePicker.RangePicker
           aria-label="Khoảng ngày"
           format="DD/MM/YYYY"
@@ -102,45 +104,45 @@ export function GrossProfitPanel() {
           onChange={(groupBy: GrossProfitGroupBy) => change({ groupBy })}
           style={{ width: 160 }}
         />
-      </Flex>
+      </FilterBar>
       {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic title="Doanh thu thuần" value={totals ? formatMoney(totals.revenue) : '–'} loading={report.isPending} />
-          </Card>
+        <Col xs={24} sm={12} xl={6}>
+          <StatCard label="Doanh thu thuần" icon="report" tone="info" loading={report.isPending} value={totals ? formatMoney(totals.revenue) : '–'} />
         </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic title="Giá vốn hàng bán" value={totals ? formatMoney(totals.cogs) : '–'} loading={report.isPending} />
-          </Card>
+        <Col xs={24} sm={12} xl={6}>
+          <StatCard label="Giá vốn hàng bán" icon="warehouse" tone="pending" loading={report.isPending} value={totals ? formatMoney(totals.cogs) : '–'} />
         </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic title="Lợi nhuận gộp" value={totals ? formatMoney(totals.grossProfit) : '–'} loading={report.isPending} />
-          </Card>
+        <Col xs={24} sm={12} xl={6}>
+          <StatCard
+            label="Lợi nhuận gộp"
+            icon="dashboard"
+            tone={totals && totals.grossProfit < 0 ? 'error' : 'success'}
+            loading={report.isPending}
+            value={totals ? formatMoney(totals.grossProfit) : '–'}
+          />
         </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic title="Số lượng bán" value={totals ? formatNumber(totals.quantity) : '–'} loading={report.isPending} />
-          </Card>
+        <Col xs={24} sm={12} xl={6}>
+          <StatCard label="Số lượng bán" icon="order" tone="neutral" loading={report.isPending} value={totals ? formatNumber(totals.quantity) : '–'} />
         </Col>
       </Row>
-      <Table<GrossProfitRow>
-        scroll={{ x: 'max-content' }}
-        rowKey="key"
-        loading={report.isFetching}
-        dataSource={report.data?.rows}
-        pagination={{ pageSize: 31, showSizeChanger: false, hideOnSinglePage: true }}
-        locale={{ emptyText: 'Không có đơn đã duyệt nào khớp bộ lọc' }}
-        columns={[
-          { title: GROUP_TITLES[filter.groupBy], render: (_, row) => label(row) },
-          { title: 'Số lượng', dataIndex: 'quantity', align: 'right', render: (quantity: number) => formatNumber(quantity) },
-          { title: 'Doanh thu thuần', dataIndex: 'revenue', align: 'right', render: (amount: number) => formatMoney(amount) },
-          { title: 'Giá vốn', dataIndex: 'cogs', align: 'right', render: (amount: number) => formatMoney(amount) },
-          { title: 'Lợi nhuận gộp', dataIndex: 'grossProfit', align: 'right', render: (amount: number) => formatMoney(amount) },
-        ]}
-      />
+      <Card title={`Chi tiết ${GROUP_OPTIONS.find((option) => option.value === filter.groupBy)?.label.toLowerCase()}`}>
+        <Table<GrossProfitRow>
+          scroll={{ x: 'max-content' }}
+          rowKey="key"
+          loading={report.isFetching}
+          dataSource={report.data?.rows}
+          pagination={{ pageSize: 31, showSizeChanger: false, hideOnSinglePage: true }}
+          locale={{ emptyText: 'Không có đơn đã duyệt nào khớp bộ lọc' }}
+          columns={[
+            { title: GROUP_TITLES[filter.groupBy], render: (_, row) => <Typography.Text strong>{label(row)}</Typography.Text> },
+            { title: 'Số lượng', dataIndex: 'quantity', align: 'right', render: (quantity: number) => formatNumber(quantity) },
+            { title: 'Doanh thu thuần', dataIndex: 'revenue', align: 'right', render: (amount: number) => formatMoney(amount) },
+            { title: 'Giá vốn', dataIndex: 'cogs', align: 'right', render: (amount: number) => formatMoney(amount) },
+            { title: 'Lợi nhuận gộp', dataIndex: 'grossProfit', align: 'right', render: (amount: number) => formatMoney(amount) },
+          ]}
+        />
+      </Card>
     </>
   );
 }

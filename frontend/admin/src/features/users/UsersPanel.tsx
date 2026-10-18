@@ -9,9 +9,10 @@ import {
   type UserAccount,
 } from '@oism/shared';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Alert, Button, Flex, Form, Input, Select, Switch, Table, Tag } from 'antd';
+import { Alert, Button, Card, Form, Input, Select, Switch, Table } from 'antd';
 import { useState } from 'react';
 import { FormModal } from '../common/FormModal';
+import { StatusTag } from '../common/StatusTag';
 
 type Values = {
   fullName: string;
@@ -43,34 +44,38 @@ export function UsersPanel() {
 
   return (
     <>
-      <Flex justify="end" style={{ marginBottom: 16 }}>
-        <Button type="primary" onClick={() => setEditing('new')}>
-          Thêm người dùng
-        </Button>
-      </Flex>
-      {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
-      <Table<UserAccount>
-        rowKey="id"
-        loading={users.isPending}
-        dataSource={users.data?.items}
-        pagination={{ current: page, pageSize: PAGE_SIZE, total: users.data?.total, showSizeChanger: false, onChange: setPage }}
-        columns={[
-          { title: 'Họ tên', dataIndex: 'fullName' },
-          { title: 'Email', dataIndex: 'email' },
-          { title: 'Số điện thoại', dataIndex: 'phone' },
-          { title: 'Vai trò', dataIndex: 'role', render: (role: Role) => ROLE_LABELS[role] },
-          { title: 'Chi nhánh', dataIndex: 'branchId', render: (id?: string | null) => branchName(id) },
-          {
-            title: 'Trạng thái',
-            dataIndex: 'isActive',
-            render: (isActive: boolean) => (isActive ? <Tag color="green">Hoạt động</Tag> : <Tag>Đã khóa</Tag>),
-          },
-          {
-            render: (_, user) =>
-              user.role !== 'Owner' && <Button type="link" onClick={() => setEditing(user)}>Sửa</Button>,
-          },
-        ]}
-      />
+      <Card
+        title="Danh sách người dùng"
+        extra={
+          <Button type="primary" onClick={() => setEditing('new')}>
+            Thêm người dùng
+          </Button>
+        }
+      >
+        {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
+        <Table<UserAccount>
+          rowKey="id"
+          loading={users.isPending}
+          dataSource={users.data?.items}
+          pagination={{ current: page, pageSize: PAGE_SIZE, total: users.data?.total, showSizeChanger: false, onChange: setPage }}
+          columns={[
+            { title: 'Họ tên', dataIndex: 'fullName' },
+            { title: 'Email', dataIndex: 'email' },
+            { title: 'Số điện thoại', dataIndex: 'phone' },
+            { title: 'Vai trò', dataIndex: 'role', render: (role: Role) => ROLE_LABELS[role] },
+            { title: 'Chi nhánh', dataIndex: 'branchId', render: (id?: string | null) => branchName(id) },
+            {
+              title: 'Trạng thái',
+              dataIndex: 'isActive',
+              render: (isActive: boolean) => (isActive ? <StatusTag tone="success">Hoạt động</StatusTag> : <StatusTag tone="neutral">Đã khóa</StatusTag>),
+            },
+            {
+              render: (_, user) =>
+                user.role !== 'Owner' && <Button type="link" onClick={() => setEditing(user)}>Sửa</Button>,
+            },
+          ]}
+        />
+      </Card>
       {editing && (
         <FormModal<Values>
           title={editing === 'new' ? 'Thêm người dùng' : `Sửa ${editing.fullName}`}

@@ -1,7 +1,8 @@
 import { errorMessage, formatMoney, formatNumber, getInventoryValue, type InventoryValueRow, useAuth } from '@oism/shared';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { Alert, Card, Statistic, Table, type TableColumnsType } from 'antd';
+import { Alert, Col, Row, Table, type TableColumnsType } from 'antd';
 import { useState } from 'react';
+import { StatCard } from '../common/StatCard';
 import { skuLabel } from './skuLabel';
 
 const PAGE_SIZE = 20;
@@ -35,13 +36,17 @@ export function InventoryValueTable({ branchId, branchName }: Props) {
     <>
       {report.error && <Alert type="error" showIcon title={errorMessage(report.error)} style={{ marginBottom: 16 }} />}
       {isOwner && (
-        <Card style={{ marginBottom: 16, maxWidth: 360 }}>
-          <Statistic
-            title="Tổng giá trị tồn theo giá vốn"
-            value={report.data?.totalValue == null ? '–' : formatMoney(report.data.totalValue)}
-            loading={report.isPending}
-          />
-        </Card>
+        <Row gutter={16} style={{ marginBottom: 16 }}>
+          <Col xs={24} md={12} xl={8}>
+            <StatCard
+              label="Tổng giá trị tồn theo giá vốn"
+              icon="report"
+              tone="info"
+              loading={report.isPending}
+              value={report.data?.totalValue == null ? '–' : formatMoney(report.data.totalValue)}
+            />
+          </Col>
+        </Row>
       )}
       <Table<InventoryValueRow>
         scroll={{ x: 'max-content' }}

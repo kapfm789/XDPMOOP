@@ -46,7 +46,7 @@ export function NewOrderForm() {
   });
 
   return (
-    <Card style={{ maxWidth: 960 }}>
+    <Card title="Thông tin đơn" style={{ maxWidth: 960 }}>
       {branches.error && <Alert type="error" showIcon title={errorMessage(branches.error)} style={{ marginBottom: 16 }} />}
       {create.error && (
         <Alert

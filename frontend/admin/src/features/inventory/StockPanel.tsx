@@ -1,9 +1,12 @@
 import { errorMessage, formatMoney, listStock, setStockThreshold, type StockRow, useAuth } from '@oism/shared';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Alert, Button, Flex, Form, Input, InputNumber, Select, Space, Table, type TableColumnsType } from 'antd';
+import { Alert, Button, Card, Form, Input, InputNumber, Select, Space, Table, type TableColumnsType, Typography } from 'antd';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FormModal } from '../common/FormModal';
+import { FilterBar } from '../common/FilterBar';
+import { StockLevelTag } from './StockLevelTag';
+import { StockSummary } from './StockSummary';
 import { useBranchOptions } from './useBranchOptions';
 
 type Filter = { branchId?: string; query?: string; page: number };
@@ -31,7 +34,7 @@ export function StockPanel() {
   const narrow = (change: Partial<Filter>) => setFilter((current) => ({ ...current, ...change, page: 1 }));
 
   const columns: TableColumnsType<StockRow> = [
-    { title: 'Mã SKU', dataIndex: 'skuCode' },
+    { title: 'Mã SKU', dataIndex: 'skuCode', render: (skuCode: string) => <Typography.Text strong>{skuCode}</Typography.Text> },
     { title: 'Tên', dataIndex: 'name' },
     { title: 'Chi nhánh', dataIndex: 'branchId', render: (id: string) => branches.name(id) },
     { title: 'Tồn', dataIndex: 'onHand', align: 'right' },
@@ -48,6 +51,7 @@ export function StockPanel() {
         ] satisfies TableColumnsType<StockRow>)
       : []),
     { title: 'Ngưỡng tối thiểu', dataIndex: 'threshold', align: 'right' },
+    { title: 'Mức tồn', render: (_, row) => <StockLevelTag available={row.available} threshold={row.threshold} /> },
     {
       render: (_, row) => (
         <Space>
@@ -62,7 +66,7 @@ export function StockPanel() {
 
   return (
     <>
-      <Flex gap={8} wrap style={{ marginBottom: 16 }}>
+      <FilterBar>
         <Select
           allowClear
           placeholder="Mọi chi nhánh"
@@ -79,22 +83,25 @@ export function StockPanel() {
           onSearch={(query) => narrow({ query })}
           style={{ width: 280 }}
         />
-      </Flex>
-      {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
-      <Table<StockRow>
-        scroll={{ x: 'max-content' }}
-        rowKey={(row) => `${row.branchId}:${row.skuId}`}
-        loading={stock.isPending}
-        dataSource={stock.data?.items}
-        columns={columns}
-        pagination={{
-          current: filter.page,
-          pageSize: PAGE_SIZE,
-          total: stock.data?.total,
-          showSizeChanger: false,
-          onChange: (page) => setFilter((current) => ({ ...current, page })),
-        }}
-      />
+      </FilterBar>
+      <StockSummary branchId={filter.branchId} trackedRows={stock.data?.total} loading={stock.isPending} />
+      <Card title="Tồn theo chi nhánh">
+        {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
+        <Table<StockRow>
+          scroll={{ x: 'max-content' }}
+          rowKey={(row) => `${row.branchId}:${row.skuId}`}
+          loading={stock.isPending}
+          dataSource={stock.data?.items}
+          columns={columns}
+          pagination={{
+            current: filter.page,
+            pageSize: PAGE_SIZE,
+            total: stock.data?.total,
+            showSizeChanger: false,
+            onChange: (page) => setFilter((current) => ({ ...current, page })),
+          }}
+        />
+      </Card>
       {editing && (
         <FormModal<ThresholdValues>
           title={`Ngưỡng tồn tối thiểu của ${editing.skuCode}`}

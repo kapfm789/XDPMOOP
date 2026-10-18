@@ -8,8 +8,10 @@ import {
   runForecast,
 } from '@oism/shared';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Alert, Button, Card, Descriptions, Flex, message, Select, Table, Tag, Typography } from 'antd';
+import { Alert, Button, Card, Descriptions, message, Select, Table, Typography } from 'antd';
 import { useState } from 'react';
+import { FilterBar } from '../common/FilterBar';
+import { StatusTag } from '../common/StatusTag';
 import { useBranchOptions } from '../inventory/useBranchOptions';
 
 const PAGE_SIZE = 20;
@@ -39,37 +41,40 @@ export function ReorderSuggestionsPanel() {
 
   return (
     <>
-      <Card style={{ marginBottom: 16 }}>
-        <Flex justify="space-between" align="start" gap={16} wrap>
-          <Descriptions
-            size="small"
-            column={1}
-            items={[
-              {
-                label: 'Lần chạy gần nhất',
-                children: latest ? (
-                  <>
-                    {formatDateTime(latest.ranAt)}{' '}
-                    {latest.status === 'Succeeded' ? <Tag color="green">Thành công</Tag> : <Tag color="red">Lỗi</Tag>}
-                  </>
-                ) : (
-                  'Chưa chạy lần nào'
-                ),
-              },
-              {
-                label: 'Sai số backtest (WAPE)',
-                children: !succeeded
-                  ? '–'
-                  : succeeded.forecastWape === null || succeeded.baselineWape === null
-                    ? 'Không có dữ liệu để đánh giá'
-                    : `Dự báo ${formatPercent(succeeded.forecastWape)} · trung bình 7 ngày ${formatPercent(succeeded.baselineWape)}`,
-              },
-            ]}
-          />
+      <Card
+        title="Lần chạy dự báo"
+        style={{ marginBottom: 16 }}
+        extra={
           <Button type="primary" loading={run.isPending} onClick={() => run.mutate()}>
             Chạy dự báo
           </Button>
-        </Flex>
+        }
+      >
+        <Descriptions
+          size="small"
+          column={1}
+          items={[
+            {
+              label: 'Lần chạy gần nhất',
+              children: latest ? (
+                <>
+                  {formatDateTime(latest.ranAt)}{' '}
+                  {latest.status === 'Succeeded' ? <StatusTag tone="success">Thành công</StatusTag> : <StatusTag tone="error">Lỗi</StatusTag>}
+                </>
+              ) : (
+                'Chưa chạy lần nào'
+              ),
+            },
+            {
+              label: 'Sai số backtest (WAPE)',
+              children: !succeeded
+                ? '–'
+                : succeeded.forecastWape === null || succeeded.baselineWape === null
+                  ? 'Không có dữ liệu để đánh giá'
+                  : `Dự báo ${formatPercent(succeeded.forecastWape)} · trung bình 7 ngày ${formatPercent(succeeded.baselineWape)}`,
+            },
+          ]}
+        />
         {latest?.status === 'Failed' && (
           <Alert
             type="error"
@@ -86,7 +91,7 @@ export function ReorderSuggestionsPanel() {
           3 ngày dự phòng) trừ tồn khả dụng. Đây chỉ là khuyến nghị; hệ thống không tự tạo phiếu nhập.
         </Typography.Paragraph>
       </Card>
-      <Flex gap={8} wrap style={{ marginBottom: 16 }}>
+      <FilterBar>
         <Select
           allowClear
           placeholder="Mọi chi nhánh"
@@ -96,43 +101,57 @@ export function ReorderSuggestionsPanel() {
           onChange={(branchId?: string) => setFilter({ branchId, page: 1 })}
           style={{ width: 240 }}
         />
-      </Flex>
-      {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
-      <Table<ReorderSuggestion>
-        scroll={{ x: 'max-content' }}
-        rowKey={(row) => `${row.branchId}-${row.skuId}`}
-        loading={suggestions.isFetching}
-        dataSource={suggestions.data?.items}
-        locale={{ emptyText: 'Chưa có kết quả dự báo; bấm "Chạy dự báo"' }}
-        pagination={{
-          current: filter.page,
-          pageSize: PAGE_SIZE,
-          total: suggestions.data?.total,
-          showSizeChanger: false,
-          onChange: (page) => setFilter((current) => ({ ...current, page })),
-        }}
-        columns={[
-          { title: 'SKU', render: (_, row) => (row.skuCode ? `${row.skuCode} · ${row.name}` : row.skuId) },
-          { title: 'Chi nhánh', dataIndex: 'branchId', render: (id: string) => branches.name(id) },
-          {
-            title: 'Nhu cầu 14 ngày',
-            align: 'right',
-            render: (_, row) =>
-              row.hasEnoughData && row.forecastQty !== null ? (
-                formatNumber(row.forecastQty, 1)
-              ) : (
-                <Typography.Text type="secondary">Chưa đủ dữ liệu</Typography.Text>
-              ),
-          },
-          { title: 'Tồn khả dụng', dataIndex: 'available', align: 'right', render: (available: number) => formatNumber(available) },
-          {
-            title: 'Đề xuất nhập',
-            align: 'right',
-            render: (_, row) =>
-              row.suggestedReorderQty === null ? '' : <Typography.Text strong={row.suggestedReorderQty > 0}>{formatNumber(row.suggestedReorderQty)}</Typography.Text>,
-          },
-        ]}
-      />
+      </FilterBar>
+      <Card title="Đề xuất nhập hàng">
+        {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
+        <Table<ReorderSuggestion>
+          scroll={{ x: 'max-content' }}
+          rowKey={(row) => `${row.branchId}-${row.skuId}`}
+          loading={suggestions.isFetching}
+          dataSource={suggestions.data?.items}
+          locale={{ emptyText: 'Chưa có kết quả dự báo; bấm "Chạy dự báo"' }}
+          pagination={{
+            current: filter.page,
+            pageSize: PAGE_SIZE,
+            total: suggestions.data?.total,
+            showSizeChanger: false,
+            onChange: (page) => setFilter((current) => ({ ...current, page })),
+          }}
+          columns={[
+            {
+              title: 'SKU',
+              render: (_, row) =>
+                row.skuCode ? (
+                  <>
+                    <Typography.Text strong>{row.skuCode}</Typography.Text>
+                    <br />
+                    <Typography.Text type="secondary">{row.name}</Typography.Text>
+                  </>
+                ) : (
+                  row.skuId
+                ),
+            },
+            { title: 'Chi nhánh', dataIndex: 'branchId', render: (id: string) => branches.name(id) },
+            {
+              title: 'Nhu cầu 14 ngày',
+              align: 'right',
+              render: (_, row) =>
+                row.hasEnoughData && row.forecastQty !== null ? (
+                  formatNumber(row.forecastQty, 1)
+                ) : (
+                  <StatusTag tone="neutral">Chưa đủ dữ liệu</StatusTag>
+                ),
+            },
+            { title: 'Tồn khả dụng', dataIndex: 'available', align: 'right', render: (available: number) => formatNumber(available) },
+            {
+              title: 'Đề xuất nhập',
+              align: 'right',
+              render: (_, row) =>
+                row.suggestedReorderQty === null ? '' : <Typography.Text strong={row.suggestedReorderQty > 0}>{formatNumber(row.suggestedReorderQty)}</Typography.Text>,
+            },
+          ]}
+        />
+      </Card>
     </>
   );
 }
