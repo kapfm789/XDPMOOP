@@ -1,19 +1,41 @@
 import { errorMessage, formatDate, formatMoney, getGrossProfit, vietnamDate } from '@oism/shared';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, Card, Skeleton, Typography, theme } from 'antd';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { axisMax, fillDays, type RevenueDay } from './revenueDays';
 
 const DAYS = 7;
-const WIDTH = 1000;
-const HEIGHT = 280;
+const DEFAULT_WIDTH = 1000;
+const DEFAULT_HEIGHT = 280;
 const PAD = { top: 24, right: 12, bottom: 32, left: 64 };
 
 const compact = new Intl.NumberFormat('vi-VN', { notation: 'compact', maximumFractionDigits: 1 });
 
+// Kích thước thật của vùng vẽ, để biểu đồ giãn theo chiều cao cột bên cạnh mà chữ không bị kéo méo.
+// Ref dạng callback vì vùng vẽ chỉ xuất hiện sau khi dữ liệu về (lúc đầu là khung chờ).
+function useElementSize<T extends HTMLElement>() {
+  const [element, ref] = useState<T | null>(null);
+  const [size, setSize] = useState<{ width: number; height: number }>();
+  useEffect(() => {
+    if (!element) return;
+    const observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      setSize((current) =>
+        current && Math.round(current.width) === Math.round(width) && Math.round(current.height) === Math.round(height) ? current : { width, height },
+      );
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [element]);
+  return { ref, size };
+}
+
 // UC-REP-01: doanh thu 7 ngày gần nhất tính cả hôm nay, theo giờ Việt Nam; chỉ Owner (docs/design/ui/admin.md).
 // Vẽ bằng SVG vì dự án chỉ dùng Ant Design, không có thư viện biểu đồ.
-export function RevenueChart() {
+// fill: thẻ kéo cao bằng ô chứa nó (trang tổng quan đặt biểu đồ cạnh cột đơn chờ duyệt và cảnh báo tồn).
+export function RevenueChart({ fill = false }: { fill?: boolean }) {
+  const area = useElementSize<HTMLDivElement>();
   const now = new Date();
   const from = vietnamDate(now, -(DAYS - 1));
   const to = vietnamDate(now);
@@ -24,7 +46,12 @@ export function RevenueChart() {
   const days = fillDays(report.data?.rows ?? [], from, DAYS);
 
   return (
-    <Card title="Doanh thu 7 ngày gần nhất" extra={<Link to="/reports/gross-profit">Xem báo cáo</Link>}>
+    <Card
+      title="Doanh thu 7 ngày gần nhất"
+      extra={<Link to="/reports/gross-profit">Xem báo cáo</Link>}
+      style={fill ? { height: '100%', display: 'flex', flexDirection: 'column' } : undefined}
+      styles={fill ? { body: { flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 } } : undefined}
+    >
       {report.error && <Alert type="error" showIcon title={errorMessage(report.error)} style={{ marginBottom: 16 }} />}
       {report.isPending ? (
         <Skeleton active paragraph={{ rows: 6 }} />
@@ -33,15 +60,28 @@ export function RevenueChart() {
           <Typography.Paragraph type="secondary" style={{ marginBottom: 8 }}>
             Tổng 7 ngày: <Typography.Text strong>{formatMoney(report.data?.totals.revenue ?? 0)}</Typography.Text>
           </Typography.Paragraph>
-          <Bars days={days} />
+          {fill ? (
+            // Biểu đồ nằm tuyệt đối trong vùng vẽ, để chiều cao của nó không đẩy cột cao thêm mà chỉ theo cột bên cạnh.
+            <div ref={area.ref} style={{ flex: 1, minHeight: DEFAULT_HEIGHT, position: 'relative' }}>
+              <div style={{ position: 'absolute', inset: 0 }}>
+                <Bars days={days} width={area.size?.width} height={area.size?.height} />
+              </div>
+            </div>
+          ) : (
+            <Bars days={days} />
+          )}
         </>
       )}
     </Card>
   );
 }
 
-function Bars({ days }: { days: RevenueDay[] }) {
+// Không truyền kích thước thì vẽ theo khung 1000 × 280 và co giãn theo chiều ngang.
+function Bars({ days, width, height }: { days: RevenueDay[]; width?: number; height?: number }) {
   const { token } = theme.useToken();
+  const sized = !!width && !!height;
+  const WIDTH = sized ? width : DEFAULT_WIDTH;
+  const HEIGHT = sized ? Math.max(height, DEFAULT_HEIGHT) : DEFAULT_HEIGHT;
   const max = axisMax(days.map((day) => day.revenue));
   const plotWidth = WIDTH - PAD.left - PAD.right;
   const plotHeight = HEIGHT - PAD.top - PAD.bottom;
@@ -54,6 +94,7 @@ function Bars({ days }: { days: RevenueDay[] }) {
     <svg
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       width="100%"
+      height={sized ? HEIGHT : undefined}
       role="img"
       aria-label="Biểu đồ cột doanh thu theo ngày"
       style={{ display: 'block', fontFamily: token.fontFamily }}
