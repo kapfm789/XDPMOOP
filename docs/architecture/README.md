@@ -34,8 +34,27 @@ Xếp theo ưu tiên; khi hai động lực xung đột, cái đứng trên th�
 | [transactions-and-concurrency.md](transactions-and-concurrency.md) | Bất biến tồn kho, ranh giới transaction, thứ tự khóa |
 | [security.md](security.md) | Xác thực, phân quyền theo vai trò, bí mật, TLS |
 
+Thiết kế chi tiết đi kèm kiến trúc nằm ở [design/](../design/README.md): sơ đồ lớp UML của Domain `core` ([class-diagram.md](../design/class-diagram.md)), ERD từng schema ([data-model/](../design/data-model/core.md)), sơ đồ tuần tự 8 luồng lõi ([flows/](../design/flows/)). Bản đặc tả liền mạch để nộp, kèm sơ đồ use case UML và ERD liên service: [requirements/srs.md](../requirements/srs.md).
+
 ## Ba quy tắc tóm gọn cả kiến trúc
 
 1. Thứ gì phải commit cùng nhau thì ở chung một service và một schema.
 2. Giữa các service chỉ có event qua outbox; không gọi HTTP chéo, không đọc schema của nhau.
 3. Trong một service, phụ thuộc chỉ hướng vào Domain; nghiệp vụ không nằm ở controller hay ở EF Core.
+
+## Kiến trúc được giữ bằng gì
+
+Mỗi quy tắc trên có một chỗ trong code hoặc test giữ nó, để không phải trông vào việc đọc review.
+
+| Quy tắc | Giữ bằng |
+| --- | --- |
+| Đơn và kho chung một transaction | Test tích hợp T01 đến T13 trên PostgreSQL thật ([testing/scenarios.md](../testing/scenarios.md)); coverage 100% dòng lệnh cho Inventory, Reservation, Costing, CI chặn dưới 80% ([testing/coverage.md](../testing/coverage.md)) |
+| Sổ chỉ thêm mới | Trigger ở database chặn UPDATE và DELETE, test T16 |
+| Không rò dữ liệu giữa tenant | Global Query Filter, test mỗi `DbContext` chỉ có entity `ITenantOwned`, bộ test cách ly toàn hệ thống T14, T15 ([testing/tenant-isolation.md](../testing/tenant-isolation.md)) |
+| Event qua outbox, consumer có inbox | Test T22, T23 ([architecture/messaging.md](messaging.md)) |
+| Phân lớp | Project reference một chiều: Domain không tham chiếu project nào ngoài `Oism.SharedKernel`; Application không tham chiếu Infrastructure ([layering.md](layering.md)) |
+| Quyền theo vai trò | Fallback policy từ chối mọi endpoint không khai báo policy; Swagger ghi vai trò của từng endpoint và có test cho từng service |
+
+## Vòng đời nền tảng
+
+Đề chỉ định .NET 8, nên mọi service, gateway, seed và test đều nhắm `net8.0`. Theo lịch của Microsoft, .NET 8 (LTS) hết hỗ trợ ngày 2026-11-10, khoảng ba tuần sau ngày bàn giao. Hệ thống bàn giao giữ .NET 8 theo đề; ai vận hành tiếp sau mốc đó nên nâng lên .NET 10 LTS theo các bước ở [handover/deployment-plan.md](../handover/deployment-plan.md) mục "Nâng cấp nền tảng". PostgreSQL 17, RabbitMQ 4 và Node 22 còn trong thời gian hỗ trợ ở ngày bàn giao.

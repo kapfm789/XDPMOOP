@@ -9,6 +9,7 @@ Thư mục này là nguồn chuẩn cho bảng, API, event, trạng thái và tr
 | Event | [events.md](events.md) | 8 thông điệp giữa các service, từng trường |
 | Trạng thái | [state-machines.md](state-machines.md) | Đơn, phần giữ hàng, phiếu nhập, chuyển kho, kiểm kê, webhook |
 | Luồng | [flows/](flows/) | Sơ đồ trình tự của 8 luồng lõi |
+| Sơ đồ lớp | [class-diagram.md](class-diagram.md) | Sơ đồ lớp UML của Domain `core`: Orders, Inventory, bản sao tham chiếu |
 | Dự báo | [forecast.md](forecast.md) | Thuật toán, tham số, backtest |
 | Giao diện | [ui/admin.md](ui/admin.md), [ui/pos.md](ui/pos.md) | Màn hình, route, API mỗi màn hình gọi |
 

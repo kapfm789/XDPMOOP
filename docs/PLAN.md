@@ -559,14 +559,14 @@ Bộ hồ sơ gồm 11 tài liệu; sơ đồ viết ngay khi làm luồng tươ
 | URS | A | Nháp phase 2, chốt phase 10 | [requirements/srs.md](requirements/srs.md), tổng hợp từ [requirements/](requirements/functional.md) và [usecase-userstory/](usecase-userstory/README.md) |
 | RTM | A | Cập nhật mỗi phase | Mục 16 |
 | Tài liệu kiến trúc: Clean Architecture, multi-tenant, microservice | A | 4 và 10 | [architecture/](architecture/README.md), [decisions/](decisions/README.md) |
-| ERD | A | 2 và 10 | [design/data-model/](design/data-model/core.md) cho từng schema; ERD liên service ở [requirements/srs.md](requirements/srs.md) mục 3.3 |
-| UML class | B | 6 và 10 | Domain của `core` |
+| ERD | A | 2 và 10 | [design/data-model/](design/data-model/core.md) cho từng schema, đã đối chiếu với migration của 5 service ở phase 10; ERD liên service ở [requirements/srs.md](requirements/srs.md) mục 3.3 |
+| UML class | B | 6 và 10 | [design/class-diagram.md](design/class-diagram.md): Domain của `core` |
 | Sequence: nhập hàng, giữ hàng, POS checkout, xác nhận, hủy và hết hạn, chuyển kho | A (kho), B (đơn) | 4 và 6 | [design/flows/](design/flows/) |
-| Kế hoạch triển khai và vận hành | C | 10 | Docker Compose, CI |
-| Tài liệu kiểm thử: unit, integration, đồng thời | B | 10 | [testing/](testing/strategy.md) và báo cáo coverage |
-| Hướng dẫn cài đặt | C | 10 | W5-04 |
-| Hướng dẫn sử dụng | C | 10 | Kịch bản demo |
-| Đặc tả API: Swagger và Postman | C | 10 | [design/api/](design/api/README.md), Swagger |
+| Kế hoạch triển khai và vận hành | C | 10 | [handover/deployment-plan.md](handover/deployment-plan.md) |
+| Tài liệu kiểm thử: unit, integration, đồng thời | B | 10 | [testing/test-report.md](testing/test-report.md), dựa trên [testing/](testing/strategy.md) và báo cáo coverage |
+| Hướng dẫn cài đặt | C | 10 | [handover/install-guide.md](handover/install-guide.md) |
+| Hướng dẫn sử dụng | C | 10 | [handover/user-guide.md](handover/user-guide.md), theo [kịch bản demo](handover/demo-script.md) |
+| Đặc tả API: Swagger và Postman | C | 10 | [design/api/](design/api/README.md), Swagger gộp ở gateway, [Postman collection](design/api/postman/README.md) |
 
 ## 14. Quy ước làm việc
 
@@ -613,8 +613,8 @@ Ba mã AI do nhóm đặt, giảng viên đã xác nhận cùng D-14 ngày 2026-
 
 | Mã | Service | Task | Kiểm chứng |
 | --- | --- | --- | --- |
-| FR-AUTH-01 | identity, frontend | W1-04, W1-09 | T14 |
-| FR-AUTH-02 | identity, frontend | W1-04, W1-09 | T21 |
+| FR-AUTH-01 | identity, frontend | W1-04, W1-09, W5-02 | T14 |
+| FR-AUTH-02 | identity, frontend | W1-04, W1-09, W5-06 | T21 |
 | FR-AUTH-03 | identity, gateway, admin | W1-04, W1-09, W1-10 | DoD W1-04 |
 | FR-AUTH-04 | identity, admin | W1-05, W1-10 | DoD W1-05 |
 | FR-PROD-01 | catalog, admin | W1-06, W1-10 | DoD W1-06 |
@@ -656,4 +656,4 @@ Ba mã AI do nhóm đặt, giảng viên đã xác nhận cùng D-14 ngày 2026-
 | NFR-USA-01 | deploy | W5-04 | T20 |
 | NFR-USA-02 | pos | W3-07 | DoD W3-07 |
 | NFR-MAINT-01 | Mọi service | W1-02 | DoD W1-02 |
-| NFR-MAINT-02 | core | W5-01 | DoD W5-01 |
+| NFR-MAINT-02 | core | W5-01, W5-05 | DoD W5-01 |

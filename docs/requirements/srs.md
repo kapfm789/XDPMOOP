@@ -4,9 +4,9 @@ Hệ thống quản lý bán hàng và tồn kho đa kênh (Omnichannel Inventor
 
 | Mục | Nội dung |
 | --- | --- |
-| Phiên bản | 1.1 |
-| Ngày | 2026-10-16 |
-| Trạng thái | Bản tổng hợp, khớp tài liệu `docs/` sau phase 8 |
+| Phiên bản | 1.2 |
+| Ngày | 2026-10-18 |
+| Trạng thái | Bản chốt phase 10 (URS bàn giao), khớp tài liệu `docs/` và code trên `main` |
 | Người soạn | Nhóm OISM (3 dev) |
 | Khuôn tham khảo | ISO/IEC/IEEE 29148 (kế thừa IEEE 830) |
 
@@ -110,7 +110,9 @@ Sản phẩm bàn giao gồm backend .NET 8 (5 service sau một gateway), trang
 | [usecase-userstory/](../usecase-userstory/README.md) | 29 use case và tiêu chí chấp nhận |
 | [decisions/](../decisions/README.md) | 13 ADR cho các điểm đề để ngỏ |
 | [architecture/](../architecture/README.md) | Chia service, phân lớp, tenant, transaction, bảo mật |
-| [design/](../design/README.md) | Bảng, API, event, trạng thái, luồng, giao diện, dự báo |
+| [design/](../design/README.md) | Bảng, API, event, trạng thái, luồng, giao diện, dự báo; sơ đồ lớp UML của Domain `core` ở [design/class-diagram.md](../design/class-diagram.md) |
+| [design/api/postman/](../design/api/postman/README.md) | Postman collection gọi trọn API qua gateway; Swagger gộp ở `/swagger` của gateway |
+| [handover/](../handover/README.md) | Hướng dẫn cài đặt, hướng dẫn sử dụng, kế hoạch triển khai, kịch bản demo |
 | [testing/](../testing/scenarios.md) | 23 kịch bản kiểm thử bắt buộc; [báo cáo backtest dự báo](../testing/forecast-backtest.md) |
 | [deploy/seed/README.md](../../deploy/seed/README.md) | Dữ liệu demo và tài khoản dùng khi nghiệm thu |
 | [PLAN.md](../PLAN.md) | Phạm vi, ưu tiên, lịch, RTM rút gọn |
@@ -308,6 +310,7 @@ Mỗi mô hình nằm ở đâu:
 | ERD vật lý từng schema (cột, kiểu, chỉ mục) | [design/data-model/](../design/data-model/core.md) | Thiết kế; nguồn chuẩn khi lệch |
 | Máy trạng thái | SRS mục 3.4, chi tiết ở [design/state-machines.md](../design/state-machines.md) | Yêu cầu hành vi |
 | Sơ đồ tuần tự 8 luồng lõi | [design/flows/](../design/flows/) | Thiết kế |
+| Sơ đồ lớp UML của Domain `core` | [design/class-diagram.md](../design/class-diagram.md) | Thiết kế; vẽ theo code |
 
 ### 3.2 Sơ đồ use case
 
@@ -1545,7 +1548,7 @@ Dành cho Owner và Staff; Cashier không vào được. Menu chỉ hiện mục
 | `/users` | Người dùng | Owner | UC-AUTH-03 |
 | `/catalog/categories`, `/catalog/brands` | Danh mục, thương hiệu | Owner, Staff | UC-PROD-01 |
 | `/catalog/products`, `/catalog/products/:id` | Sản phẩm, SKU, mã vạch, giá (ô giá chỉ Owner sửa) | Owner, Staff | UC-PROD-02, 03, 04 |
-| `/inventory/stock` | Tồn theo chi nhánh, đặt ngưỡng; dải tổng hợp giá trị tồn (chỉ Owner) và số SKU tồn thấp | Owner, Staff | UC-INV-01, UC-INV-05 |
+| `/inventory/stock` | Tồn theo chi nhánh, đặt ngưỡng; dải tổng hợp giá trị tồn (chỉ Owner), số dòng tồn đang theo dõi, số SKU tồn thấp; cột mức tồn | Owner, Staff | UC-INV-01, UC-INV-05 |
 | `/inventory/ledger` | Sổ giao dịch, chỉ xem | Owner, Staff | UC-INV-01 |
 | `/inventory/receipts` | Phiếu nhập, nhà cung cấp | Owner, Staff | UC-INV-02 |
 | `/inventory/transfers` | Chuyển kho: tạo, xuất, nhận, xóa phiếu nháp | Owner, Staff | UC-INV-03 |
@@ -1563,9 +1566,9 @@ Hành vi chung:
 - Lỗi 409 `reference_not_ready` được tự thử lại tới 3 lần, cách nhau 1 giây, rồi mới báo lỗi.
 - Giá vốn và lợi nhuận không hiện với Staff vì backend không trả các trường đó.
 - Màn hình sổ giao dịch không có nút sửa hay xóa.
-- Thông báo `OrderCreated` và `LowStock` hiện popup kèm âm thanh ở góc dưới bên phải, giữ 10 giây; bấm vào mở chi tiết đơn hoặc màn hình tồn.
+- Thông báo `OrderCreated` và `LowStock` hiện popup kèm âm thanh ở góc dưới bên phải, giữ 10 giây; bấm vào mở chi tiết đơn hoặc màn hình tồn. Chuông ở thanh trên liệt kê các thông báo nhận được trong phiên.
 - Chuỗi hiển thị cho người dùng cuối viết bằng tiếng Việt.
-- Bố cục, màu và danh sách mục của bản Figma không làm: [design/ui/admin.md](../design/ui/admin.md) mục "Bố cục và phong cách".
+- Bố cục và phong cách theo bản Figma của nhóm: thanh bên trắng chia nhóm có icon, thanh trên có tên cửa hàng, đầu trang có breadcrumb, hàng bộ lọc rồi tới thẻ nội dung có tiêu đề. Chi tiết và các mục của bản Figma không làm: [design/ui/admin.md](../design/ui/admin.md) mục "Bố cục và phong cách".
 
 #### 5.1.2 Ứng dụng POS (`pos`)
 
@@ -1851,8 +1854,8 @@ Các tầng test: đơn vị (xUnit, mỗi lần build), tích hợp trên Postg
 
 | Mã | Use case | Service | Task | Kiểm chứng |
 | --- | --- | --- | --- | --- |
-| FR-AUTH-01 | UC-AUTH-01 | identity, frontend | W1-04, W1-09 | T14 |
-| FR-AUTH-02 | UC-AUTH-02 | identity, frontend | W1-04, W1-09 | T21 |
+| FR-AUTH-01 | UC-AUTH-01 | identity, frontend | W1-04, W1-09, W5-02 | T14 |
+| FR-AUTH-02 | UC-AUTH-02 | identity, frontend | W1-04, W1-09, W5-06 | T21 |
 | FR-AUTH-03 | UC-AUTH-03 | identity, gateway, mọi service, admin | W1-04, W1-09, W1-10 | DoD W1-04 |
 | FR-AUTH-04 | UC-AUTH-04 | identity, admin | W1-05, W1-10 | DoD W1-05 |
 | FR-PROD-01 | UC-PROD-01 | catalog, admin | W1-06, W1-10 | DoD W1-06 |
@@ -1875,9 +1878,9 @@ Các tầng test: đơn vị (xUnit, mỗi lần build), tích hợp trên Postg
 | FR-POS-02 | UC-POS-01, UC-POS-02 | core, pos | W3-02, W3-07 | T02 |
 | FR-POS-03 | UC-POS-02, UC-POS-03 | pos | W3-07 | DoD W3-07 |
 | FR-POS-04 | UC-POS-02 | core | W3-02 | T02, T03 |
-| FR-REP-01 | UC-REP-01 | insights, admin | W4-01, W4-02, W4-07 | T10 |
+| FR-REP-01 | UC-REP-01 | insights, admin | W4-01, W4-02, W4-07, W5-10 | T10 |
 | FR-REP-02 | UC-REP-02 | insights, admin | W4-01, W4-03, W4-07 | DoD W4-03 |
-| FR-REP-03 | UC-REP-03, UC-INV-05 | core, insights, admin | W2-08, W4-03, W4-07 | DoD W4-03 |
+| FR-REP-03 | UC-REP-03, UC-INV-05 | core, insights, admin | W2-08, W4-03, W4-07, W5-10 | DoD W4-03 |
 | FR-SIM-01 | UC-SIM-01 | channel | W3-03 | T03 |
 | FR-SIM-02 | UC-SIM-02 | insights, frontend | W4-04, W4-08 | T15 |
 | FR-SIM-03 | UC-ORD-05, UC-REP-01 | core, insights | W3-04, W4-02 | T06, T07 |
@@ -1894,7 +1897,7 @@ Các tầng test: đơn vị (xUnit, mỗi lần build), tích hợp trên Postg
 | NFR-USA-01 | Không | deploy | W5-04 | T20 |
 | NFR-USA-02 | UC-POS-02 | pos | W3-07 | DoD W3-07 |
 | NFR-MAINT-01 | Không | mọi service | W1-02 | DoD W1-02 |
-| NFR-MAINT-02 | Không | core | W5-01 | DoD W5-01 |
+| NFR-MAINT-02 | Không | core | W5-01, W5-05 | DoD W5-01 |
 
 ---
 
@@ -1931,10 +1934,12 @@ Cả 13 ADR (gộp 18 quyết định D-01 đến D-18) đã được giảng vi
 | Dữ liệu tham chiếu, báo cáo, thông báo trễ theo event | Thao tác ngay sau khi tạo SKU hoặc chi nhánh có thể nhận 409 `reference_not_ready`; thông báo phát lúc mất kết nối không gửi bù |
 | Một database dùng chung cho 5 schema | Việc không đọc chéo schema dựa vào quy ước và review, không bị database chặn |
 | NFR-USA-01 không đo được trong 5 tuần | Chỉ chứng minh thiết kế hỗ trợ: health check, restart policy |
+| .NET 8 hết hỗ trợ ngày 2026-11-10 theo lịch của Microsoft | Đề chỉ định .NET 8 nên hệ thống bàn giao giữ .NET 8; vận hành tiếp sau mốc đó cần nâng lên .NET 10 LTS ([handover/deployment-plan.md](../handover/deployment-plan.md)) |
 
 ### 10.3 Lịch sử thay đổi
 
 | Phiên bản | Ngày | Thay đổi |
 | --- | --- | --- |
 | 1.0 | 2026-10-15 | Bản đầu: tổng hợp từ `docs/`; thêm sơ đồ use case UML, ERD khái niệm và logic liên service, quy tắc nghiệp vụ BR-01 đến BR-23 |
+| 1.2 | 2026-10-18 | Bản chốt phase 10: giao diện admin theo Figma (UC-REP-01, UC-REP-03), Swagger gộp ở gateway và Postman collection (T21), sơ đồ lớp UML của Domain `core`, ERD đã đối chiếu với migration của 5 service, tài liệu bàn giao ở `handover/`; RTM thêm task của phase 9 và 10 |
 | 1.1 | 2026-10-16 | Khớp tài liệu sau phase 8: chi tiết báo cáo tồn, bán chạy, bán chậm (UC-REP-02), cảnh báo tồn, đề xuất nhập hàng và lần chạy dự báo (UC-AI-01, UC-AI-02), kết quả backtest trên seed; viết lại phần mở đầu và mục 3.1 cho gọn |
