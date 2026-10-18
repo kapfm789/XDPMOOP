@@ -8,7 +8,6 @@
 ![RabbitMQ](https://img.shields.io/badge/RabbitMQ-FF6600?logo=rabbitmq&logoColor=white)
 ![Docker Compose](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 
-> Đồ án của nhóm 3 dev, làm trong 5 tuần, chia 10 phase. Tài liệu thiết kế trong [`docs/`](docs/README.md) là nguồn chuẩn; code phải khớp tài liệu.
 
 ## Mục lục
 
