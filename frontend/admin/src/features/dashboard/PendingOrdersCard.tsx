@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { DocumentCode } from '../common/StatusTag';
 import { useBranchOptions } from '../inventory/useBranchOptions';
 import { ChannelTag } from '../orders/labels';
-import { PENDING_LIMIT, usePendingOrders } from './useDashboardData';
+import { LIST_CARD_BODY_STYLE, LIST_CARD_STYLE, LIST_SCROLL_HEIGHT, PENDING_LIMIT, usePendingOrders } from './useDashboardData';
 
 // Đơn đang giữ hàng chờ duyệt; thông báo OrderCreated làm danh sách tải lại.
 export function PendingOrdersCard() {
@@ -17,12 +17,13 @@ export function PendingOrdersCard() {
     <Card
       title={`Đơn chờ duyệt${orders.data ? ` (${total})` : ''}`}
       extra={<Link to="/orders">{total > PENDING_LIMIT ? 'Xem tất cả' : 'Đơn hàng'}</Link>}
-      style={{ height: '100%' }}
+      style={LIST_CARD_STYLE}
+      styles={{ body: LIST_CARD_BODY_STYLE }}
     >
       {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
       <Table<Order>
         size="small"
-        scroll={{ x: 'max-content' }}
+        scroll={{ x: 'max-content', y: LIST_SCROLL_HEIGHT }}
         rowKey="id"
         loading={orders.isPending}
         dataSource={orders.data?.items}

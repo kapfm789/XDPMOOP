@@ -3,7 +3,7 @@ import { Alert, Card, Table, Typography } from 'antd';
 import { Link } from 'react-router-dom';
 import { StockLevelTag } from '../inventory/StockLevelTag';
 import { useBranchOptions } from '../inventory/useBranchOptions';
-import { useLowStockAlerts } from './useDashboardData';
+import { LIST_CARD_BODY_STYLE, LIST_CARD_STYLE, LIST_SCROLL_HEIGHT, useLowStockAlerts } from './useDashboardData';
 
 // UC-REP-03: SKU có tồn khả dụng bằng hoặc dưới ngưỡng; tự tải lại khi có LowStock và mỗi phút.
 export function LowStockAlertsCard() {
@@ -12,15 +12,20 @@ export function LowStockAlertsCard() {
   const error = alerts.error ?? branches.error;
 
   return (
-    <Card title="Cảnh báo tồn thấp" extra={<Link to="/inventory/stock">Xem tồn kho</Link>} style={{ height: '100%' }}>
+    <Card
+      title="Cảnh báo tồn thấp"
+      extra={<Link to="/inventory/stock">Xem tồn kho</Link>}
+      style={LIST_CARD_STYLE}
+      styles={{ body: LIST_CARD_BODY_STYLE }}
+    >
       {error && <Alert type="error" showIcon title={errorMessage(error)} style={{ marginBottom: 16 }} />}
       <Table<LowStockAlert>
         size="small"
-        scroll={{ x: 'max-content' }}
+        scroll={{ x: 'max-content', y: LIST_SCROLL_HEIGHT }}
         rowKey={(row) => `${row.branchId}-${row.skuId}`}
         loading={alerts.isPending}
         dataSource={alerts.data}
-        pagination={{ pageSize: 8, showSizeChanger: false, hideOnSinglePage: true }}
+        pagination={false}
         locale={{ emptyText: 'Không có SKU nào dưới ngưỡng' }}
         columns={[
           {
