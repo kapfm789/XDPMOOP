@@ -17,7 +17,7 @@ OISM gồm 5 service .NET 8 sau một API gateway và hai ứng dụng React, do
 | 7. Báo cáo và realtime | 4 | Projection, báo cáo lợi nhuận | SignalR hub | Thông báo realtime, PWA | Báo cáo khớp ví dụ 80.000; đơn mới hiện ngay |
 | 8. Cảnh báo, dự báo, giao diện | 4 | Cảnh báo tồn, màn hình kho | Dự báo AI | Dashboard, seed data | Mọi FR có luồng chạy từ UI tới DB |
 | 9. Kiểm thử và đóng gói | 5 | Test cách ly tenant, coverage | Đo tải k6, coverage | Compose demo, CI | Coverage 80%; compose up trên máy sạch |
-| 10. Tài liệu và bàn giao | 5 | URS, RTM, ERD, kiến trúc | UML, tài liệu kiểm thử | Swagger, hướng dẫn, áp thiết kế Figma cho admin | RTM đủ 44 mã; demo hai lần không lỗi |
+| 10. Tài liệu và bàn giao | 5 | URS, RTM, ERD, kiến trúc | UML, tài liệu kiểm thử | Swagger, hướng dẫn, áp thiết kế Figma cho admin, giao diện POS cùng phong cách | RTM đủ 44 mã; demo hai lần không lỗi |
 
 - Tìm việc của mình: mục 10 (Lịch 10 phase) theo cột Owner, hoặc file plan của folder mình sở hữu trong `docs/plans/` (mục 4.3).
 - Trước khi code: đọc mục 3. Cả 18 quyết định đã được giảng viên xác nhận ngày 2026-10-04 (task W1-01).
@@ -376,7 +376,7 @@ Mỗi phase dài nửa tuần (khoảng 2,5 ngày làm việc) và kết thúc b
 | 7 | | | | W4-01, W4-02, W4-04 | W4-08 | | |
 | 8 | | | | W4-03, W4-05 | W4-06, W4-07 | W4-09 | |
 | 9 | W5-04 | W5-02 | W5-01, W5-02 | W5-02 | | W5-03, W5-04, W5-05 | |
-| 10 | W5-06 | | | | W5-10 | | W5-07, W5-08, W5-09 |
+| 10 | W5-06 | | | | W5-10, W5-11 | | W5-07, W5-08, W5-09 |
 
 Mỗi folder có file plan riêng trong `docs/plans/`, ghi việc của folder đó theo phase (mục 4.3).
 
@@ -497,8 +497,9 @@ Cổng phase 9: coverage đạt 80% cho ba module lõi; có báo cáo đo tải;
 | W5-06 | Swagger từng service gộp ở gateway, Postman collection | C | Mục f của đề | Gọi theo tài liệu ra đúng kết quả |
 | W5-09 | Tập demo theo kịch bản, sửa lỗi, đóng băng code từ ngày thứ 4 | Cả nhóm | Mục f của đề | Demo chạy hai lần liên tiếp không lỗi |
 | W5-10 | admin: áp thiết kế Figma: theme, khung sidebar và topbar, tổng quan có thẻ số liệu và biểu đồ doanh thu 7 ngày, giao diện từng màn hình | C | FR-REP-01, FR-REP-03 | Mọi màn hình admin theo mục "Bố cục và phong cách" của docs/design/ui/admin.md, chỉ dùng API đã có |
+| W5-11 | pos: giao diện cùng phong cách với admin (W5-10): theme, thanh trên có logo, chi nhánh, thu ngân và trạng thái mạng, kết quả tìm dạng ô, giỏ và thanh toán dạng thẻ, đăng nhập và hóa đơn | C | FR-POS-01, NFR-USA-02 | Màn hình POS theo mục "Bố cục và phong cách" của docs/design/ui/pos.md; phím tắt và luồng quét mã rồi Enter giữ nguyên |
 
-W5-10 phải xong và qua kiểm tay trước ngày đóng băng code của W5-09; chưa xong thì giữ giao diện cũ cho buổi demo.
+W5-10 và W5-11 phải xong và qua kiểm tay trước ngày đóng băng code của W5-09; chưa xong thì giữ giao diện cũ cho buổi demo. W5-11 làm sau khi W5-09 đã chạy demo, nên xong W5-11 thì chạy lại kịch bản demo ở `docs/handover/demo-script.md`.
 
 Cổng phase 10: RTM đủ 44 mã; người ngoài nhóm cài được theo hướng dẫn; kịch bản demo chạy hai lần liên tiếp không lỗi.
 
@@ -633,7 +634,7 @@ Ba mã AI do nhóm đặt, giảng viên đã xác nhận cùng D-14 ngày 2026-
 | FR-RSE-01 | core | W2-05 | T01 |
 | FR-RSE-02 | core | W2-05 | T01, T04 |
 | FR-RSE-03 | core | W3-01 | T05, T06 |
-| FR-POS-01 | pos | W3-07, W4-08 | DoD W3-07 |
+| FR-POS-01 | pos | W3-07, W4-08, W5-11 | DoD W3-07 |
 | FR-POS-02 | core, pos | W3-02, W3-07 | T02 |
 | FR-POS-03 | pos | W3-07 | DoD W3-07 |
 | FR-POS-04 | core | W3-02 | T02, T03 |
@@ -654,6 +655,6 @@ Ba mã AI do nhóm đặt, giảng viên đã xác nhận cùng D-14 ngày 2026-
 | NFR-SEC-02 | core, shared | W1-13, W2-06, W3-01, W3-02 | T05, T23 |
 | NFR-SEC-03 | core | W2-01 | T16 |
 | NFR-USA-01 | deploy | W5-04 | T20 |
-| NFR-USA-02 | pos | W3-07 | DoD W3-07 |
+| NFR-USA-02 | pos | W3-07, W5-11 | DoD W3-07 |
 | NFR-MAINT-01 | Mọi service | W1-02 | DoD W1-02 |
 | NFR-MAINT-02 | core | W5-01, W5-05 | DoD W5-01 |

@@ -1,5 +1,5 @@
 import type { Order } from '@oism/shared';
-import { Button, Flex } from 'antd';
+import { Button, Card, Flex, Result } from 'antd';
 import { useEffect, useRef } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Receipt } from '../../features/receipt/Receipt';
@@ -30,8 +30,17 @@ function PrintableReceipt({ order }: { order: Order }) {
   }, []);
 
   return (
-    <Flex vertical align="center" gap={16}>
-      <Receipt order={order} />
+    <Flex vertical align="center" gap={16} style={{ paddingTop: 8 }}>
+      <Result
+        className="no-print"
+        status="success"
+        title="Thanh toán xong"
+        subTitle={`Đơn ${order.orderNumber} đã lưu. Hộp thoại in đã mở; in lỗi thì bấm In lại.`}
+        style={{ padding: 0 }}
+      />
+      <Card className="receipt-card" style={{ boxShadow: '0 8px 24px rgba(23, 32, 51, 0.08)' }} styles={{ body: { padding: 8 } }}>
+        <Receipt order={order} />
+      </Card>
       <Flex gap={12} className="no-print">
         <Button onClick={() => window.print()}>In lại</Button>
         <Button ref={nextSale} type="primary" onClick={() => navigate('/', { replace: true })}>

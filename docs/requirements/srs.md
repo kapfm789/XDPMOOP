@@ -1593,6 +1593,8 @@ Nút và dòng hàng cao tối thiểu 44 px.
 | Delete | Xóa dòng đang chọn (khi ô tìm trống) |
 | Esc | Xóa nội dung ô tìm; bấm lần nữa để xóa giỏ sau khi xác nhận |
 
+Màu và cách trình bày cùng phong cách với `admin`: [design/ui/pos.md](../design/ui/pos.md) mục "Bố cục và phong cách".
+
 PWA: có `manifest.webmanifest` (icon 192 và 512 px) để cài lên màn hình chính; service worker chỉ cache app shell, không cache phản hồi API, không xếp hàng đơn khi mất mạng. Mất mạng thì hiện băng thông báo và khóa thanh toán.
 
 ### 5.2 Giao diện phần cứng

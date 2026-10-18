@@ -1,5 +1,5 @@
 import { ApiError, errorMessage, type PaymentMethod, type PosSku, type StockShortage, useOnline } from '@oism/shared';
-import { Alert, Badge, Col, Flex, Grid, type InputRef, message, Modal, Row, Select, Tabs } from 'antd';
+import { Alert, Badge, Card, Col, Flex, Grid, type InputRef, message, Modal, Row, Tabs, theme } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePosBranch } from '../branch/usePosBranch';
@@ -14,6 +14,7 @@ import { usePosSearch } from '../search/usePosSearch';
 export function SaleScreen() {
   const navigate = useNavigate();
   const wide = Grid.useBreakpoint().md;
+  const { token } = theme.useToken();
   const [toast, toastHolder] = message.useMessage();
   const [modal, modalHolder] = Modal.useModal();
 
@@ -32,6 +33,14 @@ export function SaleScreen() {
     latestCart.current = next;
     setCart(next);
   }
+
+  // Giỏ thuộc về một chi nhánh: đổi chi nhánh ở thanh trên thì bắt đầu giỏ mới.
+  const cartBranch = useRef(branch.branchId);
+  useEffect(() => {
+    if (cartBranch.current === branch.branchId) return;
+    cartBranch.current = branch.branchId;
+    updateCart([]);
+  }, [branch.branchId]);
 
   const searchInput = useRef<InputRef>(null);
   // Trên thiết bị cầm tay ô tìm không tự giành lại focus sau mỗi lần chạm, để bàn phím ảo không bật lên liên tục.
@@ -181,32 +190,18 @@ export function SaleScreen() {
     <Flex vertical gap={12}>
       {toastHolder}
       {modalHolder}
-      {branch.canChoose && (
-        <Select
-          value={branch.branchId}
-          options={branch.options}
-          placeholder="Chọn chi nhánh bán hàng"
-          aria-label="Chi nhánh bán hàng"
-          style={{ maxWidth: 360 }}
-          onChange={(branchId) => {
-            // Giỏ thuộc về một chi nhánh: đổi chi nhánh thì bắt đầu giỏ mới.
-            branch.choose(branchId);
-            updateCart([]);
-            focusSearch();
-          }}
-        />
-      )}
       {branch.error && <Alert type="error" showIcon title={errorMessage(branch.error)} />}
       {search.error && <Alert type="error" showIcon title={errorMessage(search.error)} />}
-      {!branch.branchId && !branch.error && <Alert type="info" showIcon title="Chọn chi nhánh trước khi bán hàng." />}
+      {!branch.branchId && !branch.error && <Alert type="info" showIcon title="Chọn chi nhánh bán hàng ở thanh trên trước khi bán." />}
 
       {wide ? (
-        <Row gutter={16}>
-          <Col span={14}>{searchPanel}</Col>
-          <Col span={10}>
-            <Flex vertical gap={12}>
+        <Row gutter={16} align="top">
+          <Col span={15}>{searchPanel}</Col>
+          <Col span={9}>
+            {/* Giỏ và thanh toán bám theo khi cuộn danh sách kết quả, nút thanh toán luôn trong tầm mắt. */}
+            <Flex vertical gap={12} style={{ position: 'sticky', top: 80 }}>
               {cartPanel}
-              {paymentPanel}
+              <Card title="Thanh toán">{paymentPanel}</Card>
             </Flex>
           </Col>
         </Row>
@@ -229,7 +224,17 @@ export function SaleScreen() {
             style={{ paddingBottom: method === 'QR' && cart.length > 0 ? 340 : 140 }}
           />
           <div
-            style={{ position: 'fixed', left: 0, right: 0, bottom: 0, padding: 12, background: '#fff', boxShadow: '0 -2px 8px rgba(0,0,0,0.15)', zIndex: 10 }}
+            style={{
+              position: 'fixed',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              padding: 12,
+              background: token.colorBgContainer,
+              borderTop: `1px solid ${token.colorBorder}`,
+              boxShadow: '0 -4px 16px rgba(23, 32, 51, 0.08)',
+              zIndex: 10,
+            }}
           >
             {paymentPanel}
           </div>

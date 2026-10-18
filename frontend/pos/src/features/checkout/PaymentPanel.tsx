@@ -16,7 +16,7 @@ type Props = {
   onPay: () => void;
 };
 
-// Chọn tiền mặt hoặc QR và nút thanh toán: docs/design/ui/pos.md.
+// Chọn tiền mặt hoặc QR và nút thanh toán: docs/design/ui/pos.md. Thẻ bao ngoài do màn hình bán hàng quyết định.
 export function PaymentPanel({ method, onMethodChange, total, disabled, pending, showShortcuts, onPay }: Props) {
   return (
     <Flex vertical gap={12}>
@@ -30,15 +30,27 @@ export function PaymentPanel({ method, onMethodChange, total, disabled, pending,
         ]}
       />
       {method === 'QR' && total > 0 && (
-        <Flex vertical align="center" gap={4}>
-          <QRCode value={`${STORE_QR}|${total}`} size={160} />
-          <Typography.Text type="secondary">Kiểm đã nhận {formatMoney(total)} rồi mới bấm thanh toán</Typography.Text>
+        <Flex vertical align="center" gap={6}>
+          <QRCode value={`${STORE_QR}|${total}`} size={160} bordered={false} />
+          <Typography.Text strong>{formatMoney(total)}</Typography.Text>
+          <Typography.Text type="secondary">Kiểm đã nhận tiền rồi mới bấm thanh toán</Typography.Text>
         </Flex>
       )}
-      <Button type="primary" block disabled={disabled} loading={pending} onClick={onPay} style={{ height: 56, fontSize: 18 }}>
+      <Button
+        type="primary"
+        block
+        disabled={disabled}
+        loading={pending}
+        onClick={onPay}
+        style={{ height: 56, fontSize: 18, fontWeight: 600, boxShadow: disabled ? undefined : '0 4px 12px rgba(22, 119, 255, 0.25)' }}
+      >
         Thanh toán {formatMoney(total)}
       </Button>
-      {showShortcuts && <Typography.Text type="secondary">Enter: thanh toán · F4: đổi tiền mặt/QR · F2: về ô tìm</Typography.Text>}
+      {showShortcuts && (
+        <Typography.Text type="secondary" style={{ fontSize: 12, textAlign: 'center' }}>
+          Enter: thanh toán · F4: đổi tiền mặt/QR · F2: về ô tìm · Esc: xóa ô tìm
+        </Typography.Text>
+      )}
     </Flex>
   );
 }

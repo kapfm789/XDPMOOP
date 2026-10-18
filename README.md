@@ -263,6 +263,6 @@ Cây đầy đủ và tài liệu chi phối từng folder: [docs/architecture/s
 | 5–6 | Duyệt, hủy, hết hạn đơn; POS checkout; chuyển kho; kiểm kê; webhook ba sàn | POS: bán hàng, in hóa đơn; admin: đơn hàng đa kênh, tạo đơn, chi tiết đơn, kênh sàn | Xong |
 | 7–8 | Báo cáo lợi nhuận, báo cáo tồn, cảnh báo, dự báo nhập hàng, thông báo realtime, seed data | Thông báo realtime, PWA của POS; chuyển kho, kiểm kê, tổng quan, báo cáo, đề xuất nhập hàng | Xong |
 | 9 | Coverage 100% cho ba module lõi, test cách ly tenant toàn hệ thống, đo tải k6, gói Compose demo có HTTPS và seed tự chạy, CI build image | admin và pos chạy bằng nginx trong gói demo | Xong |
-| 10 | Swagger gộp ở gateway, Postman collection; SRS bản chốt, RTM đủ 44 mã, sơ đồ lớp UML, ERD đối chiếu migration; tài liệu kiểm thử, cài đặt, sử dụng, triển khai; kịch bản demo | admin theo thiết kế Figma: thanh bên chia nhóm, tổng quan có thẻ số liệu và biểu đồ doanh thu 7 ngày | Xong |
+| 10 | Swagger gộp ở gateway, Postman collection; SRS bản chốt, RTM đủ 44 mã, sơ đồ lớp UML, ERD đối chiếu migration; tài liệu kiểm thử, cài đặt, sử dụng, triển khai; kịch bản demo | admin theo thiết kế Figma: thanh bên chia nhóm, tổng quan có thẻ số liệu và biểu đồ doanh thu 7 ngày; POS cùng phong cách: kết quả tìm dạng ô, giỏ và thanh toán dạng thẻ (W5-11) | Xong; W5-11 chưa chạy lại kịch bản demo |
 
 Chi tiết theo từng task: [docs/README.md](docs/README.md) mục "Trạng thái". Mọi quyết định thiết kế đã được giảng viên xác nhận ngày 2026-10-04.

@@ -1,11 +1,18 @@
 import { listBranches, useAuth } from '@oism/shared';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { createContext, createElement, type ReactNode, useContext, useState } from 'react';
 
 const STORAGE_KEY = 'oism.pos.branchId';
 
-// Chi nhánh đang bán: Cashier lấy từ token; Owner phải chọn trước khi bán (docs/design/ui/pos.md mục "Quy tắc").
-export function usePosBranch() {
+type PosBranch = {
+  branchId: string | undefined;
+  canChoose: boolean;
+  options: { value: string; label: string }[];
+  error: Error | null;
+  choose: (branchId: string) => void;
+};
+
+function useBranchState(): PosBranch {
   const { user } = useAuth();
   const fixed = user?.branchId ?? undefined;
   const [chosen, setChosen] = useState(() => localStorage.getItem(STORAGE_KEY) ?? undefined);
@@ -24,4 +31,18 @@ export function usePosBranch() {
       setChosen(branchId);
     },
   };
+}
+
+const PosBranchContext = createContext<PosBranch | null>(null);
+
+// Một chi nhánh đang bán cho cả thanh trên, màn hình bán hàng và thông báo, để đổi ở thanh trên là mọi nơi thấy ngay.
+export function PosBranchProvider({ children }: { children: ReactNode }) {
+  return createElement(PosBranchContext.Provider, { value: useBranchState() }, children);
+}
+
+// Chi nhánh đang bán: Cashier lấy từ token; Owner phải chọn trước khi bán (docs/design/ui/pos.md mục "Quy tắc").
+export function usePosBranch(): PosBranch {
+  const branch = useContext(PosBranchContext);
+  if (!branch) throw new Error('usePosBranch must be used inside PosBranchProvider');
+  return branch;
 }

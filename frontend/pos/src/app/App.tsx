@@ -7,6 +7,7 @@ import { LoginPage } from '../pages/login/LoginPage';
 import { ReceiptPage } from '../pages/receipt/ReceiptPage';
 import { SalePage } from '../pages/sale/SalePage';
 import { PosLayout } from './PosLayout';
+import { POS_THEME } from './theme';
 
 // Vai trò được vào POS: docs/design/ui/pos.md.
 const POS_ROLES: readonly Role[] = ['Cashier', 'Owner'];
@@ -30,8 +31,8 @@ const router = createBrowserRouter([
 
 export function App() {
   return (
-    // Vùng chạm tối thiểu 44 px: docs/conventions/frontend.md mục "Riêng cho POS".
-    <ConfigProvider locale={viVN} componentSize="large" theme={{ token: { controlHeightLG: 44 } }}>
+    // Cỡ lớn để vùng chạm tối thiểu 44 px; màu và font theo theme chung với admin.
+    <ConfigProvider locale={viVN} componentSize="large" theme={POS_THEME}>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <RouterProvider router={router} />
