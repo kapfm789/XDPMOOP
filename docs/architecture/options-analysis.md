@@ -42,7 +42,7 @@ Kết luận của bước này: chỉ có một cặp không tách được là
 | Chi phí phân tán (ước lượng) | 0 ngày công | Khoảng 16 | Khoảng 22 | Khoảng 36 |
 | Tỷ lệ trên quỹ 75 ngày công | 0% | 21% | 29% | 48% |
 | Cô lập tải flash sale | Không | Không | Có: `channel` hứng webhook, đệm qua hàng đợi | Có |
-| Mỗi dev sở hữu trọn service | Không | Một phần | Có | Có, nhưng 3 dev giữ 8 service |
+| Mỗi dev sở hữu trọn service | Không | Một phần | Có | Có, nhưng mỗi dev giữ vài service |
 | Rủi ro trễ lõi kho | Thấp nhất | Thấp | Trung bình | Cao |
 
 ## 4. Cách tính chi phí phân tán
@@ -68,7 +68,7 @@ Chọn B. Lý do theo thứ tự:
 
 1. B là phương án nhiều service nhất mà chưa phải bỏ transaction chung giữa đơn và kho.
 2. `channel` tách riêng cho thấy lợi ích thật của microservice: webhook giật tải không chiếm tài nguyên của `core`.
-3. Ba dev chia được ranh giới sở hữu rõ: A giữ identity và kho, B giữ catalog, đơn, channel, C giữ frontend.
+3. Các dev chia được ranh giới sở hữu rõ: A giữ identity và kho, B giữ catalog, đơn, channel, C giữ frontend.
 
 Cái giá chấp nhận: nhóm việc ưu tiên P2 chỉ làm mức tối thiểu ([PLAN.md](../PLAN.md) mục 11), và SKU hoặc chi nhánh vừa tạo tới `core` trễ một nhịp event.
 

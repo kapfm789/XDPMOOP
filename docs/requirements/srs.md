@@ -7,7 +7,7 @@ Hệ thống quản lý bán hàng và tồn kho đa kênh (Omnichannel Inventor
 | Phiên bản | 1.2 |
 | Ngày | 2026-10-18 |
 | Trạng thái | Bản chốt phase 10 (URS bàn giao), khớp tài liệu `docs/` và code trên `main` |
-| Người soạn | Nhóm OISM (3 dev) |
+| Người soạn | Nhóm OISM |
 | Khuôn tham khảo | ISO/IEC/IEEE 29148 (kế thừa IEEE 830) |
 
 > **Vị trí của tài liệu này.** SRS gom các yêu cầu đang nằm rải rác trong `docs/` thành một tài liệu đọc liền mạch, để nộp và để người ngoài nhóm đọc.
@@ -42,7 +42,7 @@ Tài liệu đặc tả những gì OISM phải làm và phải đạt, ở mứ
 - người kiểm thử dựng kịch bản kiểm chứng cho từng yêu cầu;
 - người đọc ngoài nhóm hiểu hệ thống mà không phải đọc hết thư mục `docs/`.
 
-Người đọc chính: giảng viên hướng dẫn, ba dev của nhóm, người kiểm thử và người chấm demo.
+Người đọc chính: giảng viên hướng dẫn, các dev của nhóm, người kiểm thử và người chấm demo.
 
 ### 1.2 Phạm vi sản phẩm
 
@@ -265,7 +265,7 @@ Cổng trên máy dev: gateway 8080 (HTTP) và 8443 (HTTPS); `admin` 5173; `pos`
 | C-07 | Không dùng MediatR, AutoMapper, MassTransit, FluentAssertions; không thêm package ngoài danh sách khi chưa được đồng ý | Quy ước backend |
 | C-08 | Test luồng đụng tồn kho chạy trên PostgreSQL thật (Testcontainers); không dùng database in-memory hay SQLite | Chiến lược kiểm thử |
 | C-09 | Tiền lưu `numeric(18,4)`, làm tròn 4 chữ số, nửa lên; thời gian lưu UTC | ADR-0004, quy ước thiết kế |
-| C-10 | Quỹ thời gian 3 dev × 5 tuần = 75 ngày công; khoảng 22 ngày dành cho hạ tầng phân tán | PLAN mục 1 |
+| C-10 | Quỹ thời gian 75 ngày công; khoảng 22 ngày dành cho hạ tầng phân tán | PLAN mục 1 |
 
 ### 2.6 Giả định và phụ thuộc
 

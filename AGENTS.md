@@ -1,6 +1,6 @@
 # OISM: hướng dẫn cho công cụ AI
 
-OISM là hệ thống quản lý bán hàng và tồn kho đa kênh, multi-tenant: 5 service .NET 8 sau một API gateway, hai ứng dụng React, PostgreSQL và RabbitMQ. Đây là đồ án của 3 dev trong 5 tuần, chia 10 phase.
+OISM là hệ thống quản lý bán hàng và tồn kho đa kênh, multi-tenant: 5 service .NET 8 sau một API gateway, hai ứng dụng React, PostgreSQL và RabbitMQ.
 
 ## Trạng thái repo
 

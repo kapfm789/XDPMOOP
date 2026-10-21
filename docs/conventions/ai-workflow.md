@@ -31,7 +31,7 @@ Giao một task một lần và gọi bằng mã.
 - Nên: "Làm task W2-05" hoặc `/implement-task W2-05`.
 - Nên: "Thêm tiêu chí chấp nhận UC-ORD-04 AC-2 và test của nó."
 - Không nên: "Làm phần đơn hàng đi." Phạm vi quá rộng, AI sẽ tự đoán ranh giới.
-- Không nên: "Làm cả phase 3." Ba dev ba track; mỗi task cần được kiểm riêng.
+- Không nên: "Làm cả phase 3." Mỗi dev một track; mỗi task cần được kiểm riêng.
 
 Khi yêu cầu nằm ngoài tài liệu, sửa tài liệu trước (thêm tiêu chí chấp nhận, thêm endpoint vào `design/api/`), rồi mới bảo AI viết code. Làm ngược lại thì code và tài liệu lệch nhau ngay từ đầu.
 

@@ -4,7 +4,7 @@ Cập nhật: 2026-10-16 · Bản để comment: [Claude Doc](https://claude.ai/
 
 ## 1. Đọc nhanh
 
-OISM gồm 5 service .NET 8 sau một API gateway và hai ứng dụng React, do 3 dev làm trong 5 tuần, chia thành 10 phase, mỗi phase nửa tuần. Đơn hàng và tồn kho nằm chung service `core` để giữ đúng yêu cầu một transaction của đề (NFR-SEC-02, FR-POS-04). Lõi kho và giữ hàng phải chạy đúng trước cuối phase 4; mọi thứ khác xếp sau.
+OISM gồm 5 service .NET 8 sau một API gateway và hai ứng dụng React. Đơn hàng và tồn kho nằm chung service `core` để giữ đúng yêu cầu một transaction của đề (NFR-SEC-02, FR-POS-04). Lõi kho và giữ hàng phải chạy đúng trước cuối phase 4; mọi thứ khác xếp sau.
 
 | Phase | Tuần | Dev A | Dev B | Dev C | Cổng cuối phase |
 | --- | --- | --- | --- | --- | --- |
@@ -19,10 +19,10 @@ OISM gồm 5 service .NET 8 sau một API gateway và hai ứng dụng React, do
 | 9. Kiểm thử và đóng gói | 5 | Test cách ly tenant, coverage | Đo tải k6, coverage | Compose demo, CI | Coverage 80%; compose up trên máy sạch |
 | 10. Tài liệu và bàn giao | 5 | URS, RTM, ERD, kiến trúc | UML, tài liệu kiểm thử | Swagger, hướng dẫn, áp thiết kế Figma cho admin, giao diện POS cùng phong cách | RTM đủ 44 mã; demo hai lần không lỗi |
 
-- Tìm việc của mình: mục 10 (Lịch 10 phase) theo cột Owner, hoặc file plan của folder mình sở hữu trong `docs/plans/` (mục 4.3).
+- Tìm việc của mình: mục 10 (Lịch phase) theo cột Owner, hoặc file plan của folder mình sở hữu trong `docs/plans/` (mục 4.3).
 - Trước khi code: đọc mục 3. Cả 18 quyết định đã được giảng viên xác nhận ngày 2026-10-04 (task W1-01).
 - Tài liệu chi tiết (yêu cầu, use case, kiến trúc, quyết định, thiết kế, kiểm thử, quy ước) nằm cùng thư mục này; bản đồ ở [README.md](README.md). Quy tắc cho công cụ AI ở [AGENTS.md](../AGENTS.md).
-- Quỹ thời gian là 3 dev × 5 tuần = 75 ngày công. Riêng phần microservice tốn khoảng 22 ngày (ước lượng), nên nhóm P2 chỉ làm mức tối thiểu (mục 11).
+- Quỹ thời gian là 75 ngày công. Riêng phần microservice tốn khoảng 22 ngày (ước lượng), nên nhóm P2 chỉ làm mức tối thiểu (mục 11).
 
 ## 2. Phạm vi
 
@@ -359,7 +359,7 @@ Mỗi dev sở hữu trọn một nhóm service; `core` và `insights` chia theo
 - Duyệt PR: A duyệt cho B, B duyệt cho A; PR của C do người sở hữu API liên quan duyệt.
 - Phase 8, Dev A nhận hai màn hình chuyển kho và kiểm kê để giảm tải cho Dev C.
 
-## 10. Lịch 10 phase
+## 10. Lịch phase
 
 Mỗi phase dài nửa tuần (khoảng 2,5 ngày làm việc) và kết thúc bằng một cổng; track nào chưa qua cổng thì chưa mở task phase sau của track đó. Mã task giữ dạng `W<tuần>-<số>` và dùng làm tiền tố nhánh và commit.
 

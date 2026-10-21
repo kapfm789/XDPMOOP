@@ -13,7 +13,7 @@ Xếp theo ưu tiên; khi hai động lực xung đột, cái đứng trên th�
 | 3 | Không rò dữ liệu giữa các tenant | NFR-TENANT-01 | `TenantId` trên mọi bảng, Global Query Filter, event mang `TenantId` |
 | 4 | Giá vốn lịch sử không đổi | FR-COST-02 | Chốt `CostPrice` trên dòng đơn đúng lúc xuất kho |
 | 5 | POS phản hồi nhanh | NFR-PERF-01 | `core` giữ bản sao SKU, một lần gọi trả SKU kèm tồn |
-| 6 | 3 dev, 5 tuần | Ràng buộc dự án | Số service ít nhất mà vẫn tách được; có đường lui về 3 service |
+| 6 | Nhân lực ít, 5 tuần | Ràng buộc dự án | Số service ít nhất mà vẫn tách được; có đường lui về 3 service |
 
 ## Ràng buộc
 

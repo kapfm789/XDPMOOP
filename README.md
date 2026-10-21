@@ -250,7 +250,7 @@ Cây đầy đủ và tài liệu chi phối từng folder: [docs/architecture/s
 | [Kiểm thử](docs/testing/strategy.md) | Chiến lược, 23 kịch bản bắt buộc, [kết quả kiểm thử](docs/testing/test-report.md), coverage, đo tải, backtest |
 | [Bàn giao](docs/handover/README.md) | Hướng dẫn cài đặt, hướng dẫn sử dụng, kế hoạch triển khai và vận hành, kịch bản demo |
 | [API](docs/design/api/README.md) | Swagger gộp ở `http://localhost:8080/swagger`, [Postman collection](docs/design/api/postman/README.md) |
-| [Kế hoạch](docs/PLAN.md) | 10 phase, phân công, ưu tiên, rủi ro, RTM rút gọn |
+| [Kế hoạch](docs/PLAN.md) | Phase, phân công, ưu tiên, rủi ro, RTM rút gọn |
 | [Bản dịch và phân tích đề](OISM-ban-dich-va-phan-tich-tieng-Viet.md) | Đề gốc và các điểm cần làm rõ |
 
 ## Trạng thái
