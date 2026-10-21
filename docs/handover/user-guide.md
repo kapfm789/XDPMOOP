@@ -113,7 +113,7 @@ Trang đầu sau khi đăng nhập có số đơn chờ duyệt, số SKU tồn 
 ## Thu ngân: bán tại quầy
 
 1. Mở POS, đăng nhập. Thu ngân bán ở chi nhánh được gắn; chủ cửa hàng chọn chi nhánh trước khi bán.
-2. Quét mã vạch hoặc gõ tên, mã SKU vào ô tìm rồi Enter. Mã khớp đúng thì hàng vào giỏ ngay; không thì hiện danh sách để chọn.
+2. Quét mã vạch hoặc gõ tên, mã SKU vào ô tìm rồi Enter. Mã khớp đúng thì hàng vào giỏ ngay; không thì hiện danh sách để chọn. Không có máy quét thì bấm nút camera cạnh ô tìm: đưa mã vạch vào khung camera để quét liên tiếp, hoặc bấm **Chọn ảnh** để đọc mã từ ảnh chụp sẵn. Camera chỉ mở được khi POS chạy trên HTTPS hoặc `localhost` và trình duyệt được cấp quyền.
 3. Chỉnh số lượng bằng phím `+`, `-`, xóa dòng bằng Delete (khi ô tìm trống), hoặc chạm vào nút trên dòng.
 4. Chọn tiền mặt hoặc QR (phím F4). Với QR, đưa khách quét mã trên màn hình, hoặc bấm **In phiếu thanh toán** để in phiếu tạm tính kèm mã cho khách quét; phiếu không tạo đơn. Kiểm đã nhận tiền trong tài khoản trước khi xác nhận.
 5. Enter khi ô tìm trống, hoặc bấm **Thanh toán** (với QR là **Xác nhận đã nhận tiền**). Đơn lưu xong thì hóa đơn mở ra và hộp thoại in bật lên; Enter tiếp để sang đơn mới.

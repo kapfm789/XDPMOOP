@@ -7,7 +7,7 @@
 | Route | Màn hình | Vai trò | API | Use case | Task |
 | --- | --- | --- | --- | --- | --- |
 | `/login` | Đăng nhập | Công khai | `POST /api/identity/auth/login` | UC-AUTH-02 | W1-09 |
-| `/` | Bán hàng | Cashier, Owner | `GET /api/core/pos/skus`, `POST /api/core/pos/checkout`; thanh trên đọc tên cửa hàng ở `GET /api/identity/me`; tài khoản nhận của chi nhánh ở `GET /api/identity/branches/{id}` | UC-POS-01, UC-POS-02, UC-POS-03 | W3-07, W5-11, W5-12 |
+| `/` | Bán hàng | Cashier, Owner | `GET /api/core/pos/skus`, `POST /api/core/pos/checkout`; thanh trên đọc tên cửa hàng ở `GET /api/identity/me`; tài khoản nhận của chi nhánh ở `GET /api/identity/branches/{id}` | UC-POS-01, UC-POS-02, UC-POS-03 | W3-07, W5-11, W5-12, W5-13 |
 | `/receipt/:orderId` | Hóa đơn để in | Cashier, Owner | Dùng dữ liệu đơn vừa trả về | UC-POS-03 | W3-07 |
 
 ## Bố cục màn hình bán hàng
@@ -29,7 +29,7 @@ POS dùng cùng phong cách với `admin` (task W5-11, theo [admin.md](admin.md)
 | --- | --- |
 | Màu và chữ | Như `admin`: màu chính `#1677ff`, nền trang `#f5f7fa`, thẻ trắng, viền `#e4e9f0`, chữ `#172033`, chữ phụ `#697386`. Xanh lá là còn hàng, cam là sắp chạm tồn khả dụng, đỏ là hết hàng hoặc lỗi. Số tiền to, in đậm |
 | Thanh trên | Nền trắng, viền dưới; logo OISM kèm chữ "POS"; tên cửa hàng lấy từ `tenantName` của `GET /api/identity/me`; Owner chọn chi nhánh bán hàng ngay tại đây (Cashier bán ở chi nhánh trong token); chấm trạng thái mạng (Trực tuyến, Mất mạng); avatar chữ cái đầu, họ tên và tag vai trò; nút đăng xuất |
-| Ô tìm | Cao, có icon kính lúp, nằm trong thẻ trên cùng của cột trái |
+| Ô tìm | Cao, có icon kính lúp, nằm trong thẻ trên cùng của cột trái; bên phải ô là nút quét có icon camera, cao bằng ô tìm |
 | Kết quả tìm | Lưới ô sản phẩm: tên, mã SKU, giá lẻ, tag tồn khả dụng; ô hết hàng mờ và không bấm được. Desktop 3 cột, tablet 2 cột, thiết bị cầm tay 1 cột |
 | Giỏ hàng | Thẻ "Giỏ hàng" kèm số món; mỗi dòng có tên, mã SKU, đơn giá, nút giảm, số lượng, nút tăng, nút xóa và thành tiền; dòng đang chọn nền xanh nhạt; cuối thẻ là tổng tiền |
 | Thanh toán | Thẻ riêng: chọn Tiền mặt hoặc Chuyển khoản QR; khi chọn QR có mã QR kèm số tiền và nút "In phiếu thanh toán"; nút thanh toán màu chính cao 56 px ghi số tiền (khi chọn QR ghi "Xác nhận đã nhận tiền"); dòng gợi ý phím tắt |
@@ -61,12 +61,13 @@ Máy quét mã vạch hoạt động như bàn phím: gõ mã rồi gửi Enter.
 - "In phiếu thanh toán" in phiếu tạm tính từ giỏ hiện tại: không gọi API, không tạo đơn, không đổi giỏ; in xong ô tìm lấy lại focus. Khách quét mã trên phiếu để chuyển khoản. Phiếu không phải hóa đơn: hóa đơn chỉ in sau khi đơn đã lưu. Khách đã chuyển mà lúc xác nhận backend trả 409 `insufficient_stock` thì thu ngân hoàn tiền ngoài hệ thống, như với mã trên màn hình.
 - Sau khi backend trả đơn đã lưu, ứng dụng mở `/receipt/:orderId` và gọi hộp thoại in. In lỗi thì bấm in lại; không gọi thanh toán lần nữa. Đóng hộp thoại in xong, nút "Đơn mới" đang giữ focus nên Enter đưa thu ngân về màn hình bán hàng.
 - `branchId` lấy từ token của Cashier. Owner dùng POS phải chọn chi nhánh trước khi bán; lựa chọn được nhớ trên trình duyệt đó, và đổi chi nhánh thì bắt đầu giỏ mới.
+- Nút quét cạnh ô tìm mở hộp "Quét mã vạch" cho quầy không có máy quét (W5-13). Hộp mở camera sau của thiết bị và quét liên tục: mỗi mã đọc được đi đúng đường của máy quét (điền vào ô tìm rồi như Enter), nên khớp đúng một mã vạch hoặc mã SKU thì vào giỏ ngay; cùng một mã phải rời khung hình 1,5 giây mới được tính lần nữa, để một lần đưa hàng qua không cộng hai món. Nút "Chọn ảnh" đọc mã từ một ảnh có sẵn. Chỉ đọc EAN-13 và Code128, hai loại mã vạch mà `catalog` gán ([data-model/catalog.md](../data-model/catalog.md)). Ảnh không có mã thì hộp báo ngay. Hộp đang che giỏ, nên mỗi mã đọc được có thông báo nổi: đã thêm món nào, hoặc không có sản phẩm khớp mã đó (khi đóng hộp, ô tìm vẫn giữ mã và hiện kết quả tìm). Camera chỉ mở được trên HTTPS hoặc `localhost` và khi được cấp quyền; không được thì hộp báo lý do và vẫn cho chọn ảnh. Giải mã chạy trên trình duyệt bằng package `barcode-detector`, file `.wasm` đóng gói cùng ứng dụng, không tải từ CDN. Đóng hộp thì tắt camera và ô tìm lấy lại focus.
 - Trên thiết bị cầm tay (hẹp hơn 768 px) ô tìm không tự giành lại focus sau mỗi lần chạm, để bàn phím ảo không bật lên liên tục; từ tablet trở lên ô tìm luôn giữ focus để quét liên tiếp.
 - Thông báo `OrderCreated` của chi nhánh hiện popup kèm âm thanh ở góc trên bên phải, dưới thanh tiêu đề, và không lấy mất focus của ô tìm. Cashier chỉ nhận đơn của chi nhánh mình từ server; Owner nhận của mọi chi nhánh nên POS chỉ hiện đơn của chi nhánh đang chọn.
 
 ## PWA
 
 - `manifest.webmanifest` cho phép cài lên màn hình chính; icon 192 và 512 px nằm trong `frontend/pos/public`.
-- Service worker (`public/sw.js`) chỉ cache app shell (HTML, JS, CSS, icon). Không cache phản hồi API và không xếp hàng đợi đơn khi mất mạng. HTML lấy từ mạng trước để nhận bản build mới, mất mạng mới dùng bản cache; JS và CSS mang hash nên lấy từ cache trước.
+- Service worker (`public/sw.js`) chỉ cache app shell (HTML, JS, CSS, icon). Không cache phản hồi API và không xếp hàng đợi đơn khi mất mạng. HTML lấy từ mạng trước để nhận bản build mới, mất mạng mới dùng bản cache; JS, CSS và file `.wasm` giải mã vạch mang hash nên lấy từ cache trước.
 - Service worker chỉ đăng ký ở bản build; thử bằng `npm --prefix frontend run preview:pos`.
 - Mất mạng thì hiện băng thông báo và khóa nút thanh toán, kể cả phím Enter; giỏ hàng giữ nguyên.
