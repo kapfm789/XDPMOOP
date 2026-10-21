@@ -72,7 +72,7 @@ export { canAccess, visibleFor } from './auth/roles';
 export { bankName, VIETQR_BANKS } from './banks';
 export { formatDate, formatDateTime, formatMoney, formatNumber, formatPercent, vietnamDate } from './format';
 export { playChime } from './realtime/chime';
-export { type NotificationHandlers, useNotifications } from './realtime/useNotifications';
+export { type NotificationHandlers, sendRemoteScan, useNotifications, useRemoteScan } from './realtime/useNotifications';
 export { useOnline } from './realtime/useOnline';
 // Bộ đọc mã vạch kèm file .wasm khoảng 1 MB: chỉ tải khi cần đọc mã, không vào bundle chính.
 export const loadBarcodeReader = () => import('./scan/detector');

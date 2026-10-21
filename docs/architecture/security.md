@@ -44,6 +44,7 @@ Owner có toàn quyền trong tenant của mình (FR-AUTH-03). Bảng dưới l�
 | Đề xuất nhập hàng, chạy dự báo | Có | Không | Không |
 | Cấu hình shop của sàn, simulator, xem webhook | Có | Không | Không |
 | Nhận thông báo realtime | Có | Có | Có |
+| POS: gửi mã từ điện thoại sang màn hình bán hàng của chính mình (`SendScan`, W5-15) | Có | Không | Có |
 
 Cashier gắn với một chi nhánh qua claim `branch_id` và chỉ thanh toán được ở chi nhánh đó.
 

@@ -28,6 +28,7 @@ Phụ thuộc chỉ hướng vào trong: Api → Application → Domain; Infrast
 | 8 | W4-03 | insights: giá trị tồn theo giá vốn, bán chạy và bán chậm 30 ngày, cảnh báo available ≤ Threshold | A | FR-REP-02, FR-REP-03 | Hạ tồn dưới ngưỡng thì cảnh báo xuất hiện |
 | 8 | W4-05 | insights: dự báo exponential smoothing, job đêm, API đề xuất nhập, backtest WAPE | B | FR-AI-01..03 | Có báo cáo backtest trên seed; SKU thiếu lịch sử hiện "chưa đủ dữ liệu" |
 | 9 | W5-02 | Bộ test cách ly tenant toàn hệ thống: API, event, SignalR, job | A | NFR-TENANT-01 | Mọi ca dùng ID tenant khác nhận 404 hoặc 403 |
+| 10 | W5-15 | insights, pos: điện thoại làm máy quét cho màn hình bán hàng trên máy tính qua hub SignalR | C | FR-POS-01, FR-SIM-02 | Điện thoại và máy tính đăng nhập cùng tài khoản; điện thoại bật "Gửi sang máy tính" rồi quét thì hàng vào giỏ trên máy tính; người dùng khác và tenant khác không nhận mã |
 
 Skeleton của folder được tạo từ mẫu ở phase 1 (W1-02); nghiệp vụ bắt đầu ở phase 7.
 

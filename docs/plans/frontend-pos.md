@@ -24,6 +24,7 @@ pos/
 | 10 | W5-11 | pos: giao diện cùng phong cách với admin (W5-10): theme, thanh trên có logo, chi nhánh, thu ngân và trạng thái mạng, kết quả tìm dạng ô, giỏ và thanh toán dạng thẻ, đăng nhập và hóa đơn | C | FR-POS-01, NFR-USA-02 | Màn hình POS theo mục "Bố cục và phong cách" của docs/design/ui/pos.md; phím tắt và luồng quét mã rồi Enter giữ nguyên |
 | 10 | W5-12 | identity, admin, pos: tài khoản nhận chuyển khoản theo chi nhánh; POS hiện mã VietQR của chi nhánh và in phiếu thanh toán tạm tính kèm mã | C | FR-AUTH-04, FR-POS-03 | Owner khai tài khoản nhận cho chi nhánh; POS ở chi nhánh đó hiện và in được mã VietQR quét được bằng app ngân hàng; in phiếu thanh toán không tạo đơn |
 | 10 | W5-13 | pos: quét mã vạch bằng camera và bằng ảnh tải lên | C | FR-POS-01, NFR-USA-02 | Quét mã EAN-13 hoặc Code128 bằng camera hay bằng ảnh thì hàng vào giỏ như máy quét; máy không có camera hoặc không chạy HTTPS vẫn quét được bằng ảnh |
+| 10 | W5-15 | insights, pos: điện thoại làm máy quét cho màn hình bán hàng trên máy tính qua hub SignalR | C | FR-POS-01, FR-SIM-02 | Điện thoại và máy tính đăng nhập cùng tài khoản; điện thoại bật "Gửi sang máy tính" rồi quét thì hàng vào giỏ trên máy tính; người dùng khác và tenant khác không nhận mã |
 
 ## Quy tắc riêng
 

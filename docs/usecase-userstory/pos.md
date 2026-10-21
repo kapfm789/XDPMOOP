@@ -20,6 +20,7 @@ Tiêu chí chấp nhận:
 6. Cho tải đã thống nhất, khi đo, thì p95 của lời gọi tìm dưới 200 ms (T17).
 7. Ô tìm kiếm luôn giữ focus để quét liên tiếp mà không cần chạm màn hình.
 8. Cho mã vạch nằm trong khung camera hoặc trong ảnh tải lên, khi quét, thì xử lý như quét bằng máy quét (AC-2); không đọc được mã, hoặc mã không khớp đúng SKU nào, thì báo cho thu ngân.
+9. Cho điện thoại và máy tính đăng nhập cùng một tài khoản, khi điện thoại bật "Gửi sang máy tính" rồi quét một mã, thì màn hình bán hàng trên máy tính xử lý mã đó như máy quét (AC-2) còn điện thoại chỉ báo đã gửi; phiên của người dùng khác hay của tenant khác không nhận mã.
 
 ## UC-POS-02 Thanh toán tại quầy
 
