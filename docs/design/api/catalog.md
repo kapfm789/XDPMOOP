@@ -33,7 +33,7 @@ Tiền tố `/api/catalog`. Use case ở [catalog.md](../../usecase-userstory/ca
 Mỗi phần tử của `skus[]` khi tạo sản phẩm gồm `skuCode`, `attributes`, `retailPrice?`, `wholesalePrice?`. Sản phẩm có `hasVariants = false` nhận đúng một phần tử; sản phẩm có biến thể nhận ít nhất một. Staff gửi giá khi tạo thì giá bị bỏ qua và đặt bằng 0; chỉ Owner đặt được giá.
 
 - Sản phẩm trả về gồm `id`, `name`, `categoryId`, `brandId?`, `description?`, `hasVariants`, `isActive` và `skus[]` xếp theo `skuCode`. Mỗi SKU gồm `id`, `productId`, `skuCode`, `name` (tên hiển thị), `attributes`, `retailPrice`, `wholesalePrice`, `isActive` và `barcodes[]`; mỗi mã vạch gồm `id`, `code`, `symbology`.
-- Danh sách sản phẩm trả theo khuôn phân trang chung, xếp theo `name`; mỗi dòng gồm `id`, `name`, `categoryId`, `brandId?`, `hasVariants`, `isActive`, `skuCount`. `query` khớp một phần tên sản phẩm hoặc mã SKU, không phân biệt hoa thường. `page` nhỏ hơn 1 hoặc `pageSize` ngoài khoảng 1 đến 100 trả 400.
+- Danh sách sản phẩm trả theo khuôn phân trang chung, xếp theo `name`; mỗi dòng gồm `id`, `name`, `categoryId`, `brandId?`, `hasVariants`, `isActive`, `skuCount`. `query` khớp một phần tên sản phẩm, mã SKU hoặc mã vạch, không phân biệt hoa thường. `page` nhỏ hơn 1 hoặc `pageSize` ngoài khoảng 1 đến 100 trả 400.
 - `name` của sản phẩm tối đa 200 ký tự, `description` tối đa 2000, `skuCode` tối đa 64; `name` và `skuCode` bị cắt khoảng trắng hai đầu và không được rỗng. Tên và giá trị thuộc tính không được rỗng, tối đa 100 ký tự. Giá gửi kèm không được âm. Sai thì 400 `validation_failed`.
 - `categoryId`, `brandId`, `id` sản phẩm hoặc `id` SKU không có trong tenant trả 404 `not_found`.
 - Thêm SKU thứ hai cho sản phẩm có `hasVariants = false` trả 400 `validation_failed`.

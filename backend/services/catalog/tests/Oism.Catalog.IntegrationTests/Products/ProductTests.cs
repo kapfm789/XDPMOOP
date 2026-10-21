@@ -256,6 +256,25 @@ public sealed class ProductTests(ApiFactory factory) : IClassFixture<ApiFactory>
         await invalid.AssertProblemAsync(HttpStatusCode.BadRequest, "validation_failed");
     }
 
+    // Admin tìm sản phẩm bằng ảnh mã vạch: mã đọc được đi qua chính ô tìm này.
+    [Fact]
+    [Trait("UseCase", "UC-PROD-02 AC-6")]
+    [Trait("UseCase", "UC-PROD-03 AC-8")]
+    public async Task ListProducts_QueryIsABarcode_ReturnsOnlyTheProductHoldingItInTheTenant()
+    {
+        var shirt = await Staff.CreateSkuAsync("AT-01");
+        await Staff.CreateSkuAsync("QD-01");
+        var code = (await Staff.AddBarcodeAsync(shirt.Id, "EAN13")).Code;
+        var otherTenant = factory.CreateClient(Roles.Staff, Guid.NewGuid());
+        await otherTenant.AddBarcodeAsync((await otherTenant.CreateSkuAsync("AK-01")).Id, "Code128", "KHAC01");
+
+        var byBarcode = await Staff.ListProductsAsync($"?query={code}");
+        var byOtherTenantsCode = await Staff.ListProductsAsync("?query=KHAC01");
+
+        Assert.Equal([shirt.ProductId], byBarcode.Items.Select(item => item.Id));
+        Assert.Empty(byOtherTenantsCode.Items);
+    }
+
     // Vế "còn sản phẩm" của tiêu chí xóa danh mục.
     [Fact]
     [Trait("UseCase", "UC-PROD-01 AC-3")]

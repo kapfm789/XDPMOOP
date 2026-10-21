@@ -1,3 +1,4 @@
+import { loadBarcodeReader } from '@oism/shared';
 import { Alert, Button, Flex, Modal, theme } from 'antd';
 import { type ChangeEvent, useEffect, useRef, useState } from 'react';
 
@@ -61,7 +62,7 @@ function Scanner({ onCode }: { onCode: (code: string) => void }) {
       if (stop.signal.aborted) return release();
       element.srcObject = stream;
       await element.play();
-      const { scanVideo } = await import('./detector');
+      const { scanVideo } = await loadBarcodeReader();
       await scanVideo(element, (code) => latestOnCode.current(code), stop.signal);
     })().catch((reason: unknown) => {
       release();
@@ -80,7 +81,7 @@ function Scanner({ onCode }: { onCode: (code: string) => void }) {
     if (!file) return;
     setNotice(undefined);
     try {
-      const { readImage } = await import('./detector');
+      const { readImage } = await loadBarcodeReader();
       const code = await readImage(file);
       if (code) latestOnCode.current(code);
       else setNotice('Không tìm thấy mã vạch trong ảnh.');

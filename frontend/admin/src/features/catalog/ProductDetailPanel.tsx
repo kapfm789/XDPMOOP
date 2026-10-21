@@ -15,11 +15,12 @@ import {
   useAuth,
 } from '@oism/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Alert, Button, Card, Descriptions, Flex, Form, Input, message, Popconfirm, Select, Spin, Switch, Table, Tag, Typography } from 'antd';
+import { Alert, Button, Card, Descriptions, Flex, Form, Input, message, Popconfirm, Select, Spin, Switch, Table, Typography } from 'antd';
 import { type ReactNode, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { FormModal } from '../common/FormModal';
 import { StatusTag } from '../common/StatusTag';
+import { barcodeSvg, downloadBarcodePng, svgDataUrl } from './barcodeImage';
 import { ProductFields, type ProductValues } from './ProductFields';
 import { type AttributePair, SkuFields, type SkuValues, toAttributes, toPairs, toSkuRequest } from './SkuFields';
 import { useCatalogOptions } from './useCatalogOptions';
@@ -59,6 +60,13 @@ export function ProductDetailPanel({
 
   const removeCode = useMutation({
     mutationFn: ({ skuId, barcodeId }: { skuId: string; barcodeId: string }) => removeBarcode(skuId, barcodeId),
+    onSuccess: refresh,
+    onError: (failure) => void message.error(errorMessage(failure)),
+  });
+
+  // UC-PROD-03 AC-7: SKU chưa có mã thì một lần bấm là có EAN-13; server tự sinh vì không gửi `code`.
+  const createCode = useMutation({
+    mutationFn: (skuId: string) => addBarcode(skuId, { symbology: 'EAN13' }),
     onSuccess: refresh,
     onError: (failure) => void message.error(errorMessage(failure)),
   });
@@ -113,25 +121,50 @@ export function ProductDetailPanel({
             { title: 'Giá lẻ', dataIndex: 'retailPrice', align: 'right', render: formatMoney },
             { title: 'Giá sỉ', dataIndex: 'wholesalePrice', align: 'right', render: formatMoney },
             {
+              // UC-PROD-03 AC-6: hình từng mã vẽ ngay trên trình duyệt, tải về dạng PNG (docs/design/ui/admin.md mục "Hình mã vạch").
               title: 'Mã vạch',
-              render: (_, sku) => (
-                <Flex gap={4} wrap>
-                  {sku.barcodes.map((barcode) => (
-                    <Popconfirm
-                      key={barcode.id}
-                      title={`Xóa mã vạch ${barcode.code}?`}
-                      okText="Xóa"
-                      cancelText="Hủy"
-                      onConfirm={() => removeCode.mutate({ skuId: sku.id, barcodeId: barcode.id })}
-                    >
-                      {/* Bấm dấu x mở hộp xác nhận thay vì gỡ thẻ ngay. */}
-                      <Tag closable onClose={(event) => event.preventDefault()} style={{ cursor: 'pointer' }}>
-                        {barcode.code} · {SYMBOLOGY_LABELS[barcode.symbology]}
-                      </Tag>
-                    </Popconfirm>
-                  ))}
-                </Flex>
-              ),
+              render: (_, sku) =>
+                sku.barcodes.length === 0 ? (
+                  <Button loading={createCode.isPending && createCode.variables === sku.id} onClick={() => createCode.mutate(sku.id)}>
+                    Tạo mã vạch
+                  </Button>
+                ) : (
+                  <Flex gap={12} wrap>
+                    {sku.barcodes.map((barcode) => (
+                      <Flex key={barcode.id} vertical align="center">
+                        <img
+                          src={svgDataUrl(barcodeSvg(barcode.code, barcode.symbology))}
+                          alt={`Mã vạch ${SYMBOLOGY_LABELS[barcode.symbology]} ${barcode.code}`}
+                          title={SYMBOLOGY_LABELS[barcode.symbology]}
+                          width={160}
+                        />
+                        <Flex>
+                          <Button
+                            type="link"
+                            size="small"
+                            onClick={() =>
+                              void downloadBarcodePng(barcode.code, barcode.symbology, `${sku.skuCode}-${barcode.code}.png`).catch(() =>
+                                message.error('Không tạo được ảnh PNG'),
+                              )
+                            }
+                          >
+                            Tải PNG
+                          </Button>
+                          <Popconfirm
+                            title={`Xóa mã vạch ${barcode.code}?`}
+                            okText="Xóa"
+                            cancelText="Hủy"
+                            onConfirm={() => removeCode.mutate({ skuId: sku.id, barcodeId: barcode.id })}
+                          >
+                            <Button type="link" size="small" danger>
+                              Xóa
+                            </Button>
+                          </Popconfirm>
+                        </Flex>
+                      </Flex>
+                    ))}
+                  </Flex>
+                ),
             },
             {
               title: 'Trạng thái',

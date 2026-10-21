@@ -11,7 +11,7 @@
 - Một thư viện component cho cả hai ứng dụng: Ant Design. Không trộn thêm thư viện component khác.
 - Chuỗi hiển thị viết tiếng Việt trực tiếp trong component; dự án không dùng khung đa ngôn ngữ.
 
-Các lựa chọn trên đã chốt ở task W1-09 với các bản: React 19, Vite 8, TypeScript 7, TanStack Query 5, React Router 7 (gói `react-router-dom`), Ant Design 6, Vitest 5. Task W4-08 thêm `@microsoft/signalr` 8 cho kết nối hub thông báo, chỉ dùng trong `shared/src/realtime`. Task W5-13 thêm `barcode-detector` 3 (giải mã vạch bằng WebAssembly theo API `BarcodeDetector` chuẩn) cho việc quét bằng camera và bằng ảnh, chỉ dùng trong `pos/src/features/scan` và chỉ tải khi mở hộp quét. Đổi thì sửa file này trước.
+Các lựa chọn trên đã chốt ở task W1-09 với các bản: React 19, Vite 8, TypeScript 7, TanStack Query 5, React Router 7 (gói `react-router-dom`), Ant Design 6, Vitest 5. Task W4-08 thêm `@microsoft/signalr` 8 cho kết nối hub thông báo, chỉ dùng trong `shared/src/realtime`. Task W5-13 thêm `barcode-detector` 3 (giải mã vạch bằng WebAssembly theo API `BarcodeDetector` chuẩn) cho việc quét bằng camera và bằng ảnh, chỉ dùng trong `shared/src/scan` (task W5-14 chuyển từ `pos` sang để `admin` dùng chung) và chỉ tải khi cần đọc mã, qua `loadBarcodeReader()`. Hình mã vạch ở `admin` vẽ bằng code của dự án, không thêm package. Đổi thì sửa file này trước.
 
 ## Workspace và lệnh
 

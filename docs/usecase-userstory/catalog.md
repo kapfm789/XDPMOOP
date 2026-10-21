@@ -33,6 +33,7 @@ Tiêu chí chấp nhận:
 3. Cho mã SKU đã có trong tenant, khi tạo trùng, thì trả 409; cùng mã ở tenant khác vẫn tạo được.
 4. Cho bất kỳ lần tạo hoặc sửa SKU nào, khi lưu xong, thì `SkuUpserted` được phát với `version` lớn hơn lần trước.
 5. Cho SKU bị ngừng bán, khi tìm ở POS, thì không hiện; tồn và lịch sử của SKU giữ nguyên.
+6. Cho từ khóa là một phần tên sản phẩm, mã SKU hoặc mã vạch, khi tìm ở danh sách sản phẩm, thì ra các sản phẩm khớp trong tenant.
 
 ## UC-PROD-03 Quản lý mã vạch
 
@@ -49,6 +50,9 @@ Tiêu chí chấp nhận:
 3. Cho mã Code128 nhập tay, khi lưu, thì chấp nhận chuỗi chữ và số tới 48 ký tự.
 4. Cho mã vạch đã có trong tenant, khi gán cho SKU khác, thì trả 409.
 5. Cho mã vạch đã gán, khi quét ở POS, thì ra đúng một SKU.
+6. Cho SKU có mã vạch, khi xem sản phẩm ở admin, thì mỗi mã có hình (vạch kèm dãy số) tải về được dạng PNG, và hình tải về quét được ở POS.
+7. Cho SKU chưa có mã vạch, khi bấm "Tạo mã vạch", thì SKU có một mã EAN-13 tự sinh như AC-1 và hình hiện ngay.
+8. Cho ảnh có mã vạch đã gán, khi chọn ở danh sách sản phẩm, thì mở đúng sản phẩm giữ mã đó; không đọc được mã, hoặc không có sản phẩm nào giữ mã, thì báo cho người dùng.
 
 ## UC-PROD-04 Đặt giá lẻ, giá sỉ
 

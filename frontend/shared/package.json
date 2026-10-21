@@ -17,6 +17,7 @@
     "react-router-dom": "^7.18.4"
   },
   "dependencies": {
-    "@microsoft/signalr": "^8.0.29"
+    "@microsoft/signalr": "^8.0.29",
+    "barcode-detector": "^3.2.2"
   }
 }

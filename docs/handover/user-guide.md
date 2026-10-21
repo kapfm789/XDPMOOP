@@ -48,9 +48,12 @@ Màu trạng thái dùng chung: xanh lá là xong hoặc đủ hàng, cam là đ
 
 1. **Sản phẩm › Sản phẩm**, bấm **Thêm sản phẩm**. Chọn có biến thể hay không; sản phẩm có biến thể nhập từng biến thể với mã SKU và thuộc tính (ví dụ "Kích cỡ: M").
 2. Mở sản phẩm vừa tạo. Ở thẻ **SKU, mã vạch và giá**:
+   - **Tạo mã vạch**: hiện ở SKU chưa có mã; bấm một lần là hệ thống tự sinh mã EAN-13 hợp lệ.
    - **Thêm mã vạch**: chọn EAN-13 và để trống mã thì hệ thống tự sinh mã hợp lệ; Code128 thì nhập mã.
+   - Mỗi mã vạch có hình ngay trong cột **Mã vạch**; bấm **Tải PNG** để lưu hình về máy rồi in dán lên hàng. Hình này quét được ở POS.
    - **Đặt giá**: giá lẻ và giá sỉ. Chỉ chủ cửa hàng thấy nút này.
 3. Mã SKU, mã vạch trùng trong cửa hàng bị từ chối và báo ngay cạnh ô nhập.
+4. Ở danh sách sản phẩm, ô tìm nhận cả mã vạch. Bấm **Tìm bằng ảnh mã vạch** và chọn ảnh chụp mã vạch: đọc được mã thì trang của sản phẩm đó mở ra ngay.
 
 ### Báo cáo và dự báo
 
