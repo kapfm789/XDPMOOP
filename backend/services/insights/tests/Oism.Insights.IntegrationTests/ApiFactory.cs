@@ -36,11 +36,11 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     // JWT như identity cấp: claim sub, tenant_id, role, và branch_id khi người dùng gắn với một chi nhánh
     // (docs/architecture/security.md).
-    public string CreateToken(string role, Guid tenantId, Guid? branchId = null)
+    public string CreateToken(string role, Guid tenantId, Guid? branchId = null, Guid? userId = null)
     {
         var claims = new Dictionary<string, object>
         {
-            ["sub"] = Guid.NewGuid().ToString(),
+            ["sub"] = (userId ?? Guid.NewGuid()).ToString(),
             ["tenant_id"] = tenantId.ToString(),
             ["role"] = role,
         };

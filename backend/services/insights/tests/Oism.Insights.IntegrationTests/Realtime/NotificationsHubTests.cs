@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using Oism.Contracts;
 
@@ -115,6 +116,60 @@ public sealed class NotificationsHubTests(ApiFactory factory) : IClassFixture<Ap
         Assert.Empty(cashier.Received);
     }
 
+    // W5-15, UC-POS-01 AC-9: mã gửi từ điện thoại chỉ tới các kết nối khác của chính người dùng đó trong cùng tenant.
+    // Mỗi kết nối nhận thông điệp theo đúng thứ tự gửi, nên khi một phiên nhận được mã chốt gửi sau cùng thì mọi mã gửi
+    // trước đó (nếu có tới nó) cũng đã tới.
+    [Fact]
+    [Trait("Scenario", "T15")]
+    [Trait("UseCase", "UC-POS-01 AC-9")]
+    public async Task SendScan_FromPhone_OnlyOtherSessionsOfTheSameUserInTheTenantReceiveIt()
+    {
+        var cashier = Guid.NewGuid();
+        var phone = await ConnectAsync("Cashier", _tenantA, _branchX, cashier);
+        var pc = await ConnectAsync("Cashier", _tenantA, _branchX, cashier);
+        var colleague = await ConnectAsync("Cashier", _tenantA, _branchX);
+        var owner = await ConnectAsync("Owner", _tenantA);
+        // Cùng id người dùng nhưng ở tenant khác: group gồm cả tenant nên không nhận.
+        var otherTenant = await ConnectAsync("Cashier", _tenantB, _branchX, cashier);
+        var otherTenantPhone = await ConnectAsync("Cashier", _tenantB, _branchX, cashier);
+
+        await phone.Connection.InvokeAsync("SendScan", " 2000000000015 ");
+        await pc.WaitForScanAsync("2000000000015");
+        await pc.Connection.InvokeAsync("SendScan", "CHOT");
+        await phone.WaitForScanAsync("CHOT");
+        await otherTenantPhone.Connection.InvokeAsync("SendScan", "CHOT-B");
+        await otherTenant.WaitForScanAsync("CHOT-B");
+
+        Assert.Equal(["2000000000015"], pc.Scans());
+        // Máy gửi không nhận lại mã của chính nó.
+        Assert.Equal(["CHOT"], phone.Scans());
+        Assert.Equal(["CHOT-B"], otherTenant.Scans());
+        Assert.Empty(colleague.Received);
+        Assert.Empty(owner.Received);
+    }
+
+    // Staff không bán tại quầy nên không gửi mã; mã rỗng hoặc quá 64 ký tự bị từ chối và không tới ai.
+    [Fact]
+    [Trait("UseCase", "UC-POS-01 AC-9")]
+    public async Task SendScan_StaffOrInvalidCode_RejectedAndNothingSent()
+    {
+        var staffId = Guid.NewGuid();
+        var staff = await ConnectAsync("Staff", _tenantA, userId: staffId);
+        var staffPc = await ConnectAsync("Staff", _tenantA, userId: staffId);
+        var cashier = Guid.NewGuid();
+        var phone = await ConnectAsync("Cashier", _tenantA, _branchX, cashier);
+        var pc = await ConnectAsync("Cashier", _tenantA, _branchX, cashier);
+
+        await Assert.ThrowsAsync<HubException>(() => staff.Connection.InvokeAsync("SendScan", "2000000000015"));
+        await Assert.ThrowsAsync<HubException>(() => phone.Connection.InvokeAsync("SendScan", "   "));
+        await Assert.ThrowsAsync<HubException>(() => phone.Connection.InvokeAsync("SendScan", new string('A', 65)));
+        await phone.Connection.InvokeAsync("SendScan", "CHOT");
+        await pc.WaitForScanAsync("CHOT");
+
+        Assert.Equal(["CHOT"], pc.Scans());
+        Assert.Empty(staffPc.Received);
+    }
+
     // UC-SIM-02 AC-5: không có token thì kết nối bị từ chối.
     [Fact]
     [Trait("UseCase", "UC-SIM-02 AC-5")]
@@ -123,8 +178,8 @@ public sealed class NotificationsHubTests(ApiFactory factory) : IClassFixture<Ap
         await Assert.ThrowsAnyAsync<Exception>(() => ConnectAsync(token: null));
     }
 
-    private Task<Session> ConnectAsync(string role, Guid tenantId, Guid? branchId = null) =>
-        ConnectAsync(factory.CreateToken(role, tenantId, branchId));
+    private Task<Session> ConnectAsync(string role, Guid tenantId, Guid? branchId = null, Guid? userId = null) =>
+        ConnectAsync(factory.CreateToken(role, tenantId, branchId, userId));
 
     // Như trình duyệt: WebSocket không mang được header, token đi trên query `access_token`.
     private async Task<Session> ConnectAsync(string? token)
@@ -146,6 +201,7 @@ public sealed class NotificationsHubTests(ApiFactory factory) : IClassFixture<Ap
         var session = new Session(connection);
         connection.On<JsonElement>("OrderCreated", payload => session.Received.Enqueue(("OrderCreated", payload)));
         connection.On<JsonElement>("LowStock", payload => session.Received.Enqueue(("LowStock", payload)));
+        connection.On<JsonElement>("RemoteScan", payload => session.Received.Enqueue(("RemoteScan", payload)));
         await connection.StartAsync();
         _sessions.Add(session);
         return session;
@@ -166,6 +222,19 @@ public sealed class NotificationsHubTests(ApiFactory factory) : IClassFixture<Ap
 
         public List<Guid> OrderIds() =>
             Received.Where(message => message.Name == "OrderCreated").Select(message => message.Payload.GetProperty("orderId").GetGuid()).ToList();
+
+        public List<string?> Scans() =>
+            Received.Where(message => message.Name == "RemoteScan").Select(message => message.Payload.GetProperty("code").GetString()).ToList();
+
+        public async Task WaitForScanAsync(string code)
+        {
+            var deadline = DateTime.UtcNow.AddSeconds(30);
+            while (!Scans().Contains(code))
+            {
+                Assert.True(DateTime.UtcNow < deadline, $"never received RemoteScan {code}");
+                await Task.Delay(50);
+            }
+        }
 
         // Chờ thông báo mang orderId hoặc skuId đã cho.
         public async Task WaitForAsync(string name, Guid id)

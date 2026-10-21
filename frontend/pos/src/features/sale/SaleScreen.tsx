@@ -1,4 +1,13 @@
-import { ApiError, errorMessage, type PaymentMethod, type PosSku, type StockShortage, useOnline } from '@oism/shared';
+import {
+  ApiError,
+  errorMessage,
+  type PaymentMethod,
+  type PosSku,
+  sendRemoteScan,
+  type StockShortage,
+  useOnline,
+  useRemoteScan,
+} from '@oism/shared';
 import { Alert, Badge, Card, Col, Flex, Grid, type InputRef, message, Modal, Row, Tabs, theme } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +20,8 @@ import { PaymentSlip } from '../receipt/PaymentSlip';
 import { ScanModal } from '../scan/ScanModal';
 import { SearchPanel } from '../search/SearchPanel';
 import { usePosSearch } from '../search/usePosSearch';
+
+const REMOTE_SCAN_KEY = 'oism.pos.sendScansToPc';
 
 // Màn hình bán hàng: tìm hoặc quét, giỏ, thanh toán trên một màn hình. Bố cục và phím tắt: docs/design/ui/pos.md.
 export function SaleScreen() {
@@ -27,6 +38,8 @@ export function SaleScreen() {
   const [selected, setSelected] = useState<string>();
   const [method, setMethod] = useState<PaymentMethod>('Cash');
   const [scanning, setScanning] = useState(false);
+  // W5-15: điện thoại làm máy quét cho máy tính; lựa chọn được nhớ trên trình duyệt này.
+  const [sendToPc, setSendToPc] = useState(() => localStorage.getItem(REMOTE_SCAN_KEY) === 'true');
   const search = usePosSearch(branch.branchId, text);
   const { checkout, pending } = useCheckout();
 
@@ -96,6 +109,27 @@ export function SaleScreen() {
   function addFromCamera(code: string) {
     setText(code);
     void addScanned(code, true);
+  }
+
+  // UC-POS-01 AC-9: mã do điện thoại cùng tài khoản gửi tới được xử lý như mã đọc từ hộp quét.
+  useRemoteScan(addFromCamera);
+
+  // Điện thoại đang làm máy quét: mã không vào giỏ ở đây mà được gửi sang máy tính; chỉ báo đã gửi.
+  function onScanCode(code: string) {
+    if (!sendToPc) return addFromCamera(code);
+    sendRemoteScan(code).then(
+      () => {
+        navigator.vibrate?.(60);
+        toast.success(`Đã gửi mã ${code}`);
+      },
+      (error: unknown) =>
+        toast.error(error instanceof Error && error.message === 'hub_disconnected' ? 'Chưa kết nối máy chủ, mã chưa được gửi' : 'Không gửi được mã'),
+    );
+  }
+
+  function changeSendToPc(next: boolean) {
+    setSendToPc(next);
+    localStorage.setItem(REMOTE_SCAN_KEY, String(next));
   }
 
   async function pay() {
@@ -221,7 +255,14 @@ export function SaleScreen() {
       <Flex vertical gap={12} className="no-print">
         {toastHolder}
         {modalHolder}
-        <ScanModal open={scanning} onClose={() => setScanning(false)} afterClose={focusSearch} onCode={addFromCamera} />
+        <ScanModal
+          open={scanning}
+          onClose={() => setScanning(false)}
+          afterClose={focusSearch}
+          onCode={onScanCode}
+          remote={sendToPc}
+          onRemoteChange={changeSendToPc}
+        />
         {branch.error && <Alert type="error" showIcon title={errorMessage(branch.error)} />}
         {search.error && <Alert type="error" showIcon title={errorMessage(search.error)} />}
         {!branch.branchId && !branch.error && <Alert type="info" showIcon title="Chọn chi nhánh bán hàng ở thanh trên trước khi bán." />}
