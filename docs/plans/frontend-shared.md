@@ -14,6 +14,7 @@ shared/
    ├─ api/         client gọi gateway, tự gắn JWT, tự refresh, đọc ProblemDetails
    ├─ auth/        AuthProvider, lưu token, chặn route theo vai trò
    ├─ realtime/    kết nối SignalR, hook nhận thông báo
+   ├─ scan/        đọc mã vạch từ ảnh và video, chỉ tải khi cần (W5-13, W5-14)
    └─ types/       kiểu dữ liệu theo Swagger của từng service
 ```
 

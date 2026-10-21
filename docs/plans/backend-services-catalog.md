@@ -26,6 +26,7 @@ Phụ thuộc chỉ hướng vào trong: Api → Application → Domain; Infrast
 | 2 | W1-07 | catalog: sản phẩm, biến thể/SKU, mã vạch EAN-13/Code128, giá lẻ và giá sỉ; phát `SkuUpserted` | B | FR-PROD-02..04 | SKU trùng trong tenant bị từ chối; EAN-13 đúng số kiểm tra |
 | 2 | W1-12 | Rà ERD ở `docs/design/data-model/` theo migration thật; test cách ly tenant cho identity và catalog | A (ERD), B (test) | NFR-TENANT-01 | ERD khớp migration; tenant A gọi ID của tenant B nhận 404 |
 | 9 | W5-02 | Bộ test cách ly tenant toàn hệ thống: API, event, SignalR, job | A | NFR-TENANT-01 | Mọi ca dùng ID tenant khác nhận 404 hoặc 403 |
+| 10 | W5-14 | catalog, admin: hình mã vạch tải về cho từng SKU, tạo mã một chạm, tìm sản phẩm bằng ảnh mã vạch | C | FR-PROD-02, FR-PROD-03 | Mỗi mã vạch của SKU có hình tải về được và quét được ở POS; SKU chưa có mã tạo được bằng một lần bấm; chọn ảnh mã vạch ở danh sách sản phẩm thì mở đúng sản phẩm |
 
 ## Sở hữu
 

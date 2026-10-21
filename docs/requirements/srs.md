@@ -1059,6 +1059,7 @@ Mỗi nhóm gồm bảng phát biểu yêu cầu, rồi đặc tả từng use c
   3. Mã SKU trùng trong tenant trả 409; cùng mã ở tenant khác vẫn tạo được.
   4. Mỗi lần tạo hoặc sửa SKU phát `SkuUpserted` với `version` lớn hơn lần trước.
   5. SKU ngừng bán không hiện ở POS; tồn và lịch sử giữ nguyên.
+  6. Tìm ở danh sách sản phẩm theo một phần tên sản phẩm, mã SKU hoặc mã vạch ra các sản phẩm khớp trong tenant.
 
 #### UC-PROD-03 Quản lý mã vạch
 
@@ -1068,6 +1069,8 @@ Mỗi nhóm gồm bảng phát biểu yêu cầu, rồi đặc tả từng use c
   2. EAN-13 để trống mã thì hệ thống tự sinh: tiền tố nội bộ `200`, 9 chữ số tăng dần theo tenant, một số kiểm tra; việc lấy số giữ advisory lock theo tenant để hai request không nhận cùng mã.
   3. Mã nhập tay được kiểm: EAN-13 đúng số kiểm tra; Code128 là chữ và số không dấu, tối đa 48 ký tự.
   4. Hệ thống phát `SkuUpserted` mang danh sách mã vạch mới.
+  5. Trang sản phẩm ở admin vẽ hình từng mã vạch (vạch kèm dãy số) ngay trên trình duyệt, tải về được dạng PNG; SKU chưa có mã có nút "Tạo mã vạch" sinh EAN-13 bằng một lần bấm.
+  6. Ở danh sách sản phẩm, người dùng chọn ảnh có mã vạch; đọc được mã thì mở thẳng sản phẩm giữ mã đó.
 - **Ngoại lệ:** EAN-13 sai số kiểm tra, Code128 sai dạng hoặc thiếu mã trả 400; mã đã có trong tenant trả 409; xóa mã không thuộc SKU đó trả 404.
 - **Tiêu chí chấp nhận:**
   1. EAN-13 tự sinh có 13 chữ số, bắt đầu bằng 200, số kiểm tra đúng.
@@ -1075,6 +1078,9 @@ Mỗi nhóm gồm bảng phát biểu yêu cầu, rồi đặc tả từng use c
   3. Code128 nhập tay nhận chuỗi chữ và số tới 48 ký tự.
   4. Mã vạch đã có trong tenant gán cho SKU khác trả 409.
   5. Quét một mã vạch đã gán ở POS ra đúng một SKU.
+  6. Mỗi mã vạch có hình tải về được dạng PNG, và hình tải về quét được ở POS.
+  7. SKU chưa có mã bấm "Tạo mã vạch" thì có một EAN-13 tự sinh và hình hiện ngay.
+  8. Chọn ảnh có mã vạch đã gán ở danh sách sản phẩm thì mở đúng sản phẩm giữ mã; không đọc được mã hoặc không có sản phẩm giữ mã thì báo.
 
 #### UC-PROD-04 Đặt giá lẻ, giá sỉ
 

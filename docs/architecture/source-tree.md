@@ -42,7 +42,7 @@ XDPMOOP/
 ├─ frontend/
 │  ├─ package.json                 npm workspaces: admin, pos, shared
 │  ├─ Dockerfile, nginx.conf       image của admin và pos cho gói demo (W5-04)
-│  ├─ shared/src/                  api, auth, realtime, types
+│  ├─ shared/src/                  api, auth, realtime, scan, types
 │  ├─ admin/src/                   pages, features, app
 │  └─ pos/
 │     ├─ public/                   manifest, service worker

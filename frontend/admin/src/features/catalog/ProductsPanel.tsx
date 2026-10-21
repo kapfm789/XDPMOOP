@@ -1,7 +1,7 @@
-import { createProduct, errorMessage, listProducts, type ProductListItem, useAuth } from '@oism/shared';
+import { createProduct, errorMessage, listProducts, loadBarcodeReader, type ProductListItem, useAuth } from '@oism/shared';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Alert, Button, Card, Flex, Form, Input, Select, Switch, Table, TreeSelect } from 'antd';
-import { useState } from 'react';
+import { Alert, Button, Card, Flex, Form, Input, message, Select, Switch, Table, TreeSelect } from 'antd';
+import { type ChangeEvent, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FilterBar } from '../common/FilterBar';
 import { FormModal } from '../common/FormModal';
@@ -33,17 +33,55 @@ export function ProductsPanel() {
   const error = products.error ?? options.error;
   // Đổi bộ lọc thì quay về trang đầu.
   const narrow = (change: Partial<Filter>) => setFilter((current) => ({ ...current, ...change, page: 1 }));
+  const [searchText, setSearchText] = useState('');
+  const [reading, setReading] = useState(false);
+  const imageInput = useRef<HTMLInputElement>(null);
+
+  // UC-PROD-03 AC-8: đọc mã vạch trong ảnh rồi tìm sản phẩm giữ mã đó qua chính ô tìm (docs/design/ui/admin.md mục "Hình mã vạch").
+  async function findByImage(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    // Cho chọn lại đúng ảnh vừa chọn.
+    event.target.value = '';
+    if (!file) return;
+    setReading(true);
+    try {
+      let code: string | undefined;
+      try {
+        code = await (await loadBarcodeReader()).readImage(file);
+      } catch {
+        return void message.error('Không đọc được ảnh này.');
+      }
+      if (!code) return void message.warning('Không tìm thấy mã vạch trong ảnh.');
+      const found = await listProducts({ query: code, page: 1, pageSize: 2 });
+      if (found.total === 1) navigate(`/catalog/products/${found.items[0].id}`);
+      else if (found.total === 0) message.warning(`Không có sản phẩm nào giữ mã ${code}`);
+      else {
+        setSearchText(code);
+        narrow({ query: code });
+      }
+    } catch (failure) {
+      message.error(errorMessage(failure));
+    } finally {
+      setReading(false);
+    }
+  }
 
   return (
     <>
       <FilterBar>
         <Input.Search
           allowClear
-          placeholder="Tìm theo tên hoặc mã SKU"
+          placeholder="Tìm theo tên, mã SKU hoặc mã vạch"
           aria-label="Tìm sản phẩm"
+          value={searchText}
+          onChange={(event) => setSearchText(event.target.value)}
           onSearch={(query) => narrow({ query })}
           style={{ width: 280 }}
         />
+        <input ref={imageInput} type="file" accept="image/*" hidden onChange={(event) => void findByImage(event)} />
+        <Button loading={reading} onClick={() => imageInput.current?.click()}>
+          Tìm bằng ảnh mã vạch
+        </Button>
         <TreeSelect
           allowClear
           treeDefaultExpandAll

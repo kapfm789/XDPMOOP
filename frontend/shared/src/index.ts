@@ -74,6 +74,8 @@ export { formatDate, formatDateTime, formatMoney, formatNumber, formatPercent, v
 export { playChime } from './realtime/chime';
 export { type NotificationHandlers, useNotifications } from './realtime/useNotifications';
 export { useOnline } from './realtime/useOnline';
+// Bộ đọc mã vạch kèm file .wasm khoảng 1 MB: chỉ tải khi cần đọc mã, không vào bundle chính.
+export const loadBarcodeReader = () => import('./scan/detector');
 export type * from './types/catalog';
 export type * from './types/channel';
 export type * from './types/common';

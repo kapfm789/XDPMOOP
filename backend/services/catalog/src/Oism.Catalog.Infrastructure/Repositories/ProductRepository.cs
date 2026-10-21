@@ -18,7 +18,8 @@ internal sealed class ProductRepository(CatalogDbContext db, ITenantContext tena
         {
             var pattern = $"%{query.Trim()}%";
             products = products.Where(product =>
-                EF.Functions.ILike(product.Name, pattern) || product.Skus.Any(sku => EF.Functions.ILike(sku.SkuCode, pattern)));
+                EF.Functions.ILike(product.Name, pattern) || product.Skus.Any(sku =>
+                    EF.Functions.ILike(sku.SkuCode, pattern) || sku.Barcodes.Any(barcode => EF.Functions.ILike(barcode.Code, pattern))));
         }
 
         var items = await products

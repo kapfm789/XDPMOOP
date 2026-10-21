@@ -13,8 +13,8 @@ Trang quản trị cho Owner và Staff, nằm ở `frontend/admin`. Mỗi dòng 
 | `/users` | Người dùng | Owner | `/api/identity/users` | UC-AUTH-03 | W1-10 |
 | `/catalog/categories` | Danh mục | Owner, Staff | `/api/catalog/categories` | UC-PROD-01 | W1-10 |
 | `/catalog/brands` | Thương hiệu | Owner, Staff | `/api/catalog/brands` | UC-PROD-01 | W1-10 |
-| `/catalog/products` | Danh sách sản phẩm | Owner, Staff | `GET /api/catalog/products` | UC-PROD-02 | W2-07 |
-| `/catalog/products/:id` | Sản phẩm, SKU, mã vạch, giá | Owner, Staff; ô giá chỉ Owner sửa | `/api/catalog/products/{id}`, `/skus/{id}/barcodes`, `/skus/{id}/prices` | UC-PROD-02, 03, 04 | W2-07 |
+| `/catalog/products` | Danh sách sản phẩm; tìm bằng ảnh mã vạch | Owner, Staff | `GET /api/catalog/products` | UC-PROD-02, UC-PROD-03 | W2-07, W5-14 |
+| `/catalog/products/:id` | Sản phẩm, SKU, mã vạch kèm hình tải về, giá | Owner, Staff; ô giá chỉ Owner sửa | `/api/catalog/products/{id}`, `/skus/{id}/barcodes`, `/skus/{id}/prices` | UC-PROD-02, 03, 04 | W2-07, W5-14 |
 | `/inventory/stock` | Tồn theo chi nhánh, đặt ngưỡng; dải tổng hợp trên bảng: tổng giá trị tồn (chỉ Owner), số dòng tồn đang theo dõi, số SKU tồn thấp | Owner, Staff | `GET /api/core/stock`, `PUT /api/core/stock/threshold`; dải tổng hợp đọc `GET /api/insights/reports/inventory-value` (`totalValue`) và `GET /api/insights/alerts/low-stock` | UC-INV-01, UC-INV-05, UC-REP-02 | W2-08, W5-10 |
 | `/inventory/ledger` | Sổ giao dịch, chỉ xem, dòng mới nhất trên cùng | Owner, Staff | `GET /api/core/ledger` | UC-INV-01 | W2-08 |
 | `/inventory/receipts` | Phiếu nhập: danh sách, tạo, sửa, xác nhận; thêm nhà cung cấp | Owner, Staff | `/api/core/purchase-receipts`, `/api/core/suppliers`; tìm SKU qua `/api/catalog/products` | UC-INV-02 | W2-08 |
@@ -73,6 +73,16 @@ Những mục dưới có trong bản Figma nhưng không có trong use case hay
 | Thanh toán "qua sàn, chờ đối soát" ở đơn sàn | Chỉ đơn POS có thanh toán ([ADR-0007](../../decisions/0007-pos-payment-no-offline.md)) |
 | Cột "Lần hoạt động cuối" của người dùng, "SKU đang có" của chi nhánh, "Tiến độ" và tổng chênh lệch ở danh sách kiểm kê | API không trả các trường này |
 | Mã chứng từ dạng số thứ tự (`#GD1048`, `PN00241`, `CK00128`) | Mã thật do `core` đặt: `DH`, `PN`, `CK` kèm 12 ký tự hex; dòng sổ dùng `seq` |
+
+## Hình mã vạch
+
+Trang `/catalog/products/:id` vẽ hình cho từng mã vạch của SKU (W5-14, UC-PROD-03 AC-6 đến AC-8):
+
+- Cột "Mã vạch" hiện hình của mỗi mã, vẽ ngay trên trình duyệt từ `code` và `symbology`, không gọi thêm API. EAN-13 vẽ theo kiểu thường in trên bao bì: chữ số đầu nằm bên trái, hai nhóm sáu số dưới hai nửa vạch, ba cặp vạch bảo vệ kéo dài xuống. Code128 vẽ bộ ký tự B, dãy chữ nằm giữa dưới vạch.
+- Dưới mỗi hình có "Tải PNG" (file `<mã SKU>-<mã vạch>.png`, 4 px mỗi module, có vùng trống hai bên để máy quét đọc được) và "Xóa" (hỏi xác nhận như trước).
+- SKU chưa có mã vạch hiện nút "Tạo mã vạch": gọi `POST /skus/{id}/barcodes` với `EAN13` và không gửi `code`, nên server tự sinh mã; hình hiện ngay sau khi lưu. "Thêm mã vạch" vẫn dùng để nhập tay EAN-13 hoặc Code128.
+
+Danh sách `/catalog/products` có nút "Tìm bằng ảnh mã vạch" cạnh ô tìm. Ảnh được giải mã trên trình duyệt bằng bộ đọc dùng chung với POS (`shared/src/scan`); đọc được mã thì tìm sản phẩm theo mã đó: đúng một sản phẩm thì mở thẳng trang của nó, không có thì báo, nhiều hơn một thì điền mã vào ô tìm để lọc. Ảnh không có mã thì báo "Không tìm thấy mã vạch trong ảnh.".
 
 ## In phiếu giao
 
