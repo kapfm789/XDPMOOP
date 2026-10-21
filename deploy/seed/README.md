@@ -36,7 +36,7 @@ Mật khẩu lấy từ `SEED_PASSWORD`. Đây là dữ liệu demo, không dùn
 
 Phần dữ liệu nền đi qua gateway API như người dùng thao tác, nên mọi quy tắc nghiệp vụ, sổ kho, outbox và event chạy đúng đường của hệ thống:
 
-- Tenant, Owner, Staff, Cashier; hai chi nhánh.
+- Tenant, Owner, Staff, Cashier; hai chi nhánh. Chi nhánh đầu có tài khoản nhận chuyển khoản giả (Vietcombank, số `0000000000`) để POS hiện mã VietQR; muốn quét chuyển khoản thật thì Owner đổi sang tài khoản thật ở **Cài đặt › Chi nhánh**.
 - Danh mục, thương hiệu, sản phẩm có và không có biến thể, giá lẻ và giá sỉ, mỗi SKU một mã vạch EAN-13 do `catalog` sinh.
 - Một nhà cung cấp và mỗi chi nhánh một phiếu nhập đầu kỳ đã xác nhận, khoảng 18 ngày bán. Vài SKU chỉ nhập 2 cái và có ngưỡng 6 để trang tổng quan có cảnh báo tồn.
 - Ngưỡng tồn cho mọi SKU, khoảng 4 ngày bán.

@@ -26,6 +26,7 @@ admin/
 | 8 | W4-06 | admin: màn hình chuyển kho, kiểm kê | A | FR-INV-03, FR-INV-04 | Thao tác trọn luồng từ giao diện |
 | 8 | W4-07 | admin: dashboard báo cáo, cảnh báo tồn, đề xuất nhập hàng | C | FR-REP-01..03, FR-AI-02 | Lọc đủ thời gian, chi nhánh, kênh, SKU |
 | 10 | W5-10 | admin: áp thiết kế Figma: theme, khung sidebar và topbar, tổng quan có thẻ số liệu và biểu đồ doanh thu 7 ngày, giao diện từng màn hình | C | FR-REP-01, FR-REP-03 | Mọi màn hình admin theo mục "Bố cục và phong cách" của docs/design/ui/admin.md, chỉ dùng API đã có |
+| 10 | W5-12 | identity, admin, pos: tài khoản nhận chuyển khoản theo chi nhánh; POS hiện mã VietQR của chi nhánh và in phiếu thanh toán tạm tính kèm mã | C | FR-AUTH-04, FR-POS-03 | Owner khai tài khoản nhận cho chi nhánh; POS ở chi nhánh đó hiện và in được mã VietQR quét được bằng app ngân hàng; in phiếu thanh toán không tạo đơn |
 
 ## Quy tắc riêng
 

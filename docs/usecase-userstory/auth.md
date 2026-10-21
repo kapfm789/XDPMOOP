@@ -56,7 +56,7 @@ Bảng quyền đầy đủ ở [security.md](../architecture/security.md).
 
 - Actor: Owner
 - Yêu cầu: FR-AUTH-04
-- API: `GET, POST, PUT /api/identity/branches`, `PATCH /api/identity/branches/{id}/active`
+- API: `GET, POST, PUT /api/identity/branches`, `GET /api/identity/branches/{id}`, `PATCH /api/identity/branches/{id}/active`
 - Event: `BranchUpserted`
 
 Là Owner, tôi muốn khai báo các cửa hàng và kho của mình, để tồn kho và đơn hàng được quản lý theo từng nơi.
@@ -67,3 +67,5 @@ Tiêu chí chấp nhận:
 2. Cho mã chi nhánh đã dùng trong cùng tenant, khi tạo, thì trả 409; cùng mã ở tenant khác vẫn tạo được.
 3. Cho chi nhánh đang hoạt động, khi tắt, thì không tạo được đơn, phiếu nhập hay phiếu chuyển kho mới cho chi nhánh đó; dữ liệu cũ giữ nguyên.
 4. Cho bất kỳ thay đổi nào về chi nhánh, khi lưu xong, thì `BranchUpserted` được phát và `core` có bản sao chi nhánh sau một nhịp event.
+5. Cho chi nhánh bất kỳ, khi Owner khai mã BIN ngân hàng và số tài khoản nhận chuyển khoản, thì chi nhánh trả về mang tài khoản đó; khai thiếu một trong hai hoặc sai định dạng thì trả 400; bỏ trống cả hai thì xóa tài khoản nhận.
+6. Cho Cashier gắn với một chi nhánh, khi đọc chi nhánh đó theo id, thì nhận chi nhánh kèm tài khoản nhận; đọc chi nhánh khác thì trả 403.

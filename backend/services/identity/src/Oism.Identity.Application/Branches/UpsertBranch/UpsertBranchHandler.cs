@@ -20,11 +20,11 @@ public sealed class UpsertBranchHandler(IUnitOfWork unitOfWork, IBranchRepositor
         if (command.Id is { } id)
         {
             branch = await branches.GetForUpdateAsync(id, ct) ?? throw new NotFoundException("chi nhánh");
-            branch.Update(command.Name, type, command.Address);
+            branch.Update(command.Name, type, command.Address, command.BankBin, command.BankAccount);
         }
         else
         {
-            branch = Branch.Create(command.Code!, command.Name, type, command.Address);
+            branch = Branch.Create(command.Code!, command.Name, type, command.Address, command.BankBin, command.BankAccount);
             branches.Add(branch);
         }
 

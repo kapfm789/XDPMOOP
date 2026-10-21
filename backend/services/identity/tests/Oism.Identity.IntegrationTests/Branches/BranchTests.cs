@@ -147,4 +147,68 @@ public sealed class BranchTests(ApiFactory factory) : IClassFixture<ApiFactory>
         await cashierList.AssertProblemAsync(HttpStatusCode.Forbidden, "forbidden");
         Assert.Equal([branch], await owner.ListBranchesAsync());
     }
+
+    [Fact]
+    [Trait("UseCase", "UC-AUTH-04 AC-5")]
+    public async Task BankAccount_SetTrimmedThenCleared_IsReturnedEverywhere()
+    {
+        var owner = await factory.LoginAsOwnerAsync(await _anonymous.RegisterTenantAsync());
+
+        var created = await owner.PostAsJsonAsync(
+            "/branches", new { code = "CH-01", name = "Cửa hàng 1", type = "Store", bankBin = " 970436 ", bankAccount = " 0123456789 " });
+        var branch = (await created.Content.ReadFromJsonAsync<BranchDto>())!;
+
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        Assert.Equal(("970436", "0123456789"), (branch.BankBin, branch.BankAccount));
+        Assert.Equal([branch], await owner.ListBranchesAsync());
+        Assert.Equal(branch, await owner.GetFromJsonAsync<BranchDto>($"/branches/{branch.Id}"));
+
+        var cleared = await owner.PutAsJsonAsync($"/branches/{branch.Id}", new { name = "Cửa hàng 1", type = "Store", bankBin = "", bankAccount = " " });
+
+        Assert.Equal(branch with { BankBin = null, BankAccount = null }, await cleared.Content.ReadFromJsonAsync<BranchDto>());
+    }
+
+    [Theory]
+    [Trait("UseCase", "UC-AUTH-04 AC-5")]
+    [InlineData("970436", null, "bankAccount")]
+    [InlineData(null, "0123456789", "bankAccount")]
+    [InlineData("97043", "0123456789", "bankBin")]
+    [InlineData("97043A", "0123456789", "bankBin")]
+    [InlineData("970436", "0123-456", "bankAccount")]
+    [InlineData("970436", "01234567890123456789", "bankAccount")]
+    public async Task BankAccount_HalfFilledOrMalformed_Returns400AndChangesNothing(string? bankBin, string? bankAccount, string field)
+    {
+        var tenant = await _anonymous.RegisterTenantAsync();
+        var owner = await factory.LoginAsOwnerAsync(tenant);
+        var branch = await owner.CreateBranchAsync("CH-01");
+
+        var create = await owner.PostAsJsonAsync("/branches", new { code = "CH-02", name = "Sai", type = "Store", bankBin, bankAccount });
+        var update = await owner.PutAsJsonAsync($"/branches/{branch.Id}", new { name = "Sai", type = "Store", bankBin, bankAccount });
+
+        var problem = await create.AssertProblemAsync(HttpStatusCode.BadRequest, "validation_failed");
+        Assert.True(problem.GetProperty("errors").TryGetProperty(field, out _), problem.ToString());
+        await update.AssertProblemAsync(HttpStatusCode.BadRequest, "validation_failed");
+        Assert.Equal([branch], await owner.ListBranchesAsync());
+        Assert.Single(await factory.BranchEventsAsync(tenant.TenantId));
+    }
+
+    // POS đọc tài khoản nhận của chi nhánh đang bán; Cashier chỉ đọc được chi nhánh của mình, như quy tắc ở /api/core/pos.
+    [Fact]
+    [Trait("UseCase", "UC-AUTH-04 AC-6")]
+    public async Task GetBranch_CashierReadsOwnBranchOnly_StaffAndOwnerReadAny()
+    {
+        var owner = await factory.LoginAsOwnerAsync(await _anonymous.RegisterTenantAsync());
+        var own = await owner.CreateBranchAsync("CH-01");
+        var other = await owner.CreateBranchAsync("CH-02");
+        var (staffEmail, cashierEmail) = (ApiExtensions.NewEmail(), ApiExtensions.NewEmail());
+        await owner.CreateUserAsync("Staff", staffEmail);
+        await owner.CreateUserAsync("Cashier", cashierEmail, own.Id);
+        var staff = factory.Authorized((await _anonymous.LoginAsync(staffEmail)).AccessToken);
+        var cashier = factory.Authorized((await _anonymous.LoginAsync(cashierEmail)).AccessToken);
+
+        Assert.Equal(own, await cashier.GetFromJsonAsync<BranchDto>($"/branches/{own.Id}"));
+        await (await cashier.GetAsync($"/branches/{other.Id}")).AssertProblemAsync(HttpStatusCode.Forbidden, "forbidden");
+        Assert.Equal(other, await staff.GetFromJsonAsync<BranchDto>($"/branches/{other.Id}"));
+        await (await owner.GetAsync($"/branches/{Guid.NewGuid()}")).AssertProblemAsync(HttpStatusCode.NotFound, "not_found");
+    }
 }

@@ -7,7 +7,7 @@
 | Route | Màn hình | Vai trò | API | Use case | Task |
 | --- | --- | --- | --- | --- | --- |
 | `/login` | Đăng nhập | Công khai | `POST /api/identity/auth/login` | UC-AUTH-02 | W1-09 |
-| `/` | Bán hàng | Cashier, Owner | `GET /api/core/pos/skus`, `POST /api/core/pos/checkout`; thanh trên đọc tên cửa hàng ở `GET /api/identity/me` | UC-POS-01, UC-POS-02 | W3-07, W5-11 |
+| `/` | Bán hàng | Cashier, Owner | `GET /api/core/pos/skus`, `POST /api/core/pos/checkout`; thanh trên đọc tên cửa hàng ở `GET /api/identity/me`; tài khoản nhận của chi nhánh ở `GET /api/identity/branches/{id}` | UC-POS-01, UC-POS-02, UC-POS-03 | W3-07, W5-11, W5-12 |
 | `/receipt/:orderId` | Hóa đơn để in | Cashier, Owner | Dùng dữ liệu đơn vừa trả về | UC-POS-03 | W3-07 |
 
 ## Bố cục màn hình bán hàng
@@ -32,7 +32,8 @@ POS dùng cùng phong cách với `admin` (task W5-11, theo [admin.md](admin.md)
 | Ô tìm | Cao, có icon kính lúp, nằm trong thẻ trên cùng của cột trái |
 | Kết quả tìm | Lưới ô sản phẩm: tên, mã SKU, giá lẻ, tag tồn khả dụng; ô hết hàng mờ và không bấm được. Desktop 3 cột, tablet 2 cột, thiết bị cầm tay 1 cột |
 | Giỏ hàng | Thẻ "Giỏ hàng" kèm số món; mỗi dòng có tên, mã SKU, đơn giá, nút giảm, số lượng, nút tăng, nút xóa và thành tiền; dòng đang chọn nền xanh nhạt; cuối thẻ là tổng tiền |
-| Thanh toán | Thẻ riêng: chọn Tiền mặt hoặc Chuyển khoản QR, mã QR kèm số tiền khi chọn QR, nút thanh toán màu chính cao 56 px ghi số tiền, dòng gợi ý phím tắt |
+| Thanh toán | Thẻ riêng: chọn Tiền mặt hoặc Chuyển khoản QR; khi chọn QR có mã QR kèm số tiền và nút "In phiếu thanh toán"; nút thanh toán màu chính cao 56 px ghi số tiền (khi chọn QR ghi "Xác nhận đã nhận tiền"); dòng gợi ý phím tắt |
+| Phiếu thanh toán | Khổ hẹp như hóa đơn: tiêu đề "PHIẾU THANH TOÁN", dòng "Tạm tính, chưa thanh toán", chi nhánh, thời gian in, danh sách hàng, tổng tiền, mã VietQR và tên ngân hàng nhận. Chỉ hiện khi in |
 | Đăng nhập | Thẻ ở giữa trang trên nền gradient nhạt, logo ở trên, như `admin` |
 | Hóa đơn | Thẻ hóa đơn khổ hẹp ở giữa màn hình; bản in chỉ có hóa đơn, không có thanh trên và nút |
 
@@ -56,7 +57,8 @@ Máy quét mã vạch hoạt động như bàn phím: gõ mã rồi gửi Enter.
 
 - Mỗi lần bấm thanh toán sinh một `Idempotency-Key`. Nút bị khóa trong lúc chờ; lỗi mạng thì thử lại với cùng khóa.
 - Tồn khả dụng hiển thị chỉ để báo sớm. Khi backend trả 409 `insufficient_stock`, giỏ cập nhật số còn lại của SKU đó và thu ngân quyết định tiếp.
-- Với QR, màn hình hiện mã chuyển khoản của cửa hàng; thu ngân tự kiểm đã nhận tiền rồi mới bấm thanh toán ([ADR-0007](../../decisions/0007-pos-payment-no-offline.md)). Nội dung mã là chuỗi cấu hình ở biến `VITE_POS_QR` lúc build kèm số tiền; hệ thống không kết nối ngân hàng.
+- Với QR, màn hình hiện mã chuyển khoản của chi nhánh đang bán; thu ngân tự kiểm đã nhận tiền rồi mới bấm "Xác nhận đã nhận tiền" ([ADR-0007](../../decisions/0007-pos-payment-no-offline.md)). Mã theo chuẩn VietQR của NAPAS, sinh ngay trên trình duyệt từ `bankBin`, `bankAccount` của chi nhánh (`GET /api/identity/branches/{id}`) và tổng tiền, nên app ngân hàng nào quét cũng tự điền ngân hàng, số tài khoản và số tiền; nội dung chuyển khoản để trống. Chi nhánh chưa khai tài khoản thì chỗ mã hiện "Chi nhánh chưa khai tài khoản nhận chuyển khoản" và không có nút in phiếu. Hệ thống không kết nối ngân hàng và không đối soát.
+- "In phiếu thanh toán" in phiếu tạm tính từ giỏ hiện tại: không gọi API, không tạo đơn, không đổi giỏ; in xong ô tìm lấy lại focus. Khách quét mã trên phiếu để chuyển khoản. Phiếu không phải hóa đơn: hóa đơn chỉ in sau khi đơn đã lưu. Khách đã chuyển mà lúc xác nhận backend trả 409 `insufficient_stock` thì thu ngân hoàn tiền ngoài hệ thống, như với mã trên màn hình.
 - Sau khi backend trả đơn đã lưu, ứng dụng mở `/receipt/:orderId` và gọi hộp thoại in. In lỗi thì bấm in lại; không gọi thanh toán lần nữa. Đóng hộp thoại in xong, nút "Đơn mới" đang giữ focus nên Enter đưa thu ngân về màn hình bán hàng.
 - `branchId` lấy từ token của Cashier. Owner dùng POS phải chọn chi nhánh trước khi bán; lựa chọn được nhớ trên trình duyệt đó, và đổi chi nhánh thì bắt đầu giỏ mới.
 - Trên thiết bị cầm tay (hẹp hơn 768 px) ô tìm không tự giành lại focus sau mỗi lần chạm, để bàn phím ảo không bật lên liên tục; từ tablet trở lên ô tìm luôn giữ focus để quét liên tiếp.

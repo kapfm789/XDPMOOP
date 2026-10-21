@@ -1,4 +1,5 @@
 import {
+  bankName,
   type Branch,
   type BranchType,
   createBranch,
@@ -6,13 +7,14 @@ import {
   listBranches,
   setBranchActive,
   updateBranch,
+  VIETQR_BANKS,
 } from '@oism/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Alert, Button, Card, Form, Input, message, Select, Switch, Table } from 'antd';
 import { useState } from 'react';
 import { FormModal } from '../common/FormModal';
 
-type Values = { code: string; name: string; type: BranchType; address?: string };
+type Values = { code: string; name: string; type: BranchType; address?: string; bankBin?: string; bankAccount?: string };
 
 export const BRANCH_TYPE_LABELS: Record<BranchType, string> = { Store: 'Cửa hàng', Warehouse: 'Kho' };
 
@@ -51,6 +53,10 @@ export function BranchesPanel() {
             { title: 'Loại', dataIndex: 'type', render: (type: BranchType) => BRANCH_TYPE_LABELS[type] },
             { title: 'Địa chỉ', dataIndex: 'address' },
             {
+              title: 'Tài khoản nhận',
+              render: (_, branch) => (branch.bankBin && branch.bankAccount ? `${bankName(branch.bankBin)} · ${branch.bankAccount}` : null),
+            },
+            {
               title: 'Hoạt động',
               render: (_, branch) => (
                 <Switch
@@ -68,7 +74,16 @@ export function BranchesPanel() {
       {editing && (
         <FormModal<Values>
           title={editing === 'new' ? 'Thêm chi nhánh' : `Sửa chi nhánh ${editing.code}`}
-          initialValues={editing === 'new' ? { type: 'Store' } : { ...editing, address: editing.address ?? undefined }}
+          initialValues={
+            editing === 'new'
+              ? { type: 'Store' }
+              : {
+                  ...editing,
+                  address: editing.address ?? undefined,
+                  bankBin: editing.bankBin ?? undefined,
+                  bankAccount: editing.bankAccount ?? undefined,
+                }
+          }
           submit={async ({ code, ...rest }) => {
             await (editing === 'new' ? createBranch({ code, ...rest }) : updateBranch(editing.id, rest));
             await refresh();
@@ -86,6 +101,39 @@ export function BranchesPanel() {
           </Form.Item>
           <Form.Item name="address" label="Địa chỉ">
             <Input maxLength={500} />
+          </Form.Item>
+          {/* Tài khoản nhận chuyển khoản cho mã VietQR ở POS: chọn cả ngân hàng và số tài khoản, hoặc bỏ trống cả hai. */}
+          <Form.Item
+            name="bankBin"
+            label="Ngân hàng nhận chuyển khoản"
+            dependencies={['bankAccount']}
+            rules={[
+              ({ getFieldValue }) => ({
+                validator: (_, value?: string) =>
+                  value || !getFieldValue('bankAccount')?.trim() ? Promise.resolve() : Promise.reject(new Error('Chọn ngân hàng')),
+              }),
+            ]}
+          >
+            <Select
+              allowClear
+              showSearch={{ optionFilterProp: 'label' }}
+              placeholder="Không nhận chuyển khoản"
+              options={VIETQR_BANKS.map((bank) => ({ value: bank.bin, label: `${bank.shortName} · ${bank.name}` }))}
+            />
+          </Form.Item>
+          <Form.Item
+            name="bankAccount"
+            label="Số tài khoản nhận"
+            dependencies={['bankBin']}
+            rules={[
+              { pattern: /^\s*[0-9A-Za-z]{1,19}\s*$/, message: 'Chỉ gồm chữ và số, tối đa 19 ký tự' },
+              ({ getFieldValue }) => ({
+                validator: (_, value?: string) =>
+                  value?.trim() || !getFieldValue('bankBin') ? Promise.resolve() : Promise.reject(new Error('Nhập số tài khoản')),
+              }),
+            ]}
+          >
+            <Input maxLength={19} />
           </Form.Item>
         </FormModal>
       )}

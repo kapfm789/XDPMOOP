@@ -31,6 +31,7 @@ Owner có toàn quyền trong tenant của mình (FR-AUTH-03). Bảng dưới l�
 | --- | --- | --- | --- |
 | Quản lý người dùng và chi nhánh | Có | Không | Không |
 | Xem danh sách chi nhánh | Có | Có | Không |
+| Xem một chi nhánh theo id, kèm tài khoản nhận chuyển khoản | Có | Có | Chỉ chi nhánh của mình |
 | Danh mục, thương hiệu, sản phẩm, SKU, mã vạch | Có | Có | Không |
 | Đặt giá lẻ, giá sỉ | Có | Không | Không |
 | Phiếu nhập, chuyển kho, kiểm kê, ngưỡng tồn | Có | Có | Không |

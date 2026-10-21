@@ -9,7 +9,7 @@ Trang quản trị cho Owner và Staff, nằm ở `frontend/admin`. Mỗi dòng 
 | `/login` | Đăng nhập | Công khai | `POST /api/identity/auth/login` | UC-AUTH-02 | W1-09 |
 | `/register` | Đăng ký tenant | Công khai | `POST /api/identity/tenants` | UC-AUTH-01 | W1-09 |
 | `/` | Tổng quan: thẻ số liệu (doanh thu hôm nay chỉ Owner, số đơn chờ duyệt, số SKU tồn thấp), bảng cảnh báo tồn, danh sách đơn chờ duyệt, biểu đồ doanh thu 7 ngày gần nhất (chỉ Owner) | Owner, Staff | `GET /api/insights/alerts/low-stock`, `GET /api/core/orders?status=Reserved`; Owner thêm `GET /api/insights/reports/gross-profit` (`groupBy=day`) | UC-REP-01, UC-REP-03 | W4-07, W5-10 |
-| `/branches` | Chi nhánh | Owner | `/api/identity/branches` | UC-AUTH-04 | W1-10 |
+| `/branches` | Chi nhánh: danh sách có cột tài khoản nhận; form có ô chọn ngân hàng (tìm được theo tên, xóa được) và ô số tài khoản nhận chuyển khoản | Owner | `/api/identity/branches` | UC-AUTH-04 | W1-10, W5-12 |
 | `/users` | Người dùng | Owner | `/api/identity/users` | UC-AUTH-03 | W1-10 |
 | `/catalog/categories` | Danh mục | Owner, Staff | `/api/catalog/categories` | UC-PROD-01 | W1-10 |
 | `/catalog/brands` | Thương hiệu | Owner, Staff | `/api/catalog/brands` | UC-PROD-01 | W1-10 |

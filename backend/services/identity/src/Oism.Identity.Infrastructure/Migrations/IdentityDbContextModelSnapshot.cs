@@ -77,6 +77,14 @@ namespace Oism.Identity.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("address");
 
+                    b.Property<string>("BankAccount")
+                        .HasColumnType("text")
+                        .HasColumnName("bank_account");
+
+                    b.Property<string>("BankBin")
+                        .HasColumnType("text")
+                        .HasColumnName("bank_bin");
+
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasColumnType("text")
@@ -111,7 +119,10 @@ namespace Oism.Identity.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_branches_tenant_id_code");
 
-                    b.ToTable("branches", "identity");
+                    b.ToTable("branches", "identity", t =>
+                        {
+                            t.HasCheckConstraint("ck_branches_bank_account", "(bank_bin IS NULL) = (bank_account IS NULL)");
+                        });
                 });
 
             modelBuilder.Entity("Oism.Identity.Domain.RefreshToken", b =>

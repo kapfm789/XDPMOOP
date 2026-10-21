@@ -7,7 +7,7 @@ internal sealed record LoginResponse(string AccessToken, string RefreshToken);
 
 internal sealed record UserDto(Guid Id, string? Email);
 
-internal sealed record BranchDto(Guid Id, string Code, string Name);
+internal sealed record BranchDto(Guid Id, string Code, string Name, string? BankAccount);
 
 internal sealed record CategoryDto(Guid Id, string Name, IReadOnlyList<CategoryDto>? Children);
 

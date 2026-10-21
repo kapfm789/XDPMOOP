@@ -376,7 +376,7 @@ Mỗi phase dài nửa tuần (khoảng 2,5 ngày làm việc) và kết thúc b
 | 7 | | | | W4-01, W4-02, W4-04 | W4-08 | | |
 | 8 | | | | W4-03, W4-05 | W4-06, W4-07 | W4-09 | |
 | 9 | W5-04 | W5-02 | W5-01, W5-02 | W5-02 | | W5-03, W5-04, W5-05 | |
-| 10 | W5-06 | | | | W5-10, W5-11 | | W5-07, W5-08, W5-09 |
+| 10 | W5-06 | W5-12 | | | W5-10, W5-11, W5-12 | | W5-07, W5-08, W5-09 |
 
 Mỗi folder có file plan riêng trong `docs/plans/`, ghi việc của folder đó theo phase (mục 4.3).
 
@@ -498,8 +498,9 @@ Cổng phase 9: coverage đạt 80% cho ba module lõi; có báo cáo đo tải;
 | W5-09 | Tập demo theo kịch bản, sửa lỗi, đóng băng code từ ngày thứ 4 | Cả nhóm | Mục f của đề | Demo chạy hai lần liên tiếp không lỗi |
 | W5-10 | admin: áp thiết kế Figma: theme, khung sidebar và topbar, tổng quan có thẻ số liệu và biểu đồ doanh thu 7 ngày, giao diện từng màn hình | C | FR-REP-01, FR-REP-03 | Mọi màn hình admin theo mục "Bố cục và phong cách" của docs/design/ui/admin.md, chỉ dùng API đã có |
 | W5-11 | pos: giao diện cùng phong cách với admin (W5-10): theme, thanh trên có logo, chi nhánh, thu ngân và trạng thái mạng, kết quả tìm dạng ô, giỏ và thanh toán dạng thẻ, đăng nhập và hóa đơn | C | FR-POS-01, NFR-USA-02 | Màn hình POS theo mục "Bố cục và phong cách" của docs/design/ui/pos.md; phím tắt và luồng quét mã rồi Enter giữ nguyên |
+| W5-12 | identity, admin, pos: tài khoản nhận chuyển khoản theo chi nhánh; POS hiện mã VietQR của chi nhánh và in phiếu thanh toán tạm tính kèm mã | C | FR-AUTH-04, FR-POS-03 | Owner khai tài khoản nhận cho chi nhánh; POS ở chi nhánh đó hiện và in được mã VietQR quét được bằng app ngân hàng; in phiếu thanh toán không tạo đơn |
 
-W5-10 và W5-11 phải xong và qua kiểm tay trước ngày đóng băng code của W5-09; chưa xong thì giữ giao diện cũ cho buổi demo. W5-11 làm sau khi W5-09 đã chạy demo, nên xong W5-11 thì chạy lại kịch bản demo ở `docs/handover/demo-script.md`.
+W5-10 và W5-11 phải xong và qua kiểm tay trước ngày đóng băng code của W5-09; chưa xong thì giữ giao diện cũ cho buổi demo. W5-11 và W5-12 làm sau khi W5-09 đã chạy demo, nên xong hai task này thì chạy lại kịch bản demo ở `docs/handover/demo-script.md`.
 
 Cổng phase 10: RTM đủ 44 mã; người ngoài nhóm cài được theo hướng dẫn; kịch bản demo chạy hai lần liên tiếp không lỗi.
 
@@ -617,7 +618,7 @@ Ba mã AI do nhóm đặt, giảng viên đã xác nhận cùng D-14 ngày 2026-
 | FR-AUTH-01 | identity, frontend | W1-04, W1-09, W5-02 | T14 |
 | FR-AUTH-02 | identity, frontend | W1-04, W1-09, W5-06 | T21 |
 | FR-AUTH-03 | identity, gateway, admin | W1-04, W1-09, W1-10 | DoD W1-04 |
-| FR-AUTH-04 | identity, admin | W1-05, W1-10 | DoD W1-05 |
+| FR-AUTH-04 | identity, admin | W1-05, W1-10, W5-12 | DoD W1-05 |
 | FR-PROD-01 | catalog, admin | W1-06, W1-10 | DoD W1-06 |
 | FR-PROD-02 | catalog, admin | W1-07, W2-07 | DoD W1-07 |
 | FR-PROD-03 | catalog, admin | W1-07, W2-07 | DoD W1-07 |
@@ -636,7 +637,7 @@ Ba mã AI do nhóm đặt, giảng viên đã xác nhận cùng D-14 ngày 2026-
 | FR-RSE-03 | core | W3-01 | T05, T06 |
 | FR-POS-01 | pos | W3-07, W4-08, W5-11 | DoD W3-07 |
 | FR-POS-02 | core, pos | W3-02, W3-07 | T02 |
-| FR-POS-03 | pos | W3-07 | DoD W3-07 |
+| FR-POS-03 | pos | W3-07, W5-12 | DoD W3-07 |
 | FR-POS-04 | core | W3-02 | T02, T03 |
 | FR-REP-01 | insights, admin | W4-01, W4-02, W4-07, W5-10 | T10 |
 | FR-REP-02 | insights, admin | W4-01, W4-03, W4-07 | DoD W4-03 |

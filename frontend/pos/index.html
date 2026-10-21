@@ -14,10 +14,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
-      /* Hóa đơn in qua trình duyệt: chỉ in phần hóa đơn, không in thanh tiêu đề và nút bấm. */
+      /* Hóa đơn và phiếu thanh toán in qua trình duyệt: chỉ in phần cần in, không in thanh tiêu đề và nút bấm. */
+      .print-only {
+        display: none;
+      }
       @media print {
         .no-print {
           display: none !important;
+        }
+        .print-only {
+          display: block !important;
         }
         body,
         .ant-layout {

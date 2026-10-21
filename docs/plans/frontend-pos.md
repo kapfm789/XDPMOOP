@@ -22,12 +22,13 @@ pos/
 | 5 | W3-07 | pos: tìm theo tên, SKU, mã vạch; giỏ hàng; phím tắt; tiền mặt và QR; in qua trình duyệt | C | FR-POS-01, FR-POS-03, NFR-USA-02 | Quét mã rồi Enter là xong đơn; chạy tốt trên desktop, tablet, điện thoại |
 | 7 | W4-08 | admin và pos: nhận thông báo SignalR (âm thanh, popup); PWA manifest và service worker | C | FR-SIM-02, FR-POS-01 | Đơn mới hiện không cần tải lại; POS cài được lên màn hình chính |
 | 10 | W5-11 | pos: giao diện cùng phong cách với admin (W5-10): theme, thanh trên có logo, chi nhánh, thu ngân và trạng thái mạng, kết quả tìm dạng ô, giỏ và thanh toán dạng thẻ, đăng nhập và hóa đơn | C | FR-POS-01, NFR-USA-02 | Màn hình POS theo mục "Bố cục và phong cách" của docs/design/ui/pos.md; phím tắt và luồng quét mã rồi Enter giữ nguyên |
+| 10 | W5-12 | identity, admin, pos: tài khoản nhận chuyển khoản theo chi nhánh; POS hiện mã VietQR của chi nhánh và in phiếu thanh toán tạm tính kèm mã | C | FR-AUTH-04, FR-POS-03 | Owner khai tài khoản nhận cho chi nhánh; POS ở chi nhánh đó hiện và in được mã VietQR quét được bằng app ngân hàng; in phiếu thanh toán không tạo đơn |
 
 ## Quy tắc riêng
 
 - Mỗi lần bấm thanh toán sinh một `Idempotency-Key` và giữ nguyên khóa đó khi thử lại (kịch bản T03).
 - Kiểm tồn ở giao diện chỉ để báo sớm; `POST /pos/checkout` ở `core` mới là nơi quyết định (FR-POS-02).
-- Chỉ in sau khi backend trả đơn đã lưu; in lỗi thì in lại, không gọi checkout lần nữa.
+- Hóa đơn chỉ in sau khi backend trả đơn đã lưu; in lỗi thì in lại, không gọi checkout lần nữa. Phiếu thanh toán tạm tính kèm mã VietQR in từ giỏ, không gọi API và không tạo đơn (W5-12).
 - Hoàn tất đơn trong dưới 3 lần nhấp, hoặc quét mã rồi Enter (NFR-USA-02).
 - Không bán offline (D-11); service worker chỉ cache app shell.
 - Màu, bố cục và cách trình bày theo [design/ui/pos.md](../design/ui/pos.md) mục "Bố cục và phong cách" (W5-11).

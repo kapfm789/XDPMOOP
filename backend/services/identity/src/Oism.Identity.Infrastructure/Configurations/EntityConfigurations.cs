@@ -43,5 +43,7 @@ internal sealed class BranchConfiguration : IEntityTypeConfiguration<Branch>
     {
         builder.Property(branch => branch.Type).HasConversion<string>();
         builder.HasIndex(branch => new { branch.TenantId, branch.Code }).IsUnique();
+        builder.ToTable(table => table.HasCheckConstraint(
+            "ck_branches_bank_account", "(bank_bin IS NULL) = (bank_account IS NULL)"));
     }
 }

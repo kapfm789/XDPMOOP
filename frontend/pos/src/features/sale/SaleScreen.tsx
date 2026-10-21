@@ -7,6 +7,7 @@ import { addSku, applyShortages, type CartLine, cartCount, cartTotal, exactMatch
 import { CartPanel } from '../cart/CartPanel';
 import { PaymentPanel } from '../checkout/PaymentPanel';
 import { useCheckout } from '../checkout/useCheckout';
+import { PaymentSlip } from '../receipt/PaymentSlip';
 import { SearchPanel } from '../search/SearchPanel';
 import { usePosSearch } from '../search/usePosSearch';
 
@@ -113,6 +114,12 @@ export function SaleScreen() {
     }
   }
 
+  // Phiếu tạm tính kèm mã VietQR cho khách quét: in từ giỏ, không gọi API, không tạo đơn (UC-POS-03 AC-4).
+  function printSlip() {
+    window.print();
+    focusSearch();
+  }
+
   function clearCart() {
     if (latestCart.current.length === 0) return;
     modal.confirm({
@@ -179,6 +186,9 @@ export function SaleScreen() {
         focusSearch();
       }}
       total={cartTotal(cart)}
+      bankBin={branch.current?.bankBin}
+      bankAccount={branch.current?.bankAccount}
+      onPrintSlip={printSlip}
       disabled={!branch.branchId || cart.length === 0 || !online}
       pending={pending}
       showShortcuts={!!wide}
@@ -186,60 +196,70 @@ export function SaleScreen() {
     />
   );
 
-  return (
-    <Flex vertical gap={12}>
-      {toastHolder}
-      {modalHolder}
-      {branch.error && <Alert type="error" showIcon title={errorMessage(branch.error)} />}
-      {search.error && <Alert type="error" showIcon title={errorMessage(search.error)} />}
-      {!branch.branchId && !branch.error && <Alert type="info" showIcon title="Chọn chi nhánh bán hàng ở thanh trên trước khi bán." />}
+  const account = branch.current?.bankBin && branch.current.bankAccount ? branch.current : undefined;
 
-      {wide ? (
-        <Row gutter={16} align="top">
-          <Col span={15}>{searchPanel}</Col>
-          <Col span={9}>
-            {/* Giỏ và thanh toán bám theo khi cuộn danh sách kết quả, nút thanh toán luôn trong tầm mắt. */}
-            <Flex vertical gap={12} style={{ position: 'sticky', top: 80 }}>
-              {cartPanel}
-              <Card title="Thanh toán">{paymentPanel}</Card>
-            </Flex>
-          </Col>
-        </Row>
-      ) : (
-        <>
-          <Tabs
-            items={[
-              { key: 'search', label: 'Tìm hàng', children: searchPanel },
-              {
-                key: 'cart',
-                label: (
-                  <Badge count={cartCount(cart)} offset={[12, 0]}>
-                    Giỏ hàng
-                  </Badge>
-                ),
-                children: cartPanel,
-              },
-            ]}
-            // Chừa chỗ cho thanh thanh toán cố định ở đáy; thanh cao hơn khi đang hiện mã QR.
-            style={{ paddingBottom: method === 'QR' && cart.length > 0 ? 340 : 140 }}
-          />
-          <div
-            style={{
-              position: 'fixed',
-              left: 0,
-              right: 0,
-              bottom: 0,
-              padding: 12,
-              background: token.colorBgContainer,
-              borderTop: `1px solid ${token.colorBorder}`,
-              boxShadow: '0 -4px 16px rgba(23, 32, 51, 0.08)',
-              zIndex: 10,
-            }}
-          >
-            {paymentPanel}
-          </div>
-        </>
+  return (
+    <>
+      {/* Màn hình bán hàng không in; khi in chỉ còn phiếu thanh toán. */}
+      <Flex vertical gap={12} className="no-print">
+        {toastHolder}
+        {modalHolder}
+        {branch.error && <Alert type="error" showIcon title={errorMessage(branch.error)} />}
+        {search.error && <Alert type="error" showIcon title={errorMessage(search.error)} />}
+        {!branch.branchId && !branch.error && <Alert type="info" showIcon title="Chọn chi nhánh bán hàng ở thanh trên trước khi bán." />}
+
+        {wide ? (
+          <Row gutter={16} align="top">
+            <Col span={15}>{searchPanel}</Col>
+            <Col span={9}>
+              {/* Giỏ và thanh toán bám theo khi cuộn danh sách kết quả, nút thanh toán luôn trong tầm mắt. */}
+              <Flex vertical gap={12} style={{ position: 'sticky', top: 80 }}>
+                {cartPanel}
+                <Card title="Thanh toán">{paymentPanel}</Card>
+              </Flex>
+            </Col>
+          </Row>
+        ) : (
+          <>
+            <Tabs
+              items={[
+                { key: 'search', label: 'Tìm hàng', children: searchPanel },
+                {
+                  key: 'cart',
+                  label: (
+                    <Badge count={cartCount(cart)} offset={[12, 0]}>
+                      Giỏ hàng
+                    </Badge>
+                  ),
+                  children: cartPanel,
+                },
+              ]}
+              // Chừa chỗ cho thanh thanh toán cố định ở đáy; thanh cao hơn khi đang hiện mã QR và nút in phiếu.
+              style={{ paddingBottom: method === 'QR' && cart.length > 0 ? 400 : 140 }}
+            />
+            <div
+              style={{
+                position: 'fixed',
+                left: 0,
+                right: 0,
+                bottom: 0,
+                padding: 12,
+                background: token.colorBgContainer,
+                borderTop: `1px solid ${token.colorBorder}`,
+                boxShadow: '0 -4px 16px rgba(23, 32, 51, 0.08)',
+                zIndex: 10,
+              }}
+            >
+              {paymentPanel}
+            </div>
+          </>
+        )}
+      </Flex>
+      {method === 'QR' && account && cart.length > 0 && (
+        <div className="print-only">
+          <PaymentSlip lines={cart} branchName={account.name} bankBin={account.bankBin!} bankAccount={account.bankAccount!} />
+        </div>
       )}
-    </Flex>
+    </>
   );
 }

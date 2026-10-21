@@ -38,13 +38,16 @@ Tiền tố `/api/identity`. Use case ở [auth.md](../../usecase-userstory/auth
 | Phương thức | Đường dẫn | Vai trò | Vào | Ra | Lỗi riêng |
 | --- | --- | --- | --- | --- | --- |
 | GET | `/api/identity/branches` | Owner, Staff | `isActive?` | Danh sách chi nhánh | |
-| POST | `/api/identity/branches` | Owner | `code`, `name`, `type`, `address?` | 201: chi nhánh | 409 `duplicate` |
-| PUT | `/api/identity/branches/{id}` | Owner | `name`, `type`, `address?` | 200: chi nhánh | |
+| GET | `/api/identity/branches/{id}` | Mọi vai trò | | 200: chi nhánh | 403 khi Cashier đọc chi nhánh khác chi nhánh trong token |
+| POST | `/api/identity/branches` | Owner | `code`, `name`, `type`, `address?`, `bankBin?`, `bankAccount?` | 201: chi nhánh | 409 `duplicate` |
+| PUT | `/api/identity/branches/{id}` | Owner | `name`, `type`, `address?`, `bankBin?`, `bankAccount?` | 200: chi nhánh | |
 | PATCH | `/api/identity/branches/{id}/active` | Owner | `isActive` | 200: chi nhánh | |
 
 Mọi thay đổi chi nhánh phát `BranchUpserted` ([events.md](../events.md)).
 
-- Chi nhánh trả về gồm `id`, `code`, `name`, `type`, `address?`, `isActive`. Danh sách xếp theo `code` và không phân trang; `isActive` bỏ trống thì trả cả chi nhánh đang bật lẫn đã tắt.
+- Chi nhánh trả về gồm `id`, `code`, `name`, `type`, `address?`, `bankBin?`, `bankAccount?`, `isActive`. Danh sách xếp theo `code` và không phân trang; `isActive` bỏ trống thì trả cả chi nhánh đang bật lẫn đã tắt.
 - `type` nhận `Store` hoặc `Warehouse`. `code` và `name` bị cắt khoảng trắng hai đầu và không được rỗng; `code` tối đa 50 ký tự, `name` tối đa 200, `address` tối đa 500. Sai thì 400 `validation_failed`.
 - Mã chi nhánh đặt lúc tạo và không sửa được; chi nhánh mới luôn ở trạng thái đang hoạt động.
+- `bankBin` và `bankAccount` là tài khoản nhận chuyển khoản của chi nhánh, POS dùng để sinh mã VietQR (W5-12). Cắt khoảng trắng hai đầu, chuỗi rỗng coi như bỏ trống. `bankBin` đúng 6 chữ số; `bankAccount` chỉ gồm chữ và số, tối đa 19 ký tự; phải có cả hai hoặc bỏ trống cả hai. Sai thì 400 `validation_failed`. PUT bỏ trống cả hai là xóa tài khoản nhận.
+- `GET /api/identity/branches/{id}` cho POS đọc chi nhánh đang bán. Cashier chỉ đọc được chi nhánh trong claim `branch_id`; chi nhánh khác, hoặc token không có claim, trả 403 `forbidden`, như quy tắc của `/api/core/pos`.
 - `id` không có trong tenant trả 404 `not_found`.

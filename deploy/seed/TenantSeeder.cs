@@ -68,7 +68,8 @@ internal sealed class TenantSeeder(GatewayClient api, HistoryPublisher history, 
 
     private async Task<Dictionary<string, Guid>> EnsureBranchesAsync()
     {
-        var existing = (await api.GetAsync<List<BranchDto>>("/api/identity/branches")).ToDictionary(branch => branch.Code, branch => branch.Id);
+        var branches = (await api.GetAsync<List<BranchDto>>("/api/identity/branches")).ToDictionary(branch => branch.Code);
+        var existing = branches.ToDictionary(pair => pair.Key, pair => pair.Value.Id);
         foreach (var branch in tenant.Branches.Where(branch => !existing.ContainsKey(branch.Code)))
         {
             var created = await api.PostAsync<BranchDto>("/api/identity/branches", new
@@ -77,9 +78,26 @@ internal sealed class TenantSeeder(GatewayClient api, HistoryPublisher history, 
                 name = branch.Name,
                 type = branch.Type,
                 address = branch.Address,
+                bankBin = branch.BankBin,
+                bankAccount = branch.BankAccount,
             });
             existing[branch.Code] = created.Id;
             Log($"created branch {branch.Code}");
+        }
+
+        // Chi nhánh tạo từ lần seed trước W5-12 chưa có tài khoản nhận: khai thêm, không đụng chi nhánh đã có tài khoản.
+        foreach (var branch in tenant.Branches.Where(branch =>
+            branch.BankAccount is not null && branches.TryGetValue(branch.Code, out var current) && current.BankAccount is null))
+        {
+            await api.PutAsync<BranchDto>($"/api/identity/branches/{existing[branch.Code]}", new
+            {
+                name = branch.Name,
+                type = branch.Type,
+                address = branch.Address,
+                bankBin = branch.BankBin,
+                bankAccount = branch.BankAccount,
+            });
+            Log($"set bank account of branch {branch.Code}");
         }
 
         return existing;

@@ -12,7 +12,9 @@ internal enum Demand
     None,
 }
 
-internal sealed record BranchSeed(string Code, string Name, string Type, string Address, double DemandFactor);
+// BankBin, BankAccount: tài khoản nhận chuyển khoản giả cho mã VietQR ở POS (W5-12); số tài khoản toàn số 0, không phải tài khoản thật.
+internal sealed record BranchSeed(
+    string Code, string Name, string Type, string Address, double DemandFactor, string? BankBin = null, string? BankAccount = null);
 
 // Suffix ghép vào mã SKU; Attributes là thuộc tính biến thể. Sản phẩm không biến thể có đúng một Variant rỗng.
 internal sealed record Variant(string Suffix, IReadOnlyDictionary<string, string> Attributes);
@@ -51,7 +53,7 @@ internal static class SeedCatalog
             ShopId: "moc-shopee",
             Branches:
             [
-                new("MOC-Q1", "Mộc Quận 1", "Store", "12 Lê Lợi, Quận 1, TP.HCM", 1.0),
+                new("MOC-Q1", "Mộc Quận 1", "Store", "12 Lê Lợi, Quận 1, TP.HCM", 1.0, "970436", "0000000000"),
                 new("MOC-Q3", "Mộc Quận 3", "Store", "88 Võ Văn Tần, Quận 3, TP.HCM", 0.7),
             ],
             Products:
@@ -97,7 +99,7 @@ internal static class SeedCatalog
             ShopId: "xanh-shopee",
             Branches:
             [
-                new("XANH-CG", "Xanh Cầu Giấy", "Store", "25 Xuân Thủy, Cầu Giấy, Hà Nội", 1.0),
+                new("XANH-CG", "Xanh Cầu Giấy", "Store", "25 Xuân Thủy, Cầu Giấy, Hà Nội", 1.0, "970436", "0000000000"),
                 new("XANH-DD", "Xanh Đống Đa", "Store", "140 Tây Sơn, Đống Đa, Hà Nội", 0.8),
             ],
             Products:
