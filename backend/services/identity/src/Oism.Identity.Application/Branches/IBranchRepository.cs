@@ -10,6 +10,8 @@ public interface IBranchRepository
     // Khóa dòng chi nhánh: hai lần sửa đồng thời phải lần lượt để version tăng đúng từng bước.
     Task<Branch?> GetForUpdateAsync(Guid id, CancellationToken ct);
 
+    Task<BranchDto?> GetAsync(Guid id, CancellationToken ct);
+
     Task<bool> ExistsAsync(Guid id, CancellationToken ct);
 
     void Add(Branch branch);

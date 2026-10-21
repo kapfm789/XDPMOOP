@@ -336,7 +336,7 @@
             "url": "{{baseUrl}}/api/identity/branches",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"code\": \"CN01\",\n  \"name\": \"Chi nhánh Quận 1\",\n  \"type\": \"Store\",\n  \"address\": \"1 Lê Lợi, Quận 1\"\n}",
+              "raw": "{\n  \"code\": \"CN01\",\n  \"name\": \"Chi nhánh Quận 1\",\n  \"type\": \"Store\",\n  \"address\": \"1 Lê Lợi, Quận 1\",\n  \"bankBin\": \"970436\",\n  \"bankAccount\": \"0000000000\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -353,6 +353,7 @@
                   "pm.test('Mã 201', () => pm.response.to.have.status(201));",
                   "const json = pm.response.text() ? pm.response.json() : null;",
                   "pm.test('Chi nhánh mới đang hoạt động', () => pm.expect(json.isActive).to.be.true);",
+                  "pm.test('Có tài khoản nhận chuyển khoản', () => pm.expect([json.bankBin, json.bankAccount]).to.eql(['970436', '0000000000']));",
                   "pm.collectionVariables.set('branchId', json.id);"
                 ]
               }
@@ -446,6 +447,27 @@
                   "pm.test('Mã 200', () => pm.response.to.have.status(200));",
                   "const json = pm.response.text() ? pm.response.json() : null;",
                   "pm.test('Hai chi nhánh, xếp theo code', () => pm.expect(json.map((b) => b.code)).to.eql(['CN01', 'KHO01']));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Xem chi nhánh theo id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/identity/branches/{{branchId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Mã 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.text() ? pm.response.json() : null;",
+                  "pm.test('Đúng chi nhánh, kèm tài khoản nhận', () => pm.expect([json.code, json.bankBin, json.bankAccount]).to.eql(['CN01', '970436', '0000000000']));"
                 ]
               }
             }

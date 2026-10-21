@@ -12,8 +12,17 @@ internal sealed class BranchRepository(IdentityDbContext db, ITenantContext tena
             .Where(branch => isActive == null || branch.IsActive == isActive)
             .OrderBy(branch => branch.Code)
             .Select(branch => new BranchDto(
-                branch.Id, branch.Code, branch.Name, branch.Type.ToString(), branch.Address, branch.IsActive))
+                branch.Id, branch.Code, branch.Name, branch.Type.ToString(), branch.Address, branch.BankBin, branch.BankAccount,
+                branch.IsActive))
             .ToListAsync(ct);
+
+    public async Task<BranchDto?> GetAsync(Guid id, CancellationToken ct) =>
+        await db.Branches.AsNoTracking()
+            .Where(branch => branch.Id == id)
+            .Select(branch => new BranchDto(
+                branch.Id, branch.Code, branch.Name, branch.Type.ToString(), branch.Address, branch.BankBin, branch.BankAccount,
+                branch.IsActive))
+            .SingleOrDefaultAsync(ct);
 
     // Điều kiện tenant_id nằm ngay trong câu khóa để chỉ khóa dòng của tenant hiện tại;
     // Global Query Filter vẫn được áp ở lớp ngoài.

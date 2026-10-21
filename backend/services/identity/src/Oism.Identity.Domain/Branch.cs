@@ -27,28 +27,38 @@ public sealed class Branch : ITenantOwned
 
     public string? Address { get; private set; }
 
+    // Tài khoản nhận chuyển khoản cho mã VietQR ở POS; có cả hai hoặc cùng null (W5-12).
+    public string? BankBin { get; private set; }
+
+    public string? BankAccount { get; private set; }
+
     public bool IsActive { get; private set; }
 
     // Tăng 1 mỗi lần sửa; đi kèm BranchUpserted để bên nhận bỏ qua bản cũ.
     public long Version { get; private set; }
 
     // Chi nhánh mới luôn ở trạng thái đang hoạt động (UC-AUTH-04 AC-1).
-    public static Branch Create(string code, string name, BranchType type, string? address) => new()
+    public static Branch Create(
+        string code, string name, BranchType type, string? address, string? bankBin = null, string? bankAccount = null) => new()
     {
         Id = Guid.NewGuid(),
         Code = code.Trim(),
         Name = name.Trim(),
         Type = type,
-        Address = NormalizeAddress(address),
+        Address = Normalize(address),
+        BankBin = Normalize(bankBin),
+        BankAccount = Normalize(bankAccount),
         IsActive = true,
         Version = 1,
     };
 
-    public void Update(string name, BranchType type, string? address)
+    public void Update(string name, BranchType type, string? address, string? bankBin = null, string? bankAccount = null)
     {
         Name = name.Trim();
         Type = type;
-        Address = NormalizeAddress(address);
+        Address = Normalize(address);
+        BankBin = Normalize(bankBin);
+        BankAccount = Normalize(bankAccount);
         Version++;
     }
 
@@ -58,6 +68,6 @@ public sealed class Branch : ITenantOwned
         Version++;
     }
 
-    private static string? NormalizeAddress(string? address) =>
-        string.IsNullOrWhiteSpace(address) ? null : address.Trim();
+    private static string? Normalize(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

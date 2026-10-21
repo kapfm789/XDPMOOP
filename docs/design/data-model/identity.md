@@ -60,10 +60,12 @@ Khóa ngoại `user_id` tới `users.id`; chỉ mục `(tenant_id, user_id)` đ�
 | `name` | text | |
 | `type` | text | `Store`, `Warehouse` |
 | `address` | text, cho phép null | |
+| `bank_bin` | text, cho phép null | Mã BIN 6 chữ số của ngân hàng nhận chuyển khoản (W5-12) |
+| `bank_account` | text, cho phép null | Số tài khoản nhận chuyển khoản, tối đa 19 ký tự chữ và số |
 | `is_active` | boolean | |
 | `version` | bigint | Bắt đầu từ 1, tăng 1 mỗi lần sửa, bật hoặc tắt; đi kèm `BranchUpserted` |
 
-Mã chi nhánh đặt một lần lúc tạo và không đổi. Mọi lần sửa khóa dòng chi nhánh bằng `FOR UPDATE` để `version` tăng đúng từng bước.
+`bank_bin` và `bank_account` có cả hai hoặc cùng null (check `ck_branches_bank_account`); POS dùng cặp này để sinh mã VietQR, `core` không cần nên `BranchUpserted` không mang hai trường đó. Mã chi nhánh đặt một lần lúc tạo và không đổi. Mọi lần sửa khóa dòng chi nhánh bằng `FOR UPDATE` để `version` tăng đúng từng bước.
 
 ## Bảng hạ tầng
 

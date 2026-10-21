@@ -43,6 +43,9 @@ export const getMe = () => api<Me>('/api/identity/me');
 export const listBranches = (isActive?: boolean) =>
   api<Branch[]>(`/api/identity/branches${isActive === undefined ? '' : `?isActive=${isActive}`}`);
 
+// Mọi vai trò; Cashier chỉ đọc được chi nhánh của mình (POS lấy tài khoản nhận chuyển khoản ở đây).
+export const getBranch = (id: string) => api<Branch>(`/api/identity/branches/${id}`);
+
 export const createBranch = (request: CreateBranchRequest) =>
   api<Branch>('/api/identity/branches', { method: 'POST', body: request });
 

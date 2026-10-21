@@ -31,4 +31,15 @@ public sealed class BranchTests
         Assert.False(branch.IsActive);
         Assert.Equal(3, branch.Version);
     }
+
+    [Fact]
+    [Trait("UseCase", "UC-AUTH-04 AC-5")]
+    public void BankAccount_IsTrimmedAndBlankMeansNone()
+    {
+        var branch = Branch.Create("CH-01", "Cửa hàng 1", BranchType.Store, null, " 970436 ", " 0123456789 ");
+        Assert.Equal(("970436", "0123456789"), (branch.BankBin, branch.BankAccount));
+
+        branch.Update("Cửa hàng 1", BranchType.Store, null, "", " ");
+        Assert.Equal((null, null), (branch.BankBin, branch.BankAccount));
+    }
 }

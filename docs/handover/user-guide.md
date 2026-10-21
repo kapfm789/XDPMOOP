@@ -40,7 +40,7 @@ Màu trạng thái dùng chung: xanh lá là xong hoặc đủ hàng, cam là đ
 
 ### Thiết lập ban đầu
 
-1. **Cài đặt › Chi nhánh**: thêm cửa hàng và kho với mã chi nhánh (không đổi được sau khi tạo), tên, loại, địa chỉ. Tắt chi nhánh thì không bán và không nhập hàng ở đó được nữa.
+1. **Cài đặt › Chi nhánh**: thêm cửa hàng và kho với mã chi nhánh (không đổi được sau khi tạo), tên, loại, địa chỉ. Cửa hàng nhận chuyển khoản thì chọn ngân hàng và nhập số tài khoản nhận; POS ở chi nhánh đó hiện mã VietQR theo tài khoản này. Tắt chi nhánh thì không bán và không nhập hàng ở đó được nữa.
 2. **Cài đặt › Người dùng**: thêm nhân viên và thu ngân. Thu ngân bắt buộc gắn một chi nhánh. Khóa tài khoản bằng cách tắt "Hoạt động".
 3. **Sản phẩm › Danh mục** và **Sản phẩm › Thương hiệu**: dựng cây danh mục nhiều cấp và danh sách thương hiệu.
 
@@ -115,8 +115,8 @@ Trang đầu sau khi đăng nhập có số đơn chờ duyệt, số SKU tồn 
 1. Mở POS, đăng nhập. Thu ngân bán ở chi nhánh được gắn; chủ cửa hàng chọn chi nhánh trước khi bán.
 2. Quét mã vạch hoặc gõ tên, mã SKU vào ô tìm rồi Enter. Mã khớp đúng thì hàng vào giỏ ngay; không thì hiện danh sách để chọn.
 3. Chỉnh số lượng bằng phím `+`, `-`, xóa dòng bằng Delete (khi ô tìm trống), hoặc chạm vào nút trên dòng.
-4. Chọn tiền mặt hoặc QR (phím F4). Với QR, đưa khách quét mã trên màn hình và kiểm đã nhận tiền trước khi bấm thanh toán.
-5. Enter khi ô tìm trống, hoặc bấm **Thanh toán**. Đơn lưu xong thì hóa đơn mở ra và hộp thoại in bật lên; Enter tiếp để sang đơn mới.
+4. Chọn tiền mặt hoặc QR (phím F4). Với QR, đưa khách quét mã trên màn hình, hoặc bấm **In phiếu thanh toán** để in phiếu tạm tính kèm mã cho khách quét; phiếu không tạo đơn. Kiểm đã nhận tiền trong tài khoản trước khi xác nhận.
+5. Enter khi ô tìm trống, hoặc bấm **Thanh toán** (với QR là **Xác nhận đã nhận tiền**). Đơn lưu xong thì hóa đơn mở ra và hộp thoại in bật lên; Enter tiếp để sang đơn mới.
 
 | Phím | Tác dụng |
 | --- | --- |

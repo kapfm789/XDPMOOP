@@ -41,6 +41,7 @@ public sealed class TenantIsolationTests(ApiFactory factory) : IClassFixture<Api
         var branchOfB = await ownerB.CreateBranchAsync("CH-B");
         var staffOfA = await ownerA.CreateUserAsync("Staff", ApiExtensions.NewEmail());
 
+        var read = await ownerA.GetAsync($"/branches/{branchOfB.Id}");
         var update = await ownerA.PutAsJsonAsync($"/branches/{branchOfB.Id}", new { name = "Bị đổi", type = "Warehouse" });
         var toggle = await ownerA.PatchAsJsonAsync($"/branches/{branchOfB.Id}/active", new { isActive = false });
         // Gắn người dùng của A vào chi nhánh của B: không quan hệ chéo nào được tạo.
@@ -51,6 +52,7 @@ public sealed class TenantIsolationTests(ApiFactory factory) : IClassFixture<Api
         var moveStaff = await ownerA.PutAsJsonAsync(
             $"/users/{staffOfA.Id}", new { fullName = staffOfA.FullName, role = "Cashier", branchId = branchOfB.Id, isActive = true });
 
+        await read.AssertProblemAsync(HttpStatusCode.NotFound, "not_found");
         await update.AssertProblemAsync(HttpStatusCode.NotFound, "not_found");
         await toggle.AssertProblemAsync(HttpStatusCode.NotFound, "not_found");
         await createCashier.AssertProblemAsync(HttpStatusCode.NotFound, "not_found");

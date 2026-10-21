@@ -40,6 +40,9 @@ export type Branch = {
   name: string;
   type: BranchType;
   address?: string | null;
+  // Tài khoản nhận chuyển khoản cho mã VietQR ở POS; có cả hai hoặc cùng null (W5-12).
+  bankBin?: string | null;
+  bankAccount?: string | null;
   isActive: boolean;
 };
 
@@ -48,6 +51,8 @@ export type CreateBranchRequest = {
   name: string;
   type: BranchType;
   address?: string;
+  bankBin?: string;
+  bankAccount?: string;
 };
 
 // Mã chi nhánh chỉ đặt lúc tạo.

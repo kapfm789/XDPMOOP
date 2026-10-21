@@ -1,4 +1,4 @@
-import { listBranches, useAuth } from '@oism/shared';
+import { type Branch, getBranch, listBranches, useAuth } from '@oism/shared';
 import { useQuery } from '@tanstack/react-query';
 import { createContext, createElement, type ReactNode, useContext, useState } from 'react';
 
@@ -6,6 +6,8 @@ const STORAGE_KEY = 'oism.pos.branchId';
 
 type PosBranch = {
   branchId: string | undefined;
+  // Chi nhánh đang bán, kèm tài khoản nhận chuyển khoản cho mã VietQR (W5-12).
+  current: Branch | undefined;
   canChoose: boolean;
   options: { value: string; label: string }[];
   error: Error | null;
@@ -19,13 +21,17 @@ function useBranchState(): PosBranch {
   // Chỉ người không gắn chi nhánh mới cần danh sách; Cashier không có quyền xem danh sách chi nhánh.
   const branches = useQuery({ queryKey: ['branches', 'active'], queryFn: () => listBranches(true), enabled: !!user && !fixed });
   const options = (branches.data ?? []).map((branch) => ({ value: branch.id, label: `${branch.code} · ${branch.name}` }));
+  // Lựa chọn đã lưu chỉ dùng khi nó còn là một chi nhánh đang hoạt động của tenant này.
+  const branchId = fixed ?? options.find((option) => option.value === chosen)?.value;
+  // Cashier không xem được danh sách nhưng đọc được chi nhánh của mình theo id.
+  const current = useQuery({ queryKey: ['branch', branchId], queryFn: () => getBranch(branchId!), enabled: !!branchId });
 
   return {
-    // Lựa chọn đã lưu chỉ dùng khi nó còn là một chi nhánh đang hoạt động của tenant này.
-    branchId: fixed ?? options.find((option) => option.value === chosen)?.value,
+    branchId,
+    current: current.data,
     canChoose: !fixed,
     options,
-    error: branches.error,
+    error: branches.error ?? current.error,
     choose: (branchId: string) => {
       localStorage.setItem(STORAGE_KEY, branchId);
       setChosen(branchId);

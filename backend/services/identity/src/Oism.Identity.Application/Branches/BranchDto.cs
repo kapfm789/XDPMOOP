@@ -3,10 +3,12 @@ using Oism.Identity.Domain;
 
 namespace Oism.Identity.Application.Branches;
 
-public sealed record BranchDto(Guid Id, string Code, string Name, string Type, string? Address, bool IsActive)
+public sealed record BranchDto(
+    Guid Id, string Code, string Name, string Type, string? Address, string? BankBin, string? BankAccount, bool IsActive)
 {
     public static BranchDto From(Branch branch) =>
-        new(branch.Id, branch.Code, branch.Name, branch.Type.ToString(), branch.Address, branch.IsActive);
+        new(branch.Id, branch.Code, branch.Name, branch.Type.ToString(), branch.Address, branch.BankBin, branch.BankAccount,
+            branch.IsActive);
 }
 
 internal static class BranchUpsertedFactory

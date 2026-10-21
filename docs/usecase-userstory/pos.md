@@ -52,3 +52,5 @@ Tiêu chí chấp nhận:
 1. Cho backend đã trả đơn lưu thành công, thì hộp thoại in của trình duyệt mở với mã đơn, thời gian, danh sách hàng, đơn giá, tổng tiền và phương thức thanh toán.
 2. Cho in lỗi hoặc thu ngân đóng hộp thoại, thì không có đơn mới nào được tạo.
 3. Cho đơn vừa bán, khi bấm in lại, thì in từ đơn đã có mà không gọi thanh toán lần nữa.
+4. Cho giỏ có hàng, phương thức QR và chi nhánh đang bán đã khai tài khoản nhận, khi bấm "In phiếu thanh toán", thì hộp thoại in mở với phiếu tạm tính gồm danh sách hàng, đơn giá, tổng tiền và mã VietQR kèm số tiền; không có đơn nào được tạo và giỏ giữ nguyên.
+5. Cho chi nhánh đang bán chưa khai tài khoản nhận, khi chọn QR, thì POS báo chưa có tài khoản, không hiện mã và không cho in phiếu thanh toán.

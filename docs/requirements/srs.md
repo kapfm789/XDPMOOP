@@ -1001,20 +1001,23 @@ Mỗi nhóm gồm bảng phát biểu yêu cầu, rồi đặc tả từng use c
 
 #### UC-AUTH-04 Quản lý chi nhánh
 
-- **Actor:** Owner (Staff chỉ xem danh sách). **Yêu cầu:** FR-AUTH-04. **API:** `GET, POST /api/identity/branches`, `PUT /api/identity/branches/{id}`, `PATCH /api/identity/branches/{id}/active`. **Event:** `BranchUpserted`.
+- **Actor:** Owner (Staff chỉ xem danh sách). **Yêu cầu:** FR-AUTH-04. **API:** `GET, POST /api/identity/branches`, `GET, PUT /api/identity/branches/{id}`, `PATCH /api/identity/branches/{id}/active`. **Event:** `BranchUpserted`.
 - **Tiền điều kiện:** Owner đã đăng nhập.
 - **Luồng chính:**
   1. Owner tạo chi nhánh với mã, tên, loại `Store` hoặc `Warehouse`, địa chỉ tùy chọn. Mã và tên cắt khoảng trắng, không rỗng; mã tối đa 50 ký tự, tên 200, địa chỉ 500.
   2. Hệ thống tạo chi nhánh ở trạng thái đang hoạt động, `version = 1`, ghi `BranchUpserted` vào outbox cùng transaction.
-  3. Owner sửa tên, loại, địa chỉ, hoặc bật, tắt chi nhánh; mỗi lần đổi `version` tăng 1 và phát `BranchUpserted`.
+  3. Owner sửa tên, loại, địa chỉ, tài khoản nhận chuyển khoản (mã BIN ngân hàng và số tài khoản, dùng cho mã VietQR ở POS), hoặc bật, tắt chi nhánh; mỗi lần đổi `version` tăng 1 và phát `BranchUpserted`.
   4. `core` nhận event, ghi đè bản sao `branch_refs` theo `version`.
-- **Ngoại lệ:** mã đã dùng trong cùng tenant trả 409 `duplicate`; `id` không có trong tenant trả 404.
+  5. POS đọc chi nhánh đang bán theo id để lấy tài khoản nhận; Cashier chỉ đọc được chi nhánh của mình.
+- **Ngoại lệ:** mã đã dùng trong cùng tenant trả 409 `duplicate`; `id` không có trong tenant trả 404; tài khoản nhận thiếu một trong hai trường hoặc sai định dạng trả 400; Cashier đọc chi nhánh khác trả 403.
 - **Hậu điều kiện:** chi nhánh tắt thì không tạo được chứng từ mới ở đó (BR-19); dữ liệu cũ giữ nguyên. Mã chi nhánh không đổi sau khi tạo.
 - **Tiêu chí chấp nhận:**
   1. Mã chưa dùng trong tenant thì tạo được chi nhánh Store hoặc Warehouse ở trạng thái hoạt động.
   2. Mã đã dùng trong cùng tenant trả 409; cùng mã ở tenant khác vẫn tạo được.
   3. Chi nhánh bị tắt không nhận đơn, phiếu nhập, phiếu chuyển kho mới; dữ liệu cũ giữ nguyên.
   4. Mọi thay đổi phát `BranchUpserted`; `core` có bản sao sau một nhịp event.
+  5. Owner khai hoặc xóa được tài khoản nhận của chi nhánh; thiếu một trong hai trường hoặc sai định dạng trả 400.
+  6. Cashier đọc được chi nhánh của mình kèm tài khoản nhận; chi nhánh khác trả 403.
 
 ### 4.2 FR-PROD: sản phẩm và biến thể
 
@@ -1328,7 +1331,7 @@ Canonical Order gồm: kênh, mã đơn ngoài (với đơn sàn), chi nhánh, t
 - **Actor:** Cashier, Owner. **Yêu cầu:** FR-POS-03, FR-POS-04, FR-COST-02, NFR-SEC-02, NFR-USA-02. **API:** `POST /api/core/pos/checkout` với header `Idempotency-Key`. **Luồng thiết kế:** [pos-checkout.md](../design/flows/pos-checkout.md).
 - **Tiền điều kiện:** giỏ có hàng; thu ngân đã nhận tiền mặt hoặc đã kiểm tiền chuyển khoản QR.
 - **Luồng chính:**
-  1. Thu ngân chọn phương thức (F4 đổi giữa tiền mặt và QR; với QR, màn hình hiện mã chuyển khoản của cửa hàng kèm số tiền) rồi bấm thanh toán hoặc nhấn Enter khi ô tìm trống.
+  1. Thu ngân chọn phương thức (F4 đổi giữa tiền mặt và QR; với QR, màn hình hiện mã VietQR của chi nhánh kèm số tiền, có thể in phiếu thanh toán kèm mã cho khách quét) rồi bấm thanh toán (với QR là "Xác nhận đã nhận tiền") hoặc nhấn Enter khi ô tìm trống.
   2. POS sinh một `Idempotency-Key` (uuid) cho lần bấm, khóa nút trong lúc chờ.
   3. Hệ thống tra đơn theo khóa; chưa có thì mở transaction, chèn đơn kênh `POS` ở Draft, giữ hàng (khóa số dư, kiểm `available`), tiêu thụ ngay phần giữ (giảm `reserved`, ghi sổ OUT `Sale`, giảm `on_hand`), chốt `cost_price`, ghi `Payment`, đơn qua Confirmed rồi Completed; ghi `OrderConfirmed`, `StockChanged` vào outbox; commit.
   4. Hệ thống trả 201 với đơn Completed (`confirmedAt` bằng `completedAt`) kèm thanh toán.
@@ -1358,11 +1361,14 @@ Canonical Order gồm: kênh, mã đơn ngoài (với đơn sàn), chi nhánh, t
   1. Sau khi backend trả đơn đã lưu, POS mở `/receipt/:orderId` và gọi hộp thoại in của trình duyệt.
   2. Hóa đơn gồm mã đơn, thời gian, danh sách hàng, đơn giá, tổng tiền, phương thức thanh toán.
   3. Đóng hộp thoại in, nút "Đơn mới" giữ focus; Enter đưa thu ngân về màn hình bán hàng.
+  4. Trước khi thanh toán bằng QR, thu ngân có thể in phiếu thanh toán tạm tính từ giỏ: danh sách hàng, tổng tiền, mã VietQR của chi nhánh. Phiếu không tạo đơn và không phải hóa đơn.
 - **Ngoại lệ:** in lỗi hoặc thu ngân đóng hộp thoại thì đơn vẫn đã lưu; thu ngân in lại từ đơn đã có, không gọi thanh toán lần nữa.
 - **Tiêu chí chấp nhận:**
   1. Backend trả đơn đã lưu thì hộp thoại in mở với mã đơn, thời gian, danh sách hàng, đơn giá, tổng tiền, phương thức thanh toán.
   2. In lỗi hoặc đóng hộp thoại không tạo đơn mới.
   3. In lại đơn vừa bán dùng đơn đã có, không gọi thanh toán lần nữa.
+  4. In phiếu thanh toán khi chọn QR và chi nhánh đã khai tài khoản nhận: phiếu có hàng, tổng tiền, mã VietQR; không đơn nào được tạo, giỏ giữ nguyên.
+  5. Chi nhánh chưa khai tài khoản nhận thì không hiện mã, không cho in phiếu.
 
 ### 4.6 FR-REP: báo cáo và cảnh báo
 
