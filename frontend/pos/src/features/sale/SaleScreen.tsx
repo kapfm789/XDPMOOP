@@ -8,6 +8,7 @@ import { CartPanel } from '../cart/CartPanel';
 import { PaymentPanel } from '../checkout/PaymentPanel';
 import { useCheckout } from '../checkout/useCheckout';
 import { PaymentSlip } from '../receipt/PaymentSlip';
+import { ScanModal } from '../scan/ScanModal';
 import { SearchPanel } from '../search/SearchPanel';
 import { usePosSearch } from '../search/usePosSearch';
 
@@ -25,6 +26,7 @@ export function SaleScreen() {
   const [cart, setCart] = useState<CartLine[]>([]);
   const [selected, setSelected] = useState<string>();
   const [method, setMethod] = useState<PaymentMethod>('Cash');
+  const [scanning, setScanning] = useState(false);
   const search = usePosSearch(branch.branchId, text);
   const { checkout, pending } = useCheckout();
 
@@ -45,18 +47,21 @@ export function SaleScreen() {
 
   const searchInput = useRef<InputRef>(null);
   // Trên thiết bị cầm tay ô tìm không tự giành lại focus sau mỗi lần chạm, để bàn phím ảo không bật lên liên tục.
+  // Hộp quét đang mở thì focus ở lại trong hộp; đóng hộp xong ô tìm mới lấy lại.
   const focusSearch = () => {
-    if (wide) searchInput.current?.focus();
+    if (wide && !scanning) searchInput.current?.focus();
   };
 
-  // typed: chữ đã quét ra SKU này; ô tìm chỉ được xóa nếu nó vẫn còn đúng chữ đó.
-  function add(sku: PosSku, typed?: string) {
+  // typed: chữ đã quét ra SKU này; ô tìm chỉ được xóa nếu nó vẫn còn đúng chữ đó. Trả về false khi chạm tồn khả dụng.
+  function add(sku: PosSku, typed?: string): boolean {
     const next = addSku(latestCart.current, sku);
-    if (next === latestCart.current) toast.warning(sku.available > 0 ? `${sku.name}: chỉ còn ${sku.available}` : `${sku.name} đã hết hàng`);
+    const added = next !== latestCart.current;
+    if (!added) toast.warning(sku.available > 0 ? `${sku.name}: chỉ còn ${sku.available}` : `${sku.name} đã hết hàng`);
     updateCart(next);
     setSelected(sku.skuId);
     setText((current) => (typed === undefined || current === typed ? '' : current));
     focusSearch();
+    return added;
   }
 
   function changeQuantity(skuId: string, quantity: number) {
@@ -73,13 +78,24 @@ export function SaleScreen() {
   }
 
   // Enter khi ô tìm có chữ: khớp đúng một mã vạch hoặc mã SKU thì thêm vào giỏ; không thì kết quả tìm đã hiện sẵn.
-  async function addScanned(typed: string) {
+  // announce: mã đến từ hộp quét, hộp đang che giỏ và kết quả nên báo luôn đã thêm hay không khớp.
+  async function addScanned(typed: string, announce = false) {
     try {
       const match = exactMatch(await search.searchNow(typed), typed);
-      if (match) add(match, typed);
+      if (match) {
+        if (add(match, typed) && announce) toast.success(`Đã thêm ${match.name}`);
+      } else if (announce) {
+        toast.warning(`Không có sản phẩm khớp mã ${typed}`);
+      }
     } catch (error) {
       toast.error(errorMessage(error));
     }
+  }
+
+  // Mã đọc từ camera hoặc ảnh đi đúng đường của máy quét: vào ô tìm rồi như Enter.
+  function addFromCamera(code: string) {
+    setText(code);
+    void addScanned(code, true);
   }
 
   async function pay() {
@@ -175,6 +191,7 @@ export function SaleScreen() {
       loading={search.loading}
       inCart={(skuId) => cart.find((item) => item.skuId === skuId)?.quantity ?? 0}
       onPick={(sku) => add(sku)}
+      onScan={() => setScanning(true)}
     />
   );
   const cartPanel = <CartPanel cart={cart} selected={selected} onSelect={setSelected} onQuantity={changeQuantity} onRemove={remove} />;
@@ -204,6 +221,7 @@ export function SaleScreen() {
       <Flex vertical gap={12} className="no-print">
         {toastHolder}
         {modalHolder}
+        <ScanModal open={scanning} onClose={() => setScanning(false)} afterClose={focusSearch} onCode={addFromCamera} />
         {branch.error && <Alert type="error" showIcon title={errorMessage(branch.error)} />}
         {search.error && <Alert type="error" showIcon title={errorMessage(search.error)} />}
         {!branch.branchId && !branch.error && <Alert type="info" showIcon title="Chọn chi nhánh bán hàng ở thanh trên trước khi bán." />}

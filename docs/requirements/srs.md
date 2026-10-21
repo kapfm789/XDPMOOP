@@ -1312,7 +1312,7 @@ Canonical Order gồm: kênh, mã đơn ngoài (với đơn sàn), chi nhánh, t
 - **Actor:** Cashier, Owner. **Yêu cầu:** FR-POS-01, FR-POS-02, NFR-PERF-01. **API:** `GET /api/core/pos/skus?query=&branchId=`.
 - **Tiền điều kiện:** đã đăng nhập; Cashier dùng chi nhánh trong token, Owner chọn chi nhánh trước khi bán.
 - **Luồng chính:**
-  1. Thu ngân gõ hoặc quét vào ô tìm kiếm (luôn giữ focus trên desktop và tablet).
+  1. Thu ngân gõ hoặc quét vào ô tìm kiếm (luôn giữ focus trên desktop và tablet); không có máy quét thì quét bằng camera hoặc bằng ảnh qua nút quét cạnh ô tìm.
   2. Hệ thống trả tối đa 20 SKU đang bán khớp một phần tên, mã SKU hoặc mã vạch; SKU khớp đúng mã đứng đầu; mỗi dòng có giá lẻ và `available` tại chi nhánh.
   3. Enter khi khớp đúng một mã vạch hoặc mã SKU thì thêm thẳng vào giỏ với số lượng 1.
   4. Giao diện chặn thêm SKU hết hàng và chặn tăng số lượng vượt `available`.
@@ -1325,6 +1325,7 @@ Canonical Order gồm: kênh, mã đơn ngoài (với đơn sàn), chi nhánh, t
   5. SKU ngừng bán không hiện.
   6. p95 của lời gọi tìm dưới 200 ms ở tải đã thống nhất (T17).
   7. Ô tìm luôn giữ focus để quét liên tiếp mà không chạm màn hình.
+  8. Mã vạch trong khung camera hoặc trong ảnh tải lên được xử lý như quét bằng máy quét; không đọc được mã hoặc mã không khớp SKU nào thì báo cho thu ngân.
 
 #### UC-POS-02 Thanh toán tại quầy
 
@@ -1608,6 +1609,7 @@ PWA: có `manifest.webmanifest` (icon 192 và 512 px) để cài lên màn hình
 | Thiết bị | Yêu cầu |
 | --- | --- |
 | Máy quét mã vạch | Hoạt động như bàn phím: gõ mã rồi gửi Enter. POS không cần driver riêng |
+| Camera | Tùy chọn, thay máy quét: POS đọc mã EAN-13, Code128 từ camera của thiết bị (cần HTTPS hoặc `localhost`) hoặc từ ảnh tải lên; giải mã chạy trên trình duyệt |
 | Máy in | Bất kỳ máy in nào trình duyệt in được; in qua Browser Print (`window.print`) |
 | Màn hình | Desktop, tablet, thiết bị POS cầm tay; bố cục thích ứng theo mốc 768 px |
 

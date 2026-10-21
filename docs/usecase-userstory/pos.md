@@ -19,6 +19,7 @@ Tiêu chí chấp nhận:
 5. Cho SKU đã ngừng bán, khi tìm, thì không hiện.
 6. Cho tải đã thống nhất, khi đo, thì p95 của lời gọi tìm dưới 200 ms (T17).
 7. Ô tìm kiếm luôn giữ focus để quét liên tiếp mà không cần chạm màn hình.
+8. Cho mã vạch nằm trong khung camera hoặc trong ảnh tải lên, khi quét, thì xử lý như quét bằng máy quét (AC-2); không đọc được mã, hoặc mã không khớp đúng SKU nào, thì báo cho thu ngân.
 
 ## UC-POS-02 Thanh toán tại quầy
 
