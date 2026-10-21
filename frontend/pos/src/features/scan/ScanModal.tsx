@@ -1,5 +1,5 @@
 import { loadBarcodeReader } from '@oism/shared';
-import { Alert, Button, Flex, Modal, theme } from 'antd';
+import { Alert, Button, Flex, Modal, Switch, theme } from 'antd';
 import { type ChangeEvent, useEffect, useRef, useState } from 'react';
 
 type Props = {
@@ -8,6 +8,9 @@ type Props = {
   afterClose: () => void;
   // Mã đọc được đi đúng đường của máy quét: docs/design/ui/pos.md mục "Quy tắc".
   onCode: (code: string) => void;
+  // W5-15: bật thì mã được gửi sang màn hình bán hàng trên máy tính của cùng tài khoản thay vì vào giỏ ở máy này.
+  remote: boolean;
+  onRemoteChange: (remote: boolean) => void;
 };
 
 function cameraError(error: unknown): string {
@@ -18,7 +21,7 @@ function cameraError(error: unknown): string {
 }
 
 // Hộp quét mã vạch bằng camera hoặc ảnh, cho quầy không có máy quét (UC-POS-01 AC-8).
-export function ScanModal({ open, onClose, afterClose, onCode }: Props) {
+export function ScanModal({ open, onClose, afterClose, onCode, remote, onRemoteChange }: Props) {
   return (
     <Modal
       title="Quét mã vạch"
@@ -29,6 +32,10 @@ export function ScanModal({ open, onClose, afterClose, onCode }: Props) {
       destroyOnHidden
       footer={<Button onClick={onClose}>Đóng</Button>}
     >
+      <Flex align="center" gap={8} style={{ marginBottom: 12 }}>
+        <Switch id="scan-remote" checked={remote} onChange={onRemoteChange} />
+        <label htmlFor="scan-remote">Gửi sang máy tính (cùng tài khoản)</label>
+      </Flex>
       <Scanner onCode={onCode} />
     </Modal>
   );

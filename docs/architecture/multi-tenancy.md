@@ -31,7 +31,7 @@ flowchart LR
 3. ID do client gửi lên luôn được tra qua repository có filter. ID của tenant khác vì thế trả về "không tìm thấy" và API trả 404, không trả 403, để không lộ việc bản ghi có tồn tại. Ngoại lệ duy nhất nằm ở `core`: chi nhánh và SKU ở đó chỉ là bản sao dựng từ event, nên `branchId` hoặc `skuId` gửi trong body mà không có bản sao trả 409 `reference_not_ready` ([messaging.md](messaging.md)). `core` không phân biệt được bản sao chưa tới với ID của tenant khác; phản hồi giống nhau cho cả hai nên không lộ gì, và không quan hệ chéo nào được tạo.
 4. Khi nối hai bản ghi (đơn với chi nhánh, dòng đơn với SKU), cả hai phải được tra trong cùng tenant context. Không tin `tenantId` nằm trong body request.
 5. Event luôn mang `tenantId`. Consumer đặt `ITenantContext` từ event trước khi chạm vào database.
-6. SignalR chỉ gửi vào group `tenant:{tenantId}` hoặc `tenant:{tenantId}:branch:{branchId}`. Không gửi cho tất cả kết nối.
+6. SignalR chỉ gửi vào group `tenant:{tenantId}`, `tenant:{tenantId}:branch:{branchId}` hoặc `tenant:{tenantId}:user:{userId}` (máy quét từ xa, W5-15). Group lấy tenant và người dùng từ token, không từ dữ liệu client gửi. Không gửi cho tất cả kết nối.
 7. Khóa cache, nếu có, bắt đầu bằng `tenantId`.
 
 ## Những chỗ được phép bỏ filter

@@ -139,5 +139,6 @@ Mọi thông điệp nằm trong phong bì chung có `eventId`, `type`, `tenantI
 | --- | --- | --- |
 | `OrderCreated` | `tenant:{tenantId}` và `tenant:{tenantId}:branch:{branchId}` | `orderId`, `orderNumber`, `channel`, `branchId`, `totalAmount` |
 | `LowStock` | `tenant:{tenantId}` | `branchId`, `skuId`, `skuCode`, `name`, `available`, `threshold` |
+| `RemoteScan` | `tenant:{tenantId}:user:{userId}`, trừ kết nối gửi | `code` |
 
-`OrderCreated` phát khi `insights` nhận `OrderReserved`. `LowStock` phát khi `StockChanged` đưa `available` từ trên ngưỡng xuống bằng hoặc dưới ngưỡng.
+`OrderCreated` phát khi `insights` nhận `OrderReserved`. `LowStock` phát khi `StockChanged` đưa `available` từ trên ngưỡng xuống bằng hoặc dưới ngưỡng. `RemoteScan` phát khi một kết nối khác của cùng người dùng gọi method `SendScan` của hub ([api/insights.md](api/insights.md) mục "Thông báo realtime").

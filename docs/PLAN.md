@@ -376,7 +376,7 @@ Mỗi phase dài nửa tuần (khoảng 2,5 ngày làm việc) và kết thúc b
 | 7 | | | | W4-01, W4-02, W4-04 | W4-08 | | |
 | 8 | | | | W4-03, W4-05 | W4-06, W4-07 | W4-09 | |
 | 9 | W5-04 | W5-02 | W5-01, W5-02 | W5-02 | | W5-03, W5-04, W5-05 | |
-| 10 | W5-06 | W5-12, W5-14 | | | W5-10, W5-11, W5-12, W5-13, W5-14 | | W5-07, W5-08, W5-09 |
+| 10 | W5-06 | W5-12, W5-14 | | W5-15 | W5-10, W5-11, W5-12, W5-13, W5-14, W5-15 | | W5-07, W5-08, W5-09 |
 
 Mỗi folder có file plan riêng trong `docs/plans/`, ghi việc của folder đó theo phase (mục 4.3).
 
@@ -501,8 +501,9 @@ Cổng phase 9: coverage đạt 80% cho ba module lõi; có báo cáo đo tải;
 | W5-12 | identity, admin, pos: tài khoản nhận chuyển khoản theo chi nhánh; POS hiện mã VietQR của chi nhánh và in phiếu thanh toán tạm tính kèm mã | C | FR-AUTH-04, FR-POS-03 | Owner khai tài khoản nhận cho chi nhánh; POS ở chi nhánh đó hiện và in được mã VietQR quét được bằng app ngân hàng; in phiếu thanh toán không tạo đơn |
 | W5-13 | pos: quét mã vạch bằng camera và bằng ảnh tải lên | C | FR-POS-01, NFR-USA-02 | Quét mã EAN-13 hoặc Code128 bằng camera hay bằng ảnh thì hàng vào giỏ như máy quét; máy không có camera hoặc không chạy HTTPS vẫn quét được bằng ảnh |
 | W5-14 | catalog, admin: hình mã vạch tải về cho từng SKU, tạo mã một chạm, tìm sản phẩm bằng ảnh mã vạch | C | FR-PROD-02, FR-PROD-03 | Mỗi mã vạch của SKU có hình tải về được và quét được ở POS; SKU chưa có mã tạo được bằng một lần bấm; chọn ảnh mã vạch ở danh sách sản phẩm thì mở đúng sản phẩm |
+| W5-15 | insights, pos: điện thoại làm máy quét cho màn hình bán hàng trên máy tính qua hub SignalR | C | FR-POS-01, FR-SIM-02 | Điện thoại và máy tính đăng nhập cùng tài khoản; điện thoại bật "Gửi sang máy tính" rồi quét thì hàng vào giỏ trên máy tính; người dùng khác và tenant khác không nhận mã |
 
-W5-10 và W5-11 phải xong và qua kiểm tay trước ngày đóng băng code của W5-09; chưa xong thì giữ giao diện cũ cho buổi demo. W5-11 đến W5-14 làm sau khi W5-09 đã chạy demo, nên xong các task này thì chạy lại kịch bản demo ở `docs/handover/demo-script.md`.
+W5-10 và W5-11 phải xong và qua kiểm tay trước ngày đóng băng code của W5-09; chưa xong thì giữ giao diện cũ cho buổi demo. W5-11 đến W5-15 làm sau khi W5-09 đã chạy demo, nên xong các task này thì chạy lại kịch bản demo ở `docs/handover/demo-script.md`.
 
 Cổng phase 10: RTM đủ 44 mã; người ngoài nhóm cài được theo hướng dẫn; kịch bản demo chạy hai lần liên tiếp không lỗi.
 
@@ -637,7 +638,7 @@ Ba mã AI do nhóm đặt, giảng viên đã xác nhận cùng D-14 ngày 2026-
 | FR-RSE-01 | core | W2-05 | T01 |
 | FR-RSE-02 | core | W2-05 | T01, T04 |
 | FR-RSE-03 | core | W3-01 | T05, T06 |
-| FR-POS-01 | pos | W3-07, W4-08, W5-11, W5-13 | DoD W3-07 |
+| FR-POS-01 | pos | W3-07, W4-08, W5-11, W5-13, W5-15 | DoD W3-07 |
 | FR-POS-02 | core, pos | W3-02, W3-07 | T02 |
 | FR-POS-03 | pos | W3-07, W5-12 | DoD W3-07 |
 | FR-POS-04 | core | W3-02 | T02, T03 |
@@ -645,7 +646,7 @@ Ba mã AI do nhóm đặt, giảng viên đã xác nhận cùng D-14 ngày 2026-
 | FR-REP-02 | insights, admin | W4-01, W4-03, W4-07 | DoD W4-03 |
 | FR-REP-03 | core, insights, admin | W2-08, W4-03, W4-07, W5-10 | DoD W4-03 |
 | FR-SIM-01 | channel | W3-03 | T03 |
-| FR-SIM-02 | insights, frontend | W4-04, W4-08 | T15 |
+| FR-SIM-02 | insights, frontend | W4-04, W4-08, W5-15 | T15 |
 | FR-SIM-03 | core, insights | W3-04, W4-02 | T06, T07 |
 | FR-AI-01 | insights | W4-05 | T18 |
 | FR-AI-02 | insights, admin | W4-05, W4-07 | T19 |

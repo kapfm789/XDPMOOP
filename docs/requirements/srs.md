@@ -1322,6 +1322,7 @@ Canonical Order gồm: kênh, mã đơn ngoài (với đơn sàn), chi nhánh, t
   2. Hệ thống trả tối đa 20 SKU đang bán khớp một phần tên, mã SKU hoặc mã vạch; SKU khớp đúng mã đứng đầu; mỗi dòng có giá lẻ và `available` tại chi nhánh.
   3. Enter khi khớp đúng một mã vạch hoặc mã SKU thì thêm thẳng vào giỏ với số lượng 1.
   4. Giao diện chặn thêm SKU hết hàng và chặn tăng số lượng vượt `available`.
+  5. Điện thoại đăng nhập cùng tài khoản có thể làm máy quét cho máy tính: bật "Gửi sang máy tính" trong hộp quét, mã quét được gửi qua hub SignalR tới màn hình bán hàng của tài khoản đó trên máy tính.
 - **Ngoại lệ:** thiếu `branchId` trả 400; Cashier gửi chi nhánh khác token trả 403.
 - **Tiêu chí chấp nhận:**
   1. Tìm theo một phần tên, mã SKU hoặc mã vạch trả kết quả kèm giá lẻ và tồn khả dụng tại chi nhánh của thu ngân.
@@ -1332,6 +1333,7 @@ Canonical Order gồm: kênh, mã đơn ngoài (với đơn sàn), chi nhánh, t
   6. p95 của lời gọi tìm dưới 200 ms ở tải đã thống nhất (T17).
   7. Ô tìm luôn giữ focus để quét liên tiếp mà không chạm màn hình.
   8. Mã vạch trong khung camera hoặc trong ảnh tải lên được xử lý như quét bằng máy quét; không đọc được mã hoặc mã không khớp SKU nào thì báo cho thu ngân.
+  9. Điện thoại cùng tài khoản bật "Gửi sang máy tính" rồi quét thì màn hình bán hàng trên máy tính xử lý mã như máy quét, điện thoại chỉ báo đã gửi; người dùng khác và tenant khác không nhận mã.
 
 #### UC-POS-02 Thanh toán tại quầy
 

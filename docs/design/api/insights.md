@@ -42,7 +42,15 @@ Kết nối WebSocket tới `/hubs/notifications` kèm access token. Server tự
 | Owner, Staff | `tenant:{tenantId}`, kể cả khi token có `branch_id` |
 | Người dùng khác có `branch_id` trong token (Cashier) | `tenant:{tenantId}:branch:{branchId}` |
 
-Mỗi kết nối vào đúng một group, nên `OrderCreated` gửi cho cả hai group không tới ai hai lần. Cashier không có `branch_id` thì không vào group nào. Client không tự chọn group và không gọi method nào của hub. Thông báo chỉ được gửi sau khi transaction của consumer đã commit. Tên và trường của thông báo `OrderCreated`, `LowStock` ở [events.md](../events.md).
+Mỗi kết nối vào đúng một group thông báo, nên `OrderCreated` gửi cho cả hai group không tới ai hai lần. Cashier không có `branch_id` thì không vào group thông báo nào. Thông báo chỉ được gửi sau khi transaction của consumer đã commit. Tên và trường của thông báo `OrderCreated`, `LowStock` ở [events.md](../events.md).
+
+Ngoài group thông báo, mọi kết nối còn vào group của chính người dùng `tenant:{tenantId}:user:{userId}` (`userId` là claim `sub`). Group này chỉ dùng cho máy quét từ xa (W5-15, UC-POS-01 AC-9); không thông báo nào gửi vào đó. Client không tự chọn group và chỉ gọi được một method của hub:
+
+| Method | Vai trò | Vào | Xử lý |
+| --- | --- | --- | --- |
+| `SendScan` | Owner, Cashier | `code`: mã quét được, cắt khoảng trắng hai đầu, 1 đến 64 ký tự | Gửi `RemoteScan` tới các kết nối khác trong group của chính người dùng, trừ kết nối vừa gọi. Không lưu, không gửi bù cho kết nối đang mất mạng |
+
+Staff gọi `SendScan`, hoặc `code` rỗng hay dài quá 64 ký tự, thì hub trả lỗi và không gửi gì. Hub chỉ chuyển mã; việc tìm SKU và thêm vào giỏ do màn hình bán hàng nhận mã làm như với máy quét.
 
 ## Đường vào không phải HTTP
 

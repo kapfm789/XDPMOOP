@@ -21,6 +21,11 @@ export type LowStockNotification = {
   threshold: number;
 };
 
+// Mã điện thoại gửi sang các phiên khác của cùng người dùng (W5-15).
+export type RemoteScanNotification = {
+  code: string;
+};
+
 export type GrossProfitGroupBy = 'day' | 'branch' | 'channel' | 'sku';
 
 // `from` và `to` là ngày `yyyy-MM-dd` theo giờ Việt Nam, tính cả hai đầu.
