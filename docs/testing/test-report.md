@@ -47,9 +47,11 @@ Số test tính cả từng bộ tham số của `[Theory]`: mỗi test đồng 
 
 | Gói | Số test | Nội dung | Kết quả |
 | --- | --- | --- | --- |
-| `shared` | 19 | Định dạng tiền và ngày, lọc menu theo vai trò, client API (làm mới token một lần, thử lại `reference_not_ready`), kết nối realtime | Đạt |
-| `admin` | 8 | Khớp route với mục menu, menu theo vai trò, dựng 7 ngày của biểu đồ doanh thu | Đạt |
-| `pos` | 4 | Giỏ hàng: thêm SKU không vượt tồn khả dụng, tổng tiền, xử lý 409 `insufficient_stock`, chọn SKU từ mã quét | Đạt |
+| `shared` | 30 | Định dạng tiền và ngày, lọc menu theo vai trò, client API (làm mới token một lần, thử lại `reference_not_ready`), kết nối realtime, đếm mã quét bằng camera, thông báo lỗi theo `code`, danh sách ngân hàng VietQR, phiên đăng nhập (access token trong bộ nhớ, refresh token ở `localStorage`) | Đạt |
+| `admin` | 16 | Khớp route với mục menu, menu theo vai trò, dựng 7 ngày của biểu đồ doanh thu, vẽ mã vạch EAN-13 và Code128, nhãn SKU của báo cáo | Đạt |
+| `pos` | 6 | Giỏ hàng: thêm SKU không vượt tồn khả dụng, tổng tiền, xử lý 409 `insufficient_stock`, chọn SKU từ mã quét; chuỗi VietQR và mã kiểm CRC | Đạt |
+
+Số test frontend chạy lại ngày 2026-10-23 bằng `npm --prefix frontend test`, sau khi các task W5-12 đến W5-15 thêm test và bổ sung test cho phần logic thuần còn thiếu.
 
 ### Kiểm tra khác
 
