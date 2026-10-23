@@ -89,7 +89,7 @@ frontend/<app>/src/
 
 ## Test
 
-- Logic thuần (tính tổng giỏ, định dạng tiền, lọc theo vai trò, khớp route với menu của `admin`) có test đơn vị bằng Vitest.
+- Logic thuần (tính tổng giỏ, định dạng tiền, lọc theo vai trò, khớp route với menu của `admin`, chọn thông báo lỗi theo `code`, phiên đăng nhập) có test đơn vị bằng Vitest.
 - Luồng màn hình kiểm tay theo tiêu chí chấp nhận của use case ở cuối mỗi phase.
 
 ## Điều không làm
