@@ -16,13 +16,13 @@ Menu chỉ hiện mục mà vai trò được vào. Bảng quyền đầy đủ:
 
 ### Đăng ký cửa hàng mới
 
-1. Mở trang quản trị, bấm **Đăng ký**.
+1. Mở trang quản trị; ở trang đăng nhập, bấm **Đăng ký** cạnh dòng "Chưa có cửa hàng?".
 2. Nhập tên cửa hàng, họ tên chủ, email hoặc số điện thoại, mật khẩu ít nhất 8 ký tự.
 3. Bấm đăng ký; hệ thống tạo cửa hàng, tài khoản chủ cửa hàng và đăng nhập luôn.
 
 ### Đăng nhập, đăng xuất
 
-- Đăng nhập bằng email hoặc số điện thoại cùng mật khẩu. Phiên tự gia hạn khi đang dùng; bỏ trống 7 ngày thì phải đăng nhập lại.
+- Đăng nhập bằng email hoặc số điện thoại cùng mật khẩu. Phiên tự gia hạn khi đang dùng; không dùng tới 7 ngày thì phải đăng nhập lại.
 - Đăng xuất bằng biểu tượng cạnh tên ở góc trên bên phải (rê chuột vào sẽ hiện chữ "Đăng xuất").
 
 ### Bố cục trang quản trị
@@ -80,7 +80,7 @@ Trang đầu sau khi đăng nhập có số đơn chờ duyệt, số SKU tồn 
 ### Nhập hàng
 
 1. **Kho › Phiếu nhập**, bấm **Tạo phiếu nhập**. Chọn chi nhánh nhận, nhà cung cấp (bấm **Thêm mới** nếu chưa có), rồi từng dòng SKU, số lượng, đơn giá nhập.
-2. Phiếu mới ở trạng thái Nháp, sửa được thoải mái; tồn chưa đổi.
+2. Phiếu mới ở trạng thái Nháp, vẫn sửa được; tồn chưa đổi.
 3. Bấm **Xác nhận nhập kho**: tồn tăng, giá vốn bình quân tính lại, sổ giao dịch thêm một dòng nhập cho mỗi SKU. Phiếu đã xác nhận không sửa được.
 
 ### Xem tồn và sổ giao dịch
@@ -116,7 +116,10 @@ Trang đầu sau khi đăng nhập có số đơn chờ duyệt, số SKU tồn 
 ## Thu ngân: bán tại quầy
 
 1. Mở POS, đăng nhập. Thu ngân bán ở chi nhánh được gắn; chủ cửa hàng chọn chi nhánh trước khi bán.
-2. Quét mã vạch hoặc gõ tên, mã SKU vào ô tìm rồi Enter. Mã khớp đúng thì hàng vào giỏ ngay; không thì hiện danh sách để chọn. Không có máy quét thì bấm nút camera cạnh ô tìm: đưa mã vạch vào khung camera để quét liên tiếp, hoặc bấm **Chọn ảnh** để đọc mã từ ảnh chụp sẵn. Camera chỉ mở được khi POS chạy trên HTTPS hoặc `localhost` và trình duyệt được cấp quyền. Muốn dùng điện thoại làm máy quét cho máy tính: đăng nhập cùng tài khoản trên cả hai máy, trên điện thoại mở hộp quét và bật **Gửi sang máy tính**; mỗi mã quét được sẽ vào giỏ của màn hình bán hàng trên máy tính.
+2. Thêm hàng vào giỏ:
+   - **Máy quét hoặc bàn phím**: quét mã vạch, hoặc gõ tên, mã SKU vào ô tìm rồi Enter. Mã khớp đúng thì hàng vào giỏ ngay; không thì hiện danh sách để chọn.
+   - **Camera**: không có máy quét thì bấm nút camera cạnh ô tìm và đưa mã vạch vào khung để quét liên tiếp, hoặc bấm **Chọn ảnh** để đọc mã từ ảnh chụp sẵn. Camera chỉ mở được khi POS chạy trên HTTPS hoặc `localhost` và trình duyệt được cấp quyền.
+   - **Điện thoại làm máy quét cho máy tính**: đăng nhập cùng tài khoản trên cả hai máy, trên điện thoại mở hộp quét và bật **Gửi sang máy tính**; mỗi mã quét được sẽ vào giỏ của màn hình bán hàng trên máy tính.
 3. Chỉnh số lượng bằng phím `+`, `-`, xóa dòng bằng Delete (khi ô tìm trống), hoặc chạm vào nút trên dòng.
 4. Chọn tiền mặt hoặc QR (phím F4). Với QR, đưa khách quét mã trên màn hình, hoặc bấm **In phiếu thanh toán** để in phiếu tạm tính kèm mã cho khách quét; phiếu không tạo đơn. Kiểm đã nhận tiền trong tài khoản trước khi xác nhận.
 5. Enter khi ô tìm trống, hoặc bấm **Thanh toán** (với QR là **Xác nhận đã nhận tiền**). Đơn lưu xong thì hóa đơn mở ra và hộp thoại in bật lên; Enter tiếp để sang đơn mới.
@@ -129,7 +132,7 @@ Trang đầu sau khi đăng nhập có số đơn chờ duyệt, số SKU tồn 
 | `+`, `-`, Delete | Tăng, giảm, xóa dòng đang chọn |
 | Esc | Xóa ô tìm; bấm lần nữa để xóa giỏ |
 
-- Bấm thanh toán hai lần, hay mạng chập chờn rồi thử lại, vẫn chỉ ra một đơn.
+- Bấm thanh toán hai lần, hay mạng chập chờn rồi thử lại, vẫn chỉ tạo một đơn.
 - Mất mạng thì POS báo trên đầu màn hình và khóa nút thanh toán; giỏ hàng giữ nguyên. POS không bán ngoại tuyến.
 - Trên Chrome hoặc Edge, cài POS lên màn hình chính bằng biểu tượng cài đặt ở thanh địa chỉ.
 
