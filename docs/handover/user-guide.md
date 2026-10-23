@@ -23,7 +23,7 @@ Menu chỉ hiện mục mà vai trò được vào. Bảng quyền đầy đủ:
 ### Đăng nhập, đăng xuất
 
 - Đăng nhập bằng email hoặc số điện thoại cùng mật khẩu. Phiên tự gia hạn khi đang dùng; bỏ trống 7 ngày thì phải đăng nhập lại.
-- Đăng xuất bằng nút cạnh tên ở góc trên bên phải.
+- Đăng xuất bằng biểu tượng cạnh tên ở góc trên bên phải (rê chuột vào sẽ hiện chữ "Đăng xuất").
 
 ### Bố cục trang quản trị
 
@@ -32,7 +32,7 @@ Menu chỉ hiện mục mà vai trò được vào. Bảng quyền đầy đủ:
 | Thanh bên | Menu theo nhóm: Tổng quan, Sản phẩm, Kho, Đơn hàng, Báo cáo, Kênh sàn, Cài đặt. Nút ở đầu thanh trên thu gọn thanh bên còn icon; màn hình hẹp hơn 1180 px thì tự thu gọn |
 | Thanh trên | Tên cửa hàng, chuông thông báo, tên và vai trò người đang đăng nhập, nút đăng xuất |
 | Đầu trang | Đường dẫn (breadcrumb) và tiêu đề trang, các nút hành động |
-| Nội dung | Hàng bộ lọc, rồi các thẻ nội dung; danh sách dài có phân trang ở chân thẻ |
+| Nội dung | Hàng bộ lọc, rồi các thẻ nội dung; danh sách dài có phân trang ở chân thẻ, riêng hai thẻ ở trang Tổng quan cuộn bên trong thẻ |
 
 Màu trạng thái dùng chung: xanh lá là xong hoặc đủ hàng, cam là đang chờ hoặc sắp hết, đỏ là lỗi, đã hủy hoặc hết hàng.
 
@@ -66,7 +66,7 @@ Màu trạng thái dùng chung: xanh lá là xong hoặc đủ hàng, cam là đ
 **Kênh sàn** quản lý shop Shopee, TikTok, Lazada của cửa hàng:
 
 1. **Thêm shop**: chọn kênh, nhập mã shop trên sàn và chi nhánh xuất hàng. Khóa ký webhook chỉ hiện một lần; lưu lại nếu có hệ thống ngoài gửi webhook.
-2. **Bắn đơn giả lập**: gửi một loạt đơn giả vào chính hệ thống để thử, chọn mã SKU, số đơn, số đơn gửi cùng lúc. Đơn hợp lệ vào danh sách đơn ở trạng thái Chờ duyệt.
+2. **Bắn đơn giả lập**: gửi một loạt đơn giả vào chính hệ thống để thử; nhập mã SKU, đơn giá (bỏ trống thì đơn có giá 0), số lượng mỗi đơn, số đơn và số đơn gửi cùng lúc. Đơn hợp lệ vào danh sách đơn ở trạng thái Chờ duyệt.
 3. Thẻ **Webhook đã nhận** cho biết mỗi đơn sàn đã được giữ hàng hay bị từ chối, kèm lý do (ví dụ không đủ tồn).
 
 OISM chưa kết nối API thật của sàn; phần này là giả lập để thử luồng đơn đa kênh ([ADR-0006](../decisions/0006-channel-simulator-and-idempotency.md)).
@@ -75,7 +75,7 @@ OISM chưa kết nối API thật của sàn; phần này là giả lập để 
 
 ### Tổng quan
 
-Trang đầu sau khi đăng nhập có số đơn chờ duyệt, số SKU tồn thấp, danh sách cảnh báo tồn và đơn chờ duyệt. Chủ cửa hàng thấy thêm doanh thu hôm nay và biểu đồ doanh thu 7 ngày. Danh sách tự cập nhật khi có đơn mới hay tồn thấp.
+Trang đầu sau khi đăng nhập có số đơn chờ duyệt, số SKU tồn thấp, danh sách đơn chờ duyệt và cảnh báo tồn thấp; hai danh sách cao bằng nhau, dài thì cuộn bên trong. Chủ cửa hàng thấy thêm doanh thu hôm nay và biểu đồ doanh thu 7 ngày nằm bên trái hai danh sách. Danh sách tự cập nhật khi có đơn mới hay tồn thấp.
 
 ### Nhập hàng
 
@@ -87,7 +87,7 @@ Trang đầu sau khi đăng nhập có số đơn chờ duyệt, số SKU tồn 
 
 - **Kho › Tồn kho**: tồn thực tế, đang giữ cho đơn, khả dụng theo chi nhánh và SKU; cột Mức tồn báo Đủ hàng, Sắp hết, Hết hàng. Dải trên bảng có tổng giá trị tồn (chủ cửa hàng), số dòng tồn và số SKU tồn thấp.
 - **Đặt ngưỡng** trên từng dòng: tồn khả dụng chạm ngưỡng thì có cảnh báo và thông báo. Để trống là bỏ ngưỡng.
-- **Xem sổ** mở **Kho › Sổ giao dịch** của đúng SKU tại chi nhánh đó. Sổ chỉ để xem: mọi biến động tồn đều có một dòng, không ai sửa hay xóa được.
+- **Xem sổ** mở **Kho › Sổ giao dịch** của đúng SKU tại chi nhánh đó, dòng mới nhất nằm trên cùng. Sổ chỉ để xem: mọi biến động tồn đều có một dòng, không ai sửa hay xóa được.
 
 ### Chuyển kho
 
