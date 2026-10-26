@@ -12,7 +12,7 @@ Tổng hợp các ca kiểm thử đơn vị, tích hợp và đồng thời c�
 | API theo tài liệu | Swagger sinh từ code, Postman collection chạy bằng newman | Gateway của Compose dev |
 | Tải | k6 | Gói demo, [load-test.md](load-test.md) |
 
-Máy chạy ngày 2026-10-18: laptop Intel Core i5-10200H, 4 nhân 8 luồng, RAM 7,8 GB, Windows 10; Docker Desktop 29.8.2 với máy ảo WSL 2 được cấp 8 luồng và khoảng 3,7 GB RAM.
+Máy chạy ngày 2026-10-27: laptop Intel Core i5-11400H, 6 nhân 12 luồng, RAM 15,8 GB, Windows 11; Docker Desktop 29.8.2 với máy ảo WSL 2 được cấp 12 luồng và khoảng 7,6 GB RAM.
 
 Lệnh chạy toàn bộ test backend khi máy chỉ có Docker (máy có .NET 8 thì `dotnet test backend/Oism.sln`):
 
@@ -28,18 +28,18 @@ docker compose -f deploy/docker-compose.yml run --rm tests bash -c "cp -r /repo/
 
 | Project | Tầng | Số test | Kết quả |
 | --- | --- | --- | --- |
-| `Oism.Identity.UnitTests` | Đơn vị | 12 | Đạt |
-| `Oism.Identity.IntegrationTests` | Tích hợp | 37 | Đạt |
+| `Oism.Identity.UnitTests` | Đơn vị | 13 | Đạt |
+| `Oism.Identity.IntegrationTests` | Tích hợp | 45 | Đạt |
 | `Oism.Catalog.UnitTests` | Đơn vị | 24 | Đạt |
-| `Oism.Catalog.IntegrationTests` | Tích hợp, đồng thời | 43 | Đạt |
+| `Oism.Catalog.IntegrationTests` | Tích hợp, đồng thời | 44 | Đạt |
 | `Oism.Core.UnitTests` | Đơn vị | 43 | Đạt |
 | `Oism.Core.IntegrationTests` | Tích hợp, đồng thời, thông điệp | 175 | Đạt |
 | `Oism.Channel.UnitTests` | Đơn vị | 31 | Đạt |
 | `Oism.Channel.IntegrationTests` | Tích hợp, thông điệp | 17 | Đạt |
 | `Oism.Insights.UnitTests` | Đơn vị | 35 | Đạt |
-| `Oism.Insights.IntegrationTests` | Tích hợp, thông điệp, realtime | 55 | Đạt |
-| `Oism.BuildingBlocks.IntegrationTests` | Tích hợp hạ tầng chung | 16 | Đạt |
-| **Tổng** | | **488** | **Đạt** |
+| `Oism.Insights.IntegrationTests` | Tích hợp, thông điệp, realtime | 57 | Đạt |
+| `Oism.BuildingBlocks.IntegrationTests` | Tích hợp hạ tầng chung | 17 | Đạt |
+| **Tổng** | | **501** | **Đạt** |
 
 Số test tính cả từng bộ tham số của `[Theory]`: mỗi test đồng thời chạy lặp 20 vòng nên tính 20.
 

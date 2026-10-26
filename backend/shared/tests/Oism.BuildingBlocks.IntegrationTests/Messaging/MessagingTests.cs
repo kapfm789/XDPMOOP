@@ -48,6 +48,20 @@ public sealed class SkuUpsertedConsumer(MessagingDbContext db) : EventConsumer<S
     }
 }
 
+// Giữ thông điệp BranchUpserted lại trong consumer tới khi test thả ra, để queue của nó bận.
+public sealed class BranchUpsertedConsumer : EventConsumer<BranchUpserted>
+{
+    public static readonly SemaphoreSlim Started = new(0);
+
+    public static readonly TaskCompletionSource Release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    public override async Task HandleAsync(BranchUpserted payload, CancellationToken ct)
+    {
+        Started.Release();
+        await Release.Task.WaitAsync(ct);
+    }
+}
+
 public sealed class MessagingFixture : IAsyncLifetime
 {
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:17-alpine").Build();
@@ -83,6 +97,7 @@ public sealed class MessagingFixture : IAsyncLifetime
         builder.Services.AddDbContext<MessagingDbContext>(options => options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention());
         builder.Services.AddOismMessaging<MessagingDbContext>();
         builder.Services.AddEventConsumer<SkuUpsertedConsumer, SkuUpserted>();
+        builder.Services.AddEventConsumer<BranchUpsertedConsumer, BranchUpserted>();
 
         var host = builder.Build();
         await using (var scope = host.Services.CreateAsyncScope())
@@ -165,6 +180,24 @@ public sealed class MessagingTests(MessagingFixture fixture) : IClassFixture<Mes
     }
 
     [Fact]
+    public async Task Consumer_OneQueueBusy_OtherQueueStillHandled()
+    {
+        await EnqueueAsync(fixture.Host, new BranchUpserted(Guid.NewGuid(), "CN-01", "Chi nhánh 1", "Store", IsActive: true, Version: 1));
+        Assert.True(await BranchUpsertedConsumer.Started.WaitAsync(TimeSpan.FromSeconds(30)), "consumer never received BranchUpserted");
+        try
+        {
+            // Queue BranchUpserted đang bận: thông điệp của queue khác vẫn phải được xử lý.
+            var sku = Sku("E-01");
+            await EnqueueAsync(fixture.Host, sku);
+            await WaitForCopyAsync(fixture.Host, sku);
+        }
+        finally
+        {
+            BranchUpsertedConsumer.Release.TrySetResult();
+        }
+    }
+
+    [Fact]
     public async Task Outbox_BrokerDownAtCommit_CommitsAndSendsWhenBrokerIsBack()
     {
         // Không có broker nào nghe ở cổng 1.
@@ -206,9 +239,10 @@ public sealed class MessagingTests(MessagingFixture fixture) : IClassFixture<Mes
         new(Guid.NewGuid(), Guid.NewGuid(), code, $"Sản phẩm {code}", ["2000000000015"], 150_000m, 120_000m, IsActive: true, Version: 1);
 
     // Ghi event vào outbox như một use case: trong tenant context, cùng SaveChanges với thay đổi nghiệp vụ.
-    private async Task<Guid> EnqueueAsync(IHost host, SkuUpserted sku)
+    private async Task<Guid> EnqueueAsync<T>(IHost host, T payload)
+        where T : notnull
     {
-        var message = OutboxMessage.Create(sku, DateTimeOffset.UtcNow);
+        var message = OutboxMessage.Create(payload, DateTimeOffset.UtcNow);
         await QueryAsync(host, _tenantId, db =>
         {
             db.Add(message);
