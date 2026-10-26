@@ -46,17 +46,21 @@ internal sealed class EventConsumerHost(
         try
         {
             _connection = await RabbitMq.ConnectAsync(configuration, automaticRecovery: true, ct);
-            var channel = await _connection.CreateChannelAsync(cancellationToken: ct);
-            await RabbitMq.DeclareExchangeAsync(channel, ct);
-            await channel.BasicQosAsync(prefetchSize: 0, prefetchCount: 10, global: false, ct);
 
             // Tên service là schema mặc định của DbContext, ví dụ core.
             string service;
             await using (var scope = scopes.CreateAsyncScope())
                 service = scope.ServiceProvider.GetRequiredService<OismDbContext>().Model.GetDefaultSchema()!;
 
+            // Mỗi queue một channel: client xử lý lần lượt từng thông điệp trên một channel,
+            // nên các queue chạy song song còn trong một queue vẫn lần lượt.
             foreach (var consumer in consumers)
+            {
+                var channel = await _connection.CreateChannelAsync(cancellationToken: ct);
+                await RabbitMq.DeclareExchangeAsync(channel, ct);
+                await channel.BasicQosAsync(prefetchSize: 0, prefetchCount: 10, global: false, ct);
                 await SubscribeAsync(channel, $"{service}.{consumer.MessageType}", consumer, ct);
+            }
             return true;
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
