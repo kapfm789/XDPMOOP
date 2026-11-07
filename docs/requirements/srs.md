@@ -4,8 +4,8 @@ Hệ thống quản lý bán hàng và tồn kho đa kênh (Omnichannel Inventor
 
 | Mục | Nội dung |
 | --- | --- |
-| Phiên bản | 1.2 |
-| Ngày | 2026-10-18 |
+| Phiên bản | 1.3 |
+| Ngày | 2026-11-07 |
 | Trạng thái | Bản chốt phase 10 (URS bàn giao), khớp tài liệu `docs/` và code trên `main` |
 | Người soạn | Nhóm OISM |
 | Khuôn tham khảo | ISO/IEC/IEEE 29148 (kế thừa IEEE 830) |
@@ -393,7 +393,8 @@ flowchart LR
     p2(["UC-PROD-02<br/>Quản lý sản phẩm và SKU"])
     p3(["UC-PROD-03<br/>Quản lý mã vạch"])
     p4(["UC-PROD-04<br/>Đặt giá lẻ, giá sỉ"])
-    ev(["Phát BranchUpserted, SkuUpserted<br/>(đồng bộ sang core, insights)"])
+    evb(["Phát BranchUpserted<br/>(đồng bộ sang core)"])
+    evs(["Phát SkuUpserted<br/>(đồng bộ sang core, insights)"])
   end
 
   guest --- a1
@@ -404,11 +405,13 @@ flowchart LR
   staff --- p1
   staff --- p2
   staff --- p3
-  a4 -. «include» .-> ev
-  p2 -. «include» .-> ev
-  p3 -. «include» .-> ev
-  p4 -. «include» .-> ev
+  a4 -. «include» .-> evb
+  p2 -. «include» .-> evs
+  p3 -. «include» .-> evs
+  p4 -. «include» .-> evs
 ```
+
+`BranchUpserted` chỉ tới `core`; `SkuUpserted` tới cả `core` và `insights` ([design/events.md](../design/events.md)). Hai use case phát event là thao tác nội bộ đi kèm, không phải việc actor tự làm.
 
 #### 3.2.4 Kho
 
@@ -491,9 +494,12 @@ flowchart LR
   c2 -. «include» .-> cs
   c3 -. «extend» .-> c2
   o1 -. kích hoạt .-> s2
+  o2 -. kích hoạt .-> s2
 ```
 
 Ghi chú: "Giữ hàng", "Xuất kho và chốt giá vốn", "Giải phóng phần giữ" là ba thao tác dùng chung của `IStockService` (`Reserve`, `Consume`, `Release`), không phải màn hình riêng. POS checkout gọi cả `Reserve` lẫn `Consume` trong một transaction.
+
+Đơn online và đơn thủ công đều phát `OrderReserved`, nên cả hai kích hoạt thông báo đơn mới; đơn POS đi thẳng tới Completed, không phát `OrderReserved` nên không sinh thông báo này. Quan hệ «extend» chỉ áp cho hóa đơn in sau thanh toán; phiếu thanh toán tạm tính có mã VietQR (UC-POS-03 AC-4) in trước khi có đơn nên không mở rộng UC-POS-02.
 
 #### 3.2.6 Báo cáo, cảnh báo, dự báo
 
@@ -510,6 +516,7 @@ flowchart LR
     ai1(["UC-AI-01<br/>Xem đề xuất nhập hàng"])
     ai2(["UC-AI-02<br/>Chạy và đánh giá dự báo"])
     agg(["Tổng hợp báo cáo ngày"])
+    i5(["UC-INV-05<br/>Đặt ngưỡng tồn tối thiểu"])
   end
 
   owner --- r1
@@ -521,7 +528,10 @@ flowchart LR
   sys --- ai2
   r1 -. đọc kết quả .-> agg
   ai1 -. đọc kết quả .-> ai2
+  r3 -. đọc kết quả .-> i5
 ```
+
+Cảnh báo tồn thấp chỉ có cho SKU đã đặt ngưỡng ở UC-INV-05 (vẽ chi tiết ở 3.2.4). Staff xem được giá trị tồn ở UC-REP-02 nhưng các cột giá vốn và giá trị để trống; chỉ Owner thấy ([design/api/insights.md](../design/api/insights.md)).
 
 #### 3.2.7 Danh mục use case
 
@@ -1960,4 +1970,5 @@ Cả 13 ADR (gộp 18 quyết định D-01 đến D-18) đã được giảng vi
 | --- | --- | --- |
 | 1.0 | 2026-10-15 | Bản đầu: tổng hợp từ `docs/`; thêm sơ đồ use case UML, ERD khái niệm và logic liên service, quy tắc nghiệp vụ BR-01 đến BR-23 |
 | 1.2 | 2026-10-18 | Bản chốt phase 10: giao diện admin theo Figma (UC-REP-01, UC-REP-03), Swagger gộp ở gateway và Postman collection (T21), sơ đồ lớp UML của Domain `core`, ERD đã đối chiếu với migration của 5 service, tài liệu bàn giao ở `handover/`; RTM thêm task của phase 9 và 10 |
+| 1.3 | 2026-11-07 | Soát sơ đồ use case mục 3.2: tách hai event đồng bộ theo đúng nơi nhận, thêm quan hệ đơn thủ công kích hoạt thông báo, quan hệ cảnh báo tồn với UC-INV-05, ghi chú phạm vi «extend» của in hóa đơn và cột giá vốn ẩn với Staff |
 | 1.1 | 2026-10-16 | Khớp tài liệu sau phase 8: chi tiết báo cáo tồn, bán chạy, bán chậm (UC-REP-02), cảnh báo tồn, đề xuất nhập hàng và lần chạy dự báo (UC-AI-01, UC-AI-02), kết quả backtest trên seed; viết lại phần mở đầu và mục 3.1 cho gọn |
