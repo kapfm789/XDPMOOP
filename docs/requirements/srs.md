@@ -4,11 +4,20 @@ Hệ thống quản lý bán hàng và tồn kho đa kênh (Omnichannel Inventor
 
 | Mục | Nội dung |
 | --- | --- |
-| Phiên bản | 1.3 |
-| Ngày | 2026-11-07 |
+| Phiên bản | 1.4 |
+| Ngày | 2026-11-18 |
 | Trạng thái | Bản chốt phase 10 (URS bàn giao), khớp tài liệu `docs/` và code trên `main` |
 | Người soạn | Nhóm OISM |
 | Khuôn tham khảo | ISO/IEC/IEEE 29148 (kế thừa IEEE 830) |
+
+Nhóm thực hiện:
+
+| Thành viên | Phần chính |
+| --- | --- |
+| Nguyễn Phạm Đăng Khoa | Nền tảng backend; `identity`, `catalog`, `core`, `channel` |
+| Lê Phước Nam | `insights`, gateway, triển khai, đo tải, CI; giao diện `admin` |
+| Hồ Thanh Anh Minh | SRS, use case và UML; giao diện `pos` |
+| Phạm Minh Tâm | Kiểm thử, test frontend, tài liệu bàn giao |
 
 > **Vị trí của tài liệu này.** SRS gom các yêu cầu đang nằm rải rác trong `docs/` thành một tài liệu đọc liền mạch, để nộp và để người ngoài nhóm đọc.
 >
@@ -1846,31 +1855,33 @@ Bảng này chép từ [architecture/security.md](../architecture/security.md), 
 
 23 kịch bản là điều kiện nghiệm thu: 21 từ phần phân tích đề, 2 thêm cho kiến trúc microservice (T22, T23). Chi tiết "cho trước, khi, thì" và nơi đặt test ở [testing/scenarios.md](../testing/scenarios.md).
 
-| Mã | Kịch bản | Kết quả mong đợi | Tiêu chí chấp nhận |
-| --- | --- | --- | --- |
-| T01 | 50 đơn online đồng thời, còn 1 sản phẩm | Đúng 1 Reserved, 49 bị từ chối; `reserved = 1`; tồn khả dụng 0 | UC-ORD-01 AC-5 |
-| T02 | POS và đơn online cùng mua đơn vị cuối | Đúng một bên thành công | UC-POS-02 AC-4 |
-| T03 | Gửi lại cùng webhook; gửi lại checkout cùng `Idempotency-Key` | Không có đơn, phần giữ, dòng sổ mới; trả kết quả cũ | UC-ORD-01 AC-4, UC-POS-02 AC-3, UC-SIM-01 AC-4 |
-| T04 | Đơn 2 SKU, một SKU thiếu | Đơn bị từ chối; `reserved` cả hai SKU không đổi | UC-ORD-01 AC-3 |
-| T05 | Cắm lỗi vào bước ghi sổ khi duyệt | Đơn vẫn Reserved; số dư, phần giữ, sổ, `cost_price`, outbox như trước | UC-ORD-03 AC-4, UC-POS-02 AC-6 |
-| T06 | Hủy hai lần; chạy job hết hạn | `reserved` giảm đúng một lần | UC-ORD-04 AC-2, UC-ORD-05 AC-2 |
-| T07 | Duyệt và job hết hạn đồng thời | Đơn kết thúc ở đúng một trạng thái | UC-ORD-03 AC-5 |
-| T08 | Hủy đơn Confirmed | 409; `reserved`, `on_hand` không đổi | UC-ORD-04 AC-3 |
-| T09 | Nhập 10 × 100.000 rồi 5 × 130.000 | `avg_cost = 110.000`; `on_hand = 15` | UC-INV-02 AC-3 |
-| T10 | Bán rồi nhập lô làm đổi giá vốn | `cost_price` và lợi nhuận đơn cũ không đổi | UC-ORD-03 AC-6, UC-REP-01 AC-4 |
-| T11 | Xác nhận lại phiếu nhập | Tồn, giá vốn, sổ không đổi | UC-INV-02 AC-5 |
-| T12 | Chuyển A sang B đang InTransit | Tồn khả dụng B chưa tăng; tổng A + đang chuyển + B không đổi | UC-INV-03 AC-3 |
-| T13 | Kiểm kê đếm 6 khi `reserved = 8` | 409 kèm danh sách đơn; không SKU nào bị điều chỉnh | UC-INV-04 AC-4 |
-| T14 | Tenant A dùng ID của tenant B | 404 (riêng `core` với ID trong body: 409 `reference_not_ready`); không quan hệ chéo | UC-AUTH-01 AC-3 |
-| T15 | Phiên SignalR của tenant khác | Không nhận thông báo | UC-SIM-02 AC-3, UC-REP-03 AC-4 |
-| T16 | `UPDATE`, `DELETE` trực tiếp trên sổ | Database từ chối cả hai | UC-INV-01 AC-4 |
-| T17 | Tìm SKU, tạo đơn, báo cáo dưới tải với 100.000 dòng bán | p95 < 200 ms, < 500 ms, < 2 giây; ghi cấu hình đo | UC-POS-01 AC-6, UC-REP-01 AC-7 |
-| T18 | Backtest trên 60 ngày lịch sử | Có WAPE dự báo và cơ sở; không dùng dữ liệu sau mốc cắt; kết quả trên seed ở [forecast-backtest.md](../testing/forecast-backtest.md) | UC-AI-02 AC-2 |
-| T19 | SKU 5 ngày lịch sử; lần chạy bị cắm lỗi | "Chưa đủ dữ liệu"; lần lỗi ghi Failed, kết quả trước vẫn hiện; không phiếu nhập, không dòng sổ | UC-AI-01 AC-2, AC-3, AC-5 |
-| T20 | `docker compose up` trên máy chỉ có Docker, rồi `run --rm seed` | 5 service, gateway, hai frontend, PostgreSQL, RabbitMQ khỏe; đăng nhập bằng tài khoản seed; chạy được kịch bản demo | NFR-USA-01, sản phẩm bàn giao |
-| T21 | Gọi API theo Swagger và Postman | Mã trạng thái và hình dạng phản hồi khớp tài liệu API | FR-AUTH-02, sản phẩm bàn giao |
-| T22 | Giao lại một `OrderConfirmed` đã xử lý | `sales_facts` không thêm dòng | UC-REP-01 AC-5 |
-| T23 | RabbitMQ tắt khi tạo hoặc duyệt đơn | Transaction commit; thông điệp gửi đúng một lượt khi broker chạy lại | NFR-SEC-02 |
+| Mã | Kịch bản | Kết quả mong đợi | Tiêu chí chấp nhận | Kết quả |
+| --- | --- | --- | --- | --- |
+| T01 | 50 đơn online đồng thời, còn 1 sản phẩm | Đúng 1 Reserved, 49 bị từ chối; `reserved = 1`; tồn khả dụng 0 | UC-ORD-01 AC-5 | Đạt |
+| T02 | POS và đơn online cùng mua đơn vị cuối | Đúng một bên thành công | UC-POS-02 AC-4 | Đạt |
+| T03 | Gửi lại cùng webhook; gửi lại checkout cùng `Idempotency-Key` | Không có đơn, phần giữ, dòng sổ mới; trả kết quả cũ | UC-ORD-01 AC-4, UC-POS-02 AC-3, UC-SIM-01 AC-4 | Đạt |
+| T04 | Đơn 2 SKU, một SKU thiếu | Đơn bị từ chối; `reserved` cả hai SKU không đổi | UC-ORD-01 AC-3 | Đạt |
+| T05 | Cắm lỗi vào bước ghi sổ khi duyệt | Đơn vẫn Reserved; số dư, phần giữ, sổ, `cost_price`, outbox như trước | UC-ORD-03 AC-4, UC-POS-02 AC-6 | Đạt |
+| T06 | Hủy hai lần; chạy job hết hạn | `reserved` giảm đúng một lần | UC-ORD-04 AC-2, UC-ORD-05 AC-2 | Đạt |
+| T07 | Duyệt và job hết hạn đồng thời | Đơn kết thúc ở đúng một trạng thái | UC-ORD-03 AC-5 | Đạt |
+| T08 | Hủy đơn Confirmed | 409; `reserved`, `on_hand` không đổi | UC-ORD-04 AC-3 | Đạt |
+| T09 | Nhập 10 × 100.000 rồi 5 × 130.000 | `avg_cost = 110.000`; `on_hand = 15` | UC-INV-02 AC-3 | Đạt |
+| T10 | Bán rồi nhập lô làm đổi giá vốn | `cost_price` và lợi nhuận đơn cũ không đổi | UC-ORD-03 AC-6, UC-REP-01 AC-4 | Đạt |
+| T11 | Xác nhận lại phiếu nhập | Tồn, giá vốn, sổ không đổi | UC-INV-02 AC-5 | Đạt |
+| T12 | Chuyển A sang B đang InTransit | Tồn khả dụng B chưa tăng; tổng A + đang chuyển + B không đổi | UC-INV-03 AC-3 | Đạt |
+| T13 | Kiểm kê đếm 6 khi `reserved = 8` | 409 kèm danh sách đơn; không SKU nào bị điều chỉnh | UC-INV-04 AC-4 | Đạt |
+| T14 | Tenant A dùng ID của tenant B | 404 (riêng `core` với ID trong body: 409 `reference_not_ready`); không quan hệ chéo | UC-AUTH-01 AC-3 | Đạt |
+| T15 | Phiên SignalR của tenant khác | Không nhận thông báo | UC-SIM-02 AC-3, UC-REP-03 AC-4 | Đạt |
+| T16 | `UPDATE`, `DELETE` trực tiếp trên sổ | Database từ chối cả hai | UC-INV-01 AC-4 | Đạt |
+| T17 | Tìm SKU, tạo đơn, báo cáo dưới tải với 100.000 dòng bán | p95 < 200 ms, < 500 ms, < 2 giây; ghi cấu hình đo | UC-POS-01 AC-6, UC-REP-01 AC-7 | Đạt |
+| T18 | Backtest trên 60 ngày lịch sử | Có WAPE dự báo và cơ sở; không dùng dữ liệu sau mốc cắt; kết quả trên seed ở [forecast-backtest.md](../testing/forecast-backtest.md) | UC-AI-02 AC-2 | Đạt |
+| T19 | SKU 5 ngày lịch sử; lần chạy bị cắm lỗi | "Chưa đủ dữ liệu"; lần lỗi ghi Failed, kết quả trước vẫn hiện; không phiếu nhập, không dòng sổ | UC-AI-01 AC-2, AC-3, AC-5 | Đạt |
+| T20 | `docker compose up` trên máy chỉ có Docker, rồi `run --rm seed` | 5 service, gateway, hai frontend, PostgreSQL, RabbitMQ khỏe; đăng nhập bằng tài khoản seed; chạy được kịch bản demo | NFR-USA-01, sản phẩm bàn giao | Đạt trên máy dev; chưa chạy trên máy sạch |
+| T21 | Gọi API theo Swagger và Postman | Mã trạng thái và hình dạng phản hồi khớp tài liệu API | FR-AUTH-02, sản phẩm bàn giao | Đạt |
+| T22 | Giao lại một `OrderConfirmed` đã xử lý | `sales_facts` không thêm dòng | UC-REP-01 AC-5 | Đạt |
+| T23 | RabbitMQ tắt khi tạo hoặc duyệt đơn | Transaction commit; thông điệp gửi đúng một lượt khi broker chạy lại | NFR-SEC-02 | Đạt |
+
+Kết quả lấy từ [testing/test-report.md](../testing/test-report.md) (501 test backend, 93 test frontend, đều đạt). T17 đạt ở tải theo mô tả của đề; ở mức bão hòa, xem mục 10.2.
 
 Các tầng test: đơn vị (xUnit, mỗi lần build), tích hợp trên PostgreSQL thật (Testcontainers), đồng thời (lặp 20 lần trong CI), thông điệp (Testcontainers RabbitMQ), tải (k6 trên gói Compose), giao diện (danh sách kiểm theo kịch bản demo).
 
@@ -1962,6 +1973,7 @@ Cả 13 ADR (gộp 18 quyết định D-01 đến D-18) đã được giảng vi
 | Dữ liệu tham chiếu, báo cáo, thông báo trễ theo event | Thao tác ngay sau khi tạo SKU hoặc chi nhánh có thể nhận 409 `reference_not_ready`; thông báo phát lúc mất kết nối không gửi bù |
 | Một database dùng chung cho 5 schema | Việc không đọc chéo schema dựa vào quy ước và review, không bị database chặn |
 | NFR-USA-01 không đo được trong 5 tuần | Chỉ chứng minh thiết kế hỗ trợ: health check, restart policy |
+| Ghi đơn ở mức bão hòa (41 đơn mỗi giây trên 6 SKU, không nghỉ) có p95 khoảng 800 ms, vượt ngưỡng 500 ms của NFR-PERF-01 | Tải theo mô tả của đề vẫn đạt (p95 checkout 141 ms); các đơn tranh cùng dòng số dư phải xếp hàng theo khóa dòng ([testing/load-test.md](../testing/load-test.md)) |
 | .NET 8 hết hỗ trợ ngày 2026-11-10 theo lịch của Microsoft | Đề chỉ định .NET 8 nên hệ thống bàn giao giữ .NET 8; vận hành tiếp sau mốc đó cần nâng lên .NET 10 LTS ([handover/deployment-plan.md](../handover/deployment-plan.md)) |
 
 ### 10.3 Lịch sử thay đổi
@@ -1969,6 +1981,7 @@ Cả 13 ADR (gộp 18 quyết định D-01 đến D-18) đã được giảng vi
 | Phiên bản | Ngày | Thay đổi |
 | --- | --- | --- |
 | 1.0 | 2026-10-15 | Bản đầu: tổng hợp từ `docs/`; thêm sơ đồ use case UML, ERD khái niệm và logic liên service, quy tắc nghiệp vụ BR-01 đến BR-23 |
+| 1.1 | 2026-10-16 | Khớp tài liệu sau phase 8: chi tiết báo cáo tồn, bán chạy, bán chậm (UC-REP-02), cảnh báo tồn, đề xuất nhập hàng và lần chạy dự báo (UC-AI-01, UC-AI-02), kết quả backtest trên seed; viết lại phần mở đầu và mục 3.1 cho gọn |
 | 1.2 | 2026-10-18 | Bản chốt phase 10: giao diện admin theo Figma (UC-REP-01, UC-REP-03), Swagger gộp ở gateway và Postman collection (T21), sơ đồ lớp UML của Domain `core`, ERD đã đối chiếu với migration của 5 service, tài liệu bàn giao ở `handover/`; RTM thêm task của phase 9 và 10 |
 | 1.3 | 2026-11-07 | Soát sơ đồ use case mục 3.2: tách hai event đồng bộ theo đúng nơi nhận, thêm quan hệ đơn thủ công kích hoạt thông báo, quan hệ cảnh báo tồn với UC-INV-05, ghi chú phạm vi «extend» của in hóa đơn và cột giá vốn ẩn với Staff |
-| 1.1 | 2026-10-16 | Khớp tài liệu sau phase 8: chi tiết báo cáo tồn, bán chạy, bán chậm (UC-REP-02), cảnh báo tồn, đề xuất nhập hàng và lần chạy dự báo (UC-AI-01, UC-AI-02), kết quả backtest trên seed; viết lại phần mở đầu và mục 3.1 cho gọn |
+| 1.4 | 2026-11-18 | Thêm bảng nhóm thực hiện; mục 8 thêm cột kết quả kiểm thử chấp nhận theo báo cáo kiểm thử; mục 10.2 thêm giới hạn ghi đơn ở mức bão hòa; xếp lại lịch sử thay đổi theo phiên bản |
