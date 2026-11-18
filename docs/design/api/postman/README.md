@@ -14,6 +14,12 @@ docker run --rm -v "$PWD/docs/design/api/postman:/etc/newman" postman/newman:6-a
 
 Trên Linux không có Docker Desktop, thêm `--add-host host.docker.internal:host-gateway` ngay sau `--rm`.
 
+Trên Windows, lệnh trên chạy được nguyên văn trong PowerShell. Trong Git Bash, Git Bash tự đổi đường dẫn `/etc/newman` nên newman báo không thấy file collection; dùng lệnh này thay thế:
+
+```bash
+MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd -W)/docs/design/api/postman:/etc/newman" postman/newman:6-alpine run oism.postman_collection.json --env-var baseUrl=http://host.docker.internal:8080
+```
+
 | Biến | Mặc định | Ý nghĩa |
 | --- | --- | --- |
 | `baseUrl` | `http://localhost:8080` | Gateway; newman chạy trong container thì dùng `http://host.docker.internal:8080` |
