@@ -111,6 +111,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{252BF088
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Oism.BuildingBlocks.IntegrationTests", "shared\tests\Oism.BuildingBlocks.IntegrationTests\Oism.BuildingBlocks.IntegrationTests.csproj", "{42EA8046-D9F1-4EC5-8E24-C5163F1D8F46}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Oism.Gateway.IntegrationTests", "gateway\tests\Oism.Gateway.IntegrationTests\Oism.Gateway.IntegrationTests.csproj", "{7478F2BF-11D6-4C9D-ACCC-05CCA5DE2524}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -541,6 +543,18 @@ Global
 		{42EA8046-D9F1-4EC5-8E24-C5163F1D8F46}.Release|x64.Build.0 = Release|Any CPU
 		{42EA8046-D9F1-4EC5-8E24-C5163F1D8F46}.Release|x86.ActiveCfg = Release|Any CPU
 		{42EA8046-D9F1-4EC5-8E24-C5163F1D8F46}.Release|x86.Build.0 = Release|Any CPU
+		{7478F2BF-11D6-4C9D-ACCC-05CCA5DE2524}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7478F2BF-11D6-4C9D-ACCC-05CCA5DE2524}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7478F2BF-11D6-4C9D-ACCC-05CCA5DE2524}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7478F2BF-11D6-4C9D-ACCC-05CCA5DE2524}.Debug|x64.Build.0 = Debug|Any CPU
+		{7478F2BF-11D6-4C9D-ACCC-05CCA5DE2524}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7478F2BF-11D6-4C9D-ACCC-05CCA5DE2524}.Debug|x86.Build.0 = Debug|Any CPU
+		{7478F2BF-11D6-4C9D-ACCC-05CCA5DE2524}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7478F2BF-11D6-4C9D-ACCC-05CCA5DE2524}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7478F2BF-11D6-4C9D-ACCC-05CCA5DE2524}.Release|x64.ActiveCfg = Release|Any CPU
+		{7478F2BF-11D6-4C9D-ACCC-05CCA5DE2524}.Release|x64.Build.0 = Release|Any CPU
+		{7478F2BF-11D6-4C9D-ACCC-05CCA5DE2524}.Release|x86.ActiveCfg = Release|Any CPU
+		{7478F2BF-11D6-4C9D-ACCC-05CCA5DE2524}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -597,5 +611,6 @@ Global
 		{B1C30924-50B5-4C98-ADC2-F79B820A8592} = {3E8662D3-B3DC-B595-D3BE-29C56BF39EB9}
 		{252BF088-76D5-E31C-DF08-248CF22F93A1} = {4F52FD11-658E-A102-6CD3-7D7C16FFA15B}
 		{42EA8046-D9F1-4EC5-8E24-C5163F1D8F46} = {252BF088-76D5-E31C-DF08-248CF22F93A1}
+		{7478F2BF-11D6-4C9D-ACCC-05CCA5DE2524} = {E7BDDBC6-9FD1-D1D7-ACD8-2C4F8E3D2461}
 	EndGlobalSection
 EndGlobal

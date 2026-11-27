@@ -24,7 +24,9 @@ XDPMOOP/
 │  │  └─ tests/
 │  │     └─ Oism.BuildingBlocks.IntegrationTests/
 │  ├─ gateway/
-│  │  └─ Oism.Gateway/
+│  │  ├─ Oism.Gateway/
+│  │  └─ tests/
+│  │     └─ Oism.Gateway.IntegrationTests/
 │  └─ services/
 │     └─ <service>/                identity, catalog, core, channel, insights
 │        ├─ src/

@@ -376,7 +376,7 @@ Mỗi phase dài nửa tuần (khoảng 2,5 ngày làm việc) và kết thúc b
 | 7 | | | | W4-01, W4-02, W4-04 | W4-08 | | |
 | 8 | | | | W4-03, W4-05 | W4-06, W4-07 | W4-09 | |
 | 9 | W5-04 | W5-02 | W5-01, W5-02 | W5-02 | | W5-03, W5-04, W5-05 | |
-| 10 | W5-06 | W5-12, W5-14 | | W5-15 | W5-10, W5-11, W5-12, W5-13, W5-14, W5-15 | | W5-07, W5-08, W5-09 |
+| 10 | W5-06, W5-16 | W5-12, W5-14 | | W5-15 | W5-10, W5-11, W5-12, W5-13, W5-14, W5-15 | | W5-07, W5-08, W5-09 |
 
 Mỗi folder có file plan riêng trong `docs/plans/`, ghi việc của folder đó theo phase (mục 4.3).
 
@@ -502,6 +502,7 @@ Cổng phase 9: coverage đạt 80% cho ba module lõi; có báo cáo đo tải;
 | W5-13 | pos: quét mã vạch bằng camera và bằng ảnh tải lên | C | FR-POS-01, NFR-USA-02 | Quét mã EAN-13 hoặc Code128 bằng camera hay bằng ảnh thì hàng vào giỏ như máy quét; máy không có camera hoặc không chạy HTTPS vẫn quét được bằng ảnh |
 | W5-14 | catalog, admin: hình mã vạch tải về cho từng SKU, tạo mã một chạm, tìm sản phẩm bằng ảnh mã vạch | C | FR-PROD-02, FR-PROD-03 | Mỗi mã vạch của SKU có hình tải về được và quét được ở POS; SKU chưa có mã tạo được bằng một lần bấm; chọn ảnh mã vạch ở danh sách sản phẩm thì mở đúng sản phẩm |
 | W5-15 | insights, pos: điện thoại làm máy quét cho màn hình bán hàng trên máy tính qua hub SignalR | C | FR-POS-01, FR-SIM-02 | Điện thoại và máy tính đăng nhập cùng tài khoản; điện thoại bật "Gửi sang máy tính" rồi quét thì hàng vào giỏ trên máy tính; người dùng khác và tenant khác không nhận mã |
+| W5-16 | gateway: giới hạn tần suất gọi `POST /api/identity/auth/login` theo IP client | A | NFR-SEC-01 | Quá ngưỡng trong một cửa sổ thì gateway trả 429 `too_many_requests` kèm `Retry-After`, không chuyển tới `identity`; route khác không bị giới hạn; kịch bản demo và Postman collection vẫn chạy |
 
 W5-10 và W5-11 phải xong và qua kiểm tay trước ngày đóng băng code của W5-09; chưa xong thì giữ giao diện cũ cho buổi demo. W5-11 đến W5-15 làm sau khi W5-09 đã chạy demo, nên xong các task này thì chạy lại kịch bản demo ở `docs/handover/demo-script.md`.
 
@@ -655,7 +656,7 @@ Ba mã AI do nhóm đặt, giảng viên đã xác nhận cùng D-14 ngày 2026-
 | NFR-PERF-02 | core | W2-05, W5-03 | T01 |
 | NFR-TENANT-01 | Mọi service | W1-02, W1-08, W1-12, W5-02 | T14, T15 |
 | NFR-TENANT-02 | core | W2-03 | T17 |
-| NFR-SEC-01 | identity, gateway | W1-03, W1-04, W5-04 | DoD W1-04, DoD W5-04 |
+| NFR-SEC-01 | identity, gateway | W1-03, W1-04, W5-04, W5-16 | DoD W1-04, DoD W5-04, DoD W5-16 |
 | NFR-SEC-02 | core, shared | W1-13, W2-06, W3-01, W3-02 | T05, T23 |
 | NFR-SEC-03 | core | W2-01 | T16 |
 | NFR-USA-01 | deploy | W5-04 | T20 |

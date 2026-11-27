@@ -1881,7 +1881,7 @@ Bảng này chép từ [architecture/security.md](../architecture/security.md), 
 | T22 | Giao lại một `OrderConfirmed` đã xử lý | `sales_facts` không thêm dòng | UC-REP-01 AC-5 | Đạt |
 | T23 | RabbitMQ tắt khi tạo hoặc duyệt đơn | Transaction commit; thông điệp gửi đúng một lượt khi broker chạy lại | NFR-SEC-02 | Đạt |
 
-Kết quả lấy từ [testing/test-report.md](../testing/test-report.md) (501 test backend, 93 test frontend, đều đạt). T17 đạt ở tải theo mô tả của đề; ở mức bão hòa, xem mục 10.2.
+Kết quả lấy từ [testing/test-report.md](../testing/test-report.md) (505 test backend, 93 test frontend, đều đạt). T17 đạt ở tải theo mô tả của đề; ở mức bão hòa, xem mục 10.2.
 
 Các tầng test: đơn vị (xUnit, mỗi lần build), tích hợp trên PostgreSQL thật (Testcontainers), đồng thời (lặp 20 lần trong CI), thông điệp (Testcontainers RabbitMQ), tải (k6 trên gói Compose), giao diện (danh sách kiểm theo kịch bản demo).
 
