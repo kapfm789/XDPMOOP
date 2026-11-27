@@ -63,6 +63,7 @@ Số test frontend chạy lại ngày 2026-11-08 bằng `npm --prefix frontend t
 | Backtest dự báo trên seed | Có WAPE của dự báo và của phương án cơ sở | [forecast-backtest.md](forecast-backtest.md) |
 | Postman collection theo tài liệu API | 90 request, 144 assertion đạt (chạy lại ngày 2026-11-18 trên gói demo) | [design/api/postman/](../design/api/postman/README.md) |
 | Kịch bản demo, phần API, hai vòng liên tiếp | Đạt | [handover/demo-script.md](../handover/demo-script.md) |
+| Kiểm tay giao diện theo [design/ui/](../design/ui/admin.md) trên gói demo | Đạt ngày 2026-11-27: trang đăng nhập và 19 màn hình của `admin` với Owner mở đúng nội dung theo bảng màn hình; với Staff, menu không có Lợi nhuận gộp, Dự báo, Kênh sàn, Cài đặt, màn hình tồn ẩn tổng giá trị tồn và cột giá vốn, vào thẳng route chỉ Owner hiện "Không có quyền"; `pos` bán bằng Enter, mã VietQR, hộp quét đúng mô tả. Một điểm lệch nhỏ ở mục 7 | [design/ui/admin.md](../design/ui/admin.md), [design/ui/pos.md](../design/ui/pos.md) |
 | Cài gói demo theo hướng dẫn trên bản clone mới (T20) | Đạt ngày 2026-11-18: build và khởi động khoảng 1 phút 40 giây, seed xong sau khoảng 3 phút; 10 container khỏe; đăng nhập admin, bán một đơn ở POS, Swagger 5 service, HTTPS 8443 đều đúng; chạy lại seed không tạo bản trùng | [handover/install-guide.md](../handover/install-guide.md) mục 4 đến 7 |
 
 ## 3. Ca kiểm thử đơn vị
@@ -146,6 +147,7 @@ Mọi request được giữ sau một cổng rồi thả cùng lúc để chún
 | Điểm | Ghi chú |
 | --- | --- |
 | Giao diện | Không có test tự động end-to-end cho `admin` và `pos`; luồng màn hình kiểm tay theo [handover/demo-script.md](../handover/demo-script.md) |
+| Địa chỉ không có trong `admin` | Gõ một địa chỉ không có route (ví dụ `/products`) thì hiện trang lỗi mặc định của React Router thay vì trang báo không tìm thấy. Không chặn demo vì menu chỉ dẫn tới route có thật; [design/ui/admin.md](../design/ui/admin.md) chưa quy định trang này |
 | T20 trên máy thật sự sạch | Ngày 2026-11-18 đã cài lại từ bản clone mới theo đúng hướng dẫn và đạt, nhưng trên máy dev còn sẵn một phần image nền và cache, nên thời gian cài chưa phản ánh lần cài đầu trên máy mới; chưa chạy trên một máy chưa từng có image nền |
 | Tài nguyên khi chạy test | Máy ảo Docker 4 GB RAM cần chạy test tuần tự (`-m:1`) và tắt Compose dev; chạy song song thì test đồng thời có thể lỗi timeout khi mở kết nối |
 | Ghi đơn ở mức bão hòa | p95 khoảng 800 ms khi 41 đơn mỗi giây trên 6 SKU không nghỉ, vượt ngưỡng 500 ms; tải theo mô tả của đề vẫn đạt ([load-test.md](load-test.md)) |
