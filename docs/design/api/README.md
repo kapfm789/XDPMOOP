@@ -58,6 +58,7 @@ Lỗi trả theo ProblemDetails, kèm trường `code` để giao diện xử l�
 | 409 | `stocktake_below_reserved` | Số đếm thấp hơn lượng đã giữ; `details` nêu các đơn |
 | 409 | `reference_not_ready` | SKU hoặc chi nhánh chưa tới service do event trễ; thử lại sau |
 | 409 | `inactive_reference` | Chi nhánh đã tắt hoặc SKU đã ngừng bán; `details` nêu `reason` và `id` |
+| 429 | `too_many_requests` | Gọi đăng nhập quá ngưỡng trong một cửa sổ ([security.md](../../architecture/security.md)); header `Retry-After` cho biết số giây phải chờ |
 
 ## Chống gửi trùng
 

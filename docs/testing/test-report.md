@@ -39,7 +39,8 @@ docker compose -f deploy/docker-compose.yml run --rm tests bash -c "cp -r /repo/
 | `Oism.Insights.UnitTests` | Đơn vị | 35 | Đạt |
 | `Oism.Insights.IntegrationTests` | Tích hợp, thông điệp, realtime | 57 | Đạt |
 | `Oism.BuildingBlocks.IntegrationTests` | Tích hợp hạ tầng chung | 17 | Đạt |
-| **Tổng** | | **501** | **Đạt** |
+| `Oism.Gateway.IntegrationTests` | Tích hợp gateway: giới hạn tần suất đăng nhập (W5-16) | 4 | Đạt |
+| **Tổng** | | **505** | **Đạt** |
 
 Số test tính cả từng bộ tham số của `[Theory]`: mỗi test đồng thời chạy lặp 20 vòng nên tính 20.
 

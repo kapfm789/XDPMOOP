@@ -10,10 +10,12 @@ Tầng cổng vào (mục 4.1 của kế hoạch tổng). Không có database, k
 
 ```text
 gateway/
-└─ Oism.Gateway/
-   ├─ Program.cs          YARP, xác thực JWT, CORS, rate limit
-   ├─ appsettings.json    route /api/identity, /api/catalog, /api/core, /api/channel, /api/insights, /hubs
-   └─ Swagger/            gộp Swagger của 5 service
+├─ Oism.Gateway/
+│  ├─ Program.cs          YARP, xác thực JWT, CORS, rate limit
+│  ├─ appsettings.json    route /api/identity, /api/catalog, /api/core, /api/channel, /api/insights, /hubs
+│  └─ Swagger/            gộp Swagger của 5 service
+└─ tests/
+   └─ Oism.Gateway.IntegrationTests/   route công khai và giới hạn tần suất đăng nhập, chạy trên TestServer
 ```
 
 ## Việc theo phase
@@ -23,10 +25,12 @@ gateway/
 | 1 | W1-03 | Docker Compose dev: PostgreSQL một database với 5 schema, RabbitMQ, gateway YARP | A | NFR-SEC-01 | `docker compose up` chạy; health check 5 service qua gateway |
 | 9 | W5-04 | Docker Compose demo đầy đủ, Dockerfile từng service, seed tự chạy, HTTPS ở gateway, health check và restart policy | C | Mục f của đề, NFR-SEC-01, NFR-USA-01 | Máy sạch: clone, compose up, đăng nhập được |
 | 10 | W5-06 | Swagger từng service gộp ở gateway, Postman collection | C | Mục f của đề | Gọi theo tài liệu ra đúng kết quả |
+| 10 | W5-16 | gateway: giới hạn tần suất gọi `POST /api/identity/auth/login` theo IP client | A | NFR-SEC-01 | Quá ngưỡng trong một cửa sổ thì gateway trả 429 `too_many_requests` kèm `Retry-After`, không chuyển tới `identity`; route khác không bị giới hạn; kịch bản demo và Postman collection vẫn chạy |
 
 ## Quy tắc riêng
 
 - Route không yêu cầu JWT đúng bằng danh sách endpoint công khai ở [security.md](../architecture/security.md): đăng ký tenant, đăng nhập, làm mới token, `POST /api/channel/webhooks/{channel}`, `/api/<service>/health` và Swagger gộp ở `/swagger` (chỉ ở Development). Mọi route khác yêu cầu.
 - `Swagger/` lấy tài liệu của từng service theo địa chỉ cluster trong `ReverseProxy` và đặt `servers` thành `/api/<service>`; đó là endpoint riêng của gateway, không phải route chuyển tiếp ([design/api/README.md](../design/api/README.md)).
 - Gateway chỉ chuyển tiếp: không sửa nội dung request, chỉ truyền header xác thực và correlation id.
+- Giới hạn tần suất đăng nhập theo [security.md](../architecture/security.md) mục "Xác thực"; policy gắn vào đúng route `identity-login` trong `ReverseProxy`, không gắn chung cho mọi route.
 - HTTPS với TLS 1.3 bật ở gateway (NFR-SEC-01); các service phía sau nói HTTP trong mạng nội bộ của Compose.
